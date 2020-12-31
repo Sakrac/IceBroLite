@@ -44,6 +44,8 @@
     </ClInclude>
     <ClInclude Include="Files.h" />
     <ClInclude Include="FilesView.h" />
+    <ClInclude Include="ViceBinInterface.h" />
+    <ClInclude Include="platform.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\examples\imgui_impl_opengl2.cpp">
@@ -71,6 +73,8 @@
     <ClCompile Include="IceBroLite.cpp" />
     <ClCompile Include="FilesView.cpp" />
     <ClCompile Include="struse.cpp" />
+    <ClCompile Include="ViceInterface.cpp" />
+    <ClCompile Include="Platform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="imgui\misc\natvis\imgui.natvis">
