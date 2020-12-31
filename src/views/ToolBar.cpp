@@ -124,7 +124,7 @@ void ToolBar::Draw()
 		if (ViceConnected()) {
 			ViceDisconnect();
 		} else {
-			ViceConnect("127.0.0.1", 6510);
+			ViceConnect("127.0.0.1", 6502);
 		}
 	}
 
