@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="strref">
+    <DisplayString>{string,[length]s}</DisplayString>
+  </Type>
+  <Type Name="strown&lt;*&gt;">
+    <DisplayString>{string,[length]s}</DisplayString>
+  </Type>
+  <Type Name="strovl">
+    <DisplayString>{string_ptr,[string_length]s}</DisplayString>
+  </Type>
+</AutoVisualizer>
