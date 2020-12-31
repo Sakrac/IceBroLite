@@ -1,0 +1,18 @@
+#pragma once
+
+#define C64_BLACK 	ImVec4(0,0,0,1)
+#define C64_WHITE 	ImVec4(1,1,1,1)
+#define C64_RED 	ImVec4(136/255.0f,57/255.0f,50/255.0f,1.0f)
+#define C64_CYAN 	ImVec4(103/255.0f,182/255.0f,189/255.0f,1.0f)
+#define C64_PURPLE	ImVec4(139/255.0f,63/255.0f,150/255.0f,1.0f)
+#define C64_GREEN	ImVec4(85/255.0f,160/255.0f,73/255.0f,1.0f)
+#define C64_BLUE	ImVec4(64/255.0f,49/255.0f,141/255.0f,1.0f)
+#define C64_YELLOW	ImVec4(191/255.0f,206/255.0f,114/255.0f,1.0f)
+#define C64_ORANGE	ImVec4(139/255.0f,84/255.0f,41/255.0f,1.0f)
+#define C64_BROWN	ImVec4(87/255.0f,66/255.0f,0/255.0f,1.0f)
+#define C64_PINK	ImVec4(184/255.0f,105/255.0f,98/255.0f,1.0f)
+#define C64_DGRAY	ImVec4(80/255.0f,80/255.0f,80/255.0f,1.0f)
+#define C64_MGRAY	ImVec4(120/255.0f,120/255.0f,120/255.0f,1.0f)
+#define C64_LGREEN	ImVec4(148/255.0f,224/255.0f,137/255.0f,1.0f)
+#define C64_LBLUE 	ImVec4(120/255.0f,105/255.0f,196/255.0f,1.0f)
+#define C64_LGRAY 	ImVec4(159/255.0f,159/255.0f,159/255.0f,1.0f)

@@ -20,6 +20,51 @@ static SOCKET s;
 static IBThread threadHandle;
 static ViceConnection* viceCon = nullptr;
 
+bool ViceConnected()
+{
+	return false;
+}
+
+bool ViceRunning()
+{
+	return false;
+}
+
+void ViceDisconnect()
+{
+
+}
+
+void ViceConnect(const char* ip, uint32_t port)
+{
+
+}
+
+void ViceBreak()
+{
+
+}
+
+void ViceGo()
+{
+
+}
+
+void ViceStep()
+{
+
+}
+
+void ViceStepOver()
+{
+
+}
+
+void ViceStepOut()
+{
+
+}
+
 IBThreadRet ViceConnection::ViceConnectThread(void* data)
 {
 	((ViceConnection*)data)->connectionThread();
