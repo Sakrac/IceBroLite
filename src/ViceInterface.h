@@ -14,6 +14,7 @@ void ViceStepOut();
 void ViceRunTo(uint16_t addr);
 
 void ViceWaiting();
+void ViceTickMessage();
 
 enum VICEMemSpaces {
 	VICE_MainMemory,

@@ -62,6 +62,7 @@ void ViewContext::Draw()
 		cpu->RefreshMemory();
 	}
 	GlobalKeyCheck();
+	ViceTickMessage();
 }
 
 void ViewContext::GlobalKeyCheck()

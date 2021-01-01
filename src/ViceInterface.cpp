@@ -39,11 +39,14 @@ public:
 
 	void updateRegisters(VICEBinRegisterResponse* resp);
 
+	void handleStopResume(VICEBinStopResponse* resp);
+
 	void updateRegisterNames(VICEBinRegisterAvailableResponse* resp);
 
 	bool open();
+	void Tick();
 	bool openConnection();
-	void AddMessage(uint8_t *message, int size);
+	void AddMessage(uint8_t *message, int size, bool wantResponse = false);
 
 	bool isConnected() { return connected; }
 	bool isStopped() { return stopped; }
@@ -59,11 +62,17 @@ struct GetMemoryRequest {
 	uint8_t space;
 };
 
+struct MessageRequestTimeout {
+	uint32_t requestID;
+	uint32_t timeSincePing;
+};
+
 static SOCKET s;
 static IBThread threadHandle;
 static ViceConnection* viceCon = nullptr;
 static uint32_t lastRequestID = 0x10000000;
 static std::vector<GetMemoryRequest> sMemRequests;
+static std::vector<MessageRequestTimeout> sMessageTimeouts;
 static IBMutex userRequestMutex;
 
 ViceConnection::ViceConnection(const char* ip, uint32_t port) : ipPort(port), waitCount(0), connected(false), stopped(false)
@@ -105,7 +114,7 @@ void ViceBreak()
 {
 	if (viceCon && viceCon->isConnected() && !viceCon->isStopped()) {
 		VICEBinRegisters regMsg(++lastRequestID, false);
-		viceCon->AddMessage((uint8_t*)&regMsg, sizeof(regMsg));
+		viceCon->AddMessage((uint8_t*)&regMsg, sizeof(regMsg), true);
 	}
 }
 
@@ -114,7 +123,7 @@ void ViceGo()
 	if (viceCon && viceCon->isConnected() && viceCon->isStopped()) {
 		VICEBinHeader resumeMsg;
 		resumeMsg.Setup(0, ++lastRequestID, VICE_Exit);
-		viceCon->AddMessage((uint8_t*)&resumeMsg, sizeof(VICEBinHeader));
+		viceCon->AddMessage((uint8_t*)&resumeMsg, sizeof(VICEBinHeader), true);
 	}
 }
 
@@ -123,8 +132,7 @@ void ViceStep()
 	if (viceCon && viceCon->isConnected() && viceCon->isStopped()) {
 		VICEBinStep stepMsg;
 		stepMsg.Setup(++lastRequestID, false);
-		viceCon->AddMessage((uint8_t*)&stepMsg, sizeof(VICEBinStep));
-		VicePing();
+		viceCon->AddMessage((uint8_t*)&stepMsg, sizeof(VICEBinStep), true);
 	}
 }
 
@@ -133,8 +141,7 @@ void ViceStepOver()
 	if (viceCon && viceCon->isConnected() && viceCon->isStopped()) {
 		VICEBinStep stepMsg;
 		stepMsg.Setup(++lastRequestID, true);
-		viceCon->AddMessage((uint8_t*)&stepMsg, sizeof(VICEBinStep));
-		VicePing();
+		viceCon->AddMessage((uint8_t*)&stepMsg, sizeof(VICEBinStep), true);
 	}
 }
 
@@ -143,8 +150,7 @@ void ViceStepOut()
 	if (viceCon && viceCon->isConnected() && viceCon->isStopped()) {
 		VICEBinHeader stepOutMsg;
 		stepOutMsg.Setup(0, ++lastRequestID, VICE_StepOut);
-		viceCon->AddMessage((uint8_t*)&stepOutMsg, sizeof(VICEBinHeader));
-		VicePing();
+		viceCon->AddMessage((uint8_t*)&stepOutMsg, sizeof(VICEBinHeader), true);
 	}
 }
 
@@ -159,7 +165,7 @@ void ViceRunTo(uint16_t addr)
 		checkSet.enabled = true;
 		checkSet.operation = (uint8_t)VICE_Exec;
 		checkSet.temporary = true;
-		viceCon->AddMessage((uint8_t*)&checkSet, sizeof(checkSet));
+		viceCon->AddMessage((uint8_t*)&checkSet, sizeof(checkSet), true);
 		ViceGo();
 	}
 }
@@ -169,6 +175,11 @@ void ViceWaiting()
 	if (viceCon && viceCon->isConnected()) {
 		viceCon->ImWaiting();
 	}
+}
+
+void ViceTickMessage()
+{
+	if (viceCon) { viceCon->Tick(); }
 }
 
 bool ViceGetMemory(uint16_t start, uint16_t end, VICEMemSpaces mem)
@@ -184,7 +195,7 @@ bool ViceGetMemory(uint16_t start, uint16_t end, VICEMemSpaces mem)
 		msg.append_num(start, 4, 16).append("-$").append_num(end, 4, 16).append("\n");
 		OutputDebugStringA(msg.c_str());
 #endif
-		viceCon->AddMessage((uint8_t*)&getNem, sizeof(getNem));
+		viceCon->AddMessage((uint8_t*)&getNem, sizeof(getNem), true);
 		return true;
 	}
 	return false;
@@ -258,9 +269,20 @@ void ViceConnection::connectionThread()
 					strown<128> msg("Got VICE respnse: $");
 					msg.append_num(resp->commandType, 2, 16).append(" ReqID:").append_num(resp->GetReqID(), 8, 16);
 					msg.append(" err: ").append_num(resp->errorCode,2,16).append("\n");
-
 					OutputDebugStringA(msg.c_str());
 #endif
+					uint32_t id = resp->GetReqID();
+					if (id != 0xffffffff) {
+						IBMutexLock(&msgSendMutex);
+						for (size_t i = 0, n = sMessageTimeouts.size(); i < n; ++i) {
+							if (sMessageTimeouts[i].requestID == id) {
+								sMessageTimeouts.erase(sMessageTimeouts.begin() + i);
+								break;
+							}
+						}
+						IBMutexRelease(&msgSendMutex);
+					}
+
 					switch (resp->commandType) {
 						case VICE_RegistersGet:
 							updateRegisters((VICEBinRegisterResponse*)resp);
@@ -269,13 +291,25 @@ void ViceConnection::connectionThread()
 							updateRegisterNames((VICEBinRegisterAvailableResponse*)resp);
 							break;
 						case VICE_Resumed:
-							stopped = false;
+#ifdef _DEBUG
+							OutputDebugStringA("Vice resumed");
+#endif
+							handleStopResume((VICEBinStopResponse*)resp);
 							break;
 						case VICE_MemGet:
 							updateGetMemory((VICEBinMemGetResponse*)resp);
 							break;
+						case VICE_Step:
+#ifdef _DEBUG
+							OutputDebugStringA("Vice stepped!\n");
+#endif
+							break;
 						case VICE_Stopped:
-							stopped = true;
+						case VICE_JAM:
+#ifdef _DEBUG
+							OutputDebugStringA("Vice stopped");
+#endif
+							handleStopResume((VICEBinStopResponse*)resp);
 							if (CPU6510* cpu = GetCurrCPU()) {
 								cpu->FlushRAM();
 							}
@@ -292,12 +326,12 @@ void ViceConnection::connectionThread()
 			}
 		}
 
-		if (waitCount > 30) {
-			waitCount = 0;
-			VICEBinHeader pingMsg;
-			pingMsg.Setup(0, ++lastRequestID, VICE_Ping);
-			send(s, (const char*)&pingMsg, sizeof(pingMsg), 0);
-		}
+//		if (waitCount > 30) {
+//			waitCount = 0;
+//			VICEBinHeader pingMsg;
+//			pingMsg.Setup(0, ++lastRequestID, VICE_Ping);
+//			send(s, (const char*)&pingMsg, sizeof(pingMsg), 0);
+//		}
 
 		// messages to send
 		{
@@ -371,6 +405,22 @@ void ViceConnection::updateRegisters(VICEBinRegisterResponse* resp)
 		d.append("\n");
 		OutputDebugStringA(d.c_str());
 #endif
+	}
+}
+
+void ViceConnection::handleStopResume(VICEBinStopResponse* resp)
+{
+	if (CPU6510* cpu = GetCurrCPU()) {
+		cpu->regs.PC = resp->GetPC();
+	}
+	switch (resp->commandType) {
+		case VICE_Resumed:
+			stopped = false;
+			break;
+		case VICE_Stopped:
+		case VICE_JAM:
+			stopped = true;
+			break;
 	}
 }
 
@@ -449,7 +499,28 @@ bool ViceConnection::open()
 	return iResult == 0;
 }
 
-void ViceConnection::AddMessage(uint8_t* message, int size)
+void ViceConnection::Tick()
+{
+	IBMutexLock(&msgSendMutex);
+	uint32_t maxTime = 0;
+	for (size_t i = 0, n = sMessageTimeouts.size(); i < n; ++i) {
+		sMessageTimeouts[i].timeSincePing++;
+		if (sMessageTimeouts[i].timeSincePing > maxTime) {
+			maxTime = sMessageTimeouts[i].timeSincePing;
+		}
+	}
+	IBMutexRelease(&msgSendMutex);
+	if (maxTime > 10) {
+		VicePing();
+		IBMutexLock(&msgSendMutex);
+		for (size_t i = 0, n = sMessageTimeouts.size(); i < n; ++i) {
+			sMessageTimeouts[i].timeSincePing = 0;
+		}
+		IBMutexRelease(&msgSendMutex);
+	}
+}
+
+void ViceConnection::AddMessage(uint8_t* message, int size, bool wantResponse)
 {
 #ifdef _DEBUG
 	VICEBinHeader* hdr = (VICEBinHeader*)message;
@@ -460,11 +531,17 @@ void ViceConnection::AddMessage(uint8_t* message, int size)
 #endif
 
 	ViceMessage* msg = (ViceMessage*)malloc(sizeof(ViceMessage) + size);
-	msg->size = size;
-	memcpy(&msg->size + 1, message, size);
-	IBMutexLock(&msgSendMutex);
-	toSend.push(msg);
-	IBMutexRelease(&msgSendMutex);
+	if (msg) {
+		if (wantResponse) {
+			MessageRequestTimeout to = { ((VICEBinHeader*)message)->GetReqID(), 0 };
+			sMessageTimeouts.push_back(to);
+		}
+		msg->size = size;
+		memcpy(&msg->size + 1, message, size);
+		IBMutexLock(&msgSendMutex);
+		toSend.push(msg);
+		IBMutexRelease(&msgSendMutex);
+	}
 }
 
 IBThreadRet ViceConnection::ViceConnectThread(void* data)
