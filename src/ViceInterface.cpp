@@ -21,6 +21,7 @@ class ViceConnection {
 		int size;	// data follows after len..
 	};
 
+	size_t waitCount;
 	char ipAddress[32];
 	uint32_t ipPort;
 	bool connected;
@@ -46,6 +47,7 @@ public:
 
 	bool isConnected() { return connected; }
 	bool isStopped() { return stopped; }
+	void ImWaiting() { waitCount++; }
 
 	IBMutex msgSendMutex;
 
@@ -64,7 +66,7 @@ static uint32_t lastRequestID = 0x10000000;
 static std::vector<GetMemoryRequest> sMemRequests;
 static IBMutex userRequestMutex;
 
-ViceConnection::ViceConnection(const char* ip, uint32_t port) : ipPort(port), connected(false), stopped(false)
+ViceConnection::ViceConnection(const char* ip, uint32_t port) : ipPort(port), waitCount(0), connected(false), stopped(false)
 {
 	IBMutexInit(&msgSendMutex, "VICE Send Message Mutex");
 	strcpy_s(ipAddress, ip);
@@ -113,6 +115,13 @@ void ViceStepOver()
 void ViceStepOut()
 {
 
+}
+
+void ViceWaiting()
+{
+	if (viceCon && viceCon->isConnected()) {
+		viceCon->ImWaiting();
+	}
 }
 
 bool ViceGetMemory(uint16_t start, uint16_t end, VICEMemSpaces mem)
@@ -231,6 +240,13 @@ void ViceConnection::connectionThread()
 
 				}
 			}
+		}
+
+		if (waitCount > 30) {
+			waitCount = 0;
+			VICEBinHeader pingMsg;
+			pingMsg.Setup(0, ++lastRequestID, VICE_Ping);
+			send(s, (const char*)&pingMsg, sizeof(pingMsg), 0);
 		}
 
 		// messages to send
@@ -406,6 +422,10 @@ IBThreadRet ViceConnection::ViceConnectThread(void* data)
 	IBMutexInit(&userRequestMutex, "User request VICE operations");
 	((ViceConnection*)data)->connectionThread();
 	IBMutexDestroy(&userRequestMutex);
+	if ((void*)viceCon == data) {
+		viceCon = nullptr;
+		delete (ViceConnection*)data;
+	}
 	return 0;
 }
 

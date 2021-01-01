@@ -12,6 +12,8 @@ void ViceStep();
 void ViceStepOver();
 void ViceStepOut();
 
+void ViceWaiting();
+
 enum VICEMemSpaces {
 	VICE_MainMemory,
 	VICE_Drive8,
