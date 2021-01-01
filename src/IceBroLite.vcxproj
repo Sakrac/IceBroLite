@@ -35,6 +35,7 @@
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_internal.h" />
     <ClInclude Include="ImGui_Helper.h" />
+    <ClInclude Include="Mnemonics.h" />
     <ClInclude Include="platform.h" />
     <ClInclude Include="stb\stb_image.h" />
     <ClInclude Include="struse\struse.h" />
@@ -42,6 +43,7 @@
     <ClInclude Include="Sym.h" />
     <ClInclude Include="ViceBinInterface.h" />
     <ClInclude Include="ViceInterface.h" />
+    <ClInclude Include="views\CodeView.h" />
     <ClInclude Include="views\MemView.h" />
     <ClInclude Include="views\RegView.h" />
     <ClInclude Include="views\ToolBar.h" />
@@ -64,12 +66,14 @@
     <ClCompile Include="imgui\imgui_draw.cpp" />
     <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="ImGui_Helper.cpp" />
+    <ClCompile Include="Mnemonics.cpp" />
     <ClCompile Include="Platform.cpp" />
     <ClCompile Include="struse.cpp" />
     <ClCompile Include="struse\xml.cpp" />
     <ClCompile Include="IceBroLite.cpp" />
     <ClCompile Include="sym.cpp" />
     <ClCompile Include="ViceInterface.cpp" />
+    <ClCompile Include="views\CodeView.cpp" />
     <ClCompile Include="views\MemView.cpp" />
     <ClCompile Include="views\RegView.cpp" />
     <ClCompile Include="views\ToolBar.cpp" />

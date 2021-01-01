@@ -52,10 +52,15 @@ struct CPU6510 {
 	uint8_t GetByte(uint16_t addr);
 	void SetByte(uint16_t addr, uint8_t byte);
 	bool MemoryChange() { return false; }
+	void SetPC(uint16_t pc);
+
+	void FlushRAM() { memoryFlush = true; }
 
 protected:
 	IBMutex memoryUpdateMutex;
 	size_t memoryRequestsPending;
+	bool memoryFlush;
+	bool memoryChanged;
 
 
 

@@ -79,12 +79,12 @@ ViceConnection::~ViceConnection()
 
 bool ViceConnected()
 {
-	return false;
+	return viceCon && viceCon->isConnected();
 }
 
 bool ViceRunning()
 {
-	return false;
+	return viceCon && viceCon->isConnected() && !viceCon->isStopped();
 }
 
 void ViceDisconnect()
@@ -92,29 +92,76 @@ void ViceDisconnect()
 
 }
 
+void VicePing()
+{
+	if (viceCon && viceCon->isConnected() && viceCon->isStopped()) {
+		VICEBinHeader pingMsg;
+		pingMsg.Setup(0, ++lastRequestID, VICE_Ping);
+		viceCon->AddMessage((uint8_t*)&pingMsg, sizeof(VICEBinHeader));
+	}
+}
+
 void ViceBreak()
 {
-
+	if (viceCon && viceCon->isConnected() && !viceCon->isStopped()) {
+		VICEBinRegisters regMsg(++lastRequestID, false);
+		viceCon->AddMessage((uint8_t*)&regMsg, sizeof(regMsg));
+	}
 }
 
 void ViceGo()
 {
-
+	if (viceCon && viceCon->isConnected() && viceCon->isStopped()) {
+		VICEBinHeader resumeMsg;
+		resumeMsg.Setup(0, ++lastRequestID, VICE_Exit);
+		viceCon->AddMessage((uint8_t*)&resumeMsg, sizeof(VICEBinHeader));
+	}
 }
 
 void ViceStep()
 {
-
+	if (viceCon && viceCon->isConnected() && viceCon->isStopped()) {
+		VICEBinStep stepMsg;
+		stepMsg.Setup(++lastRequestID, false);
+		viceCon->AddMessage((uint8_t*)&stepMsg, sizeof(VICEBinStep));
+		VicePing();
+	}
 }
 
 void ViceStepOver()
 {
-
+	if (viceCon && viceCon->isConnected() && viceCon->isStopped()) {
+		VICEBinStep stepMsg;
+		stepMsg.Setup(++lastRequestID, true);
+		viceCon->AddMessage((uint8_t*)&stepMsg, sizeof(VICEBinStep));
+		VicePing();
+	}
 }
 
 void ViceStepOut()
 {
+	if (viceCon && viceCon->isConnected() && viceCon->isStopped()) {
+		VICEBinHeader stepOutMsg;
+		stepOutMsg.Setup(0, ++lastRequestID, VICE_StepOut);
+		viceCon->AddMessage((uint8_t*)&stepOutMsg, sizeof(VICEBinHeader));
+		VicePing();
+	}
+}
 
+void ViceRunTo(uint16_t addr)
+{
+	if (viceCon && viceCon->isConnected() && viceCon->isStopped()) {
+		VICEBinCheckpointSet checkSet;
+		checkSet.Setup(8, ++lastRequestID, VICE_CheckpointSet);
+		checkSet.SetStart(addr);
+		checkSet.SetEnd(addr);
+		checkSet.stopWhenHit = true;
+		checkSet.enabled = true;
+		checkSet.operation = (uint8_t)VICE_Exec;
+		checkSet.temporary = true;
+		viceCon->AddMessage((uint8_t*)&checkSet, sizeof(checkSet));
+		ViceGo();
+	}
 }
 
 void ViceWaiting()
@@ -221,14 +268,17 @@ void ViceConnection::connectionThread()
 						case VICE_RegistersAvailable:
 							updateRegisterNames((VICEBinRegisterAvailableResponse*)resp);
 							break;
+						case VICE_Resumed:
+							stopped = false;
+							break;
 						case VICE_MemGet:
-#ifdef _DEBUG
-							OutputDebugStringA("Got Memory!");
-#endif
 							updateGetMemory((VICEBinMemGetResponse*)resp);
 							break;
 						case VICE_Stopped:
 							stopped = true;
+							if (CPU6510* cpu = GetCurrCPU()) {
+								cpu->FlushRAM();
+							}
 							break;
 					}
 					if (bufferRead > bytes) {

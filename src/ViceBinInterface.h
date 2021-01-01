@@ -25,7 +25,7 @@ enum VICECommandTypes {
 	VICE_BanksAvailable,
 	VICE_RegistersAvailable,
 	VICE_DisplayGet,
-	VICE_Exit = 0xaa,
+	VICE_Exit = 0xaa,	// Exit actyally means Resume
 	VICE_Quit = 0xbb,
 	VICE_Reset = 0xcc,
 	VICE_AutoStart = 0xdd,
@@ -314,6 +314,11 @@ struct VICEBinStep : public VICEBinHeader {
 	void SetStepCount(uint16_t steps) {
 		numSteps[0] = (uint8_t)steps;
 		numSteps[1] = (uint8_t)(steps >> 8);
+	}
+	void Setup(uint32_t reqID, bool stpOver, uint16_t numSteps = 1) {
+		VICEBinHeader::Setup(3, reqID, VICE_Step);
+		stepOver = stpOver;
+		SetStepCount(numSteps);
 	}
 };
 

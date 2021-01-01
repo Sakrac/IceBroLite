@@ -1,11 +1,11 @@
 #include "../imgui/imgui.h"
 #include "../struse/struse.h"
 #include "../Image.h"
-#include "ToolBar.h"
-#include "ViceInterface.h"
+#include "../ViceInterface.h"
 #include "../C64Colors.h"
 #include "../Config.h"
 #include "../FileDialog.h"
+#include "ToolBar.h"
 
 ToolBar::ToolBar() : open(true) {}
 
@@ -88,15 +88,15 @@ void ToolBar::Draw()
 
 	ImGui::NextColumn();
 
-	bool NMI = DrawTexturedIconCenter(VMI_NMI);
-	NMI = CenterTextInColumn("NMI") || NMI;
+//	bool NMI = DrawTexturedIconCenter(VMI_NMI);
+//	NMI = CenterTextInColumn("NMI") || NMI;
+//
+//	ImGui::NextColumn();
 
-	ImGui::NextColumn();
-
-	bool Interrupt = DrawTexturedIconCenter(VMI_Interrupt);
-	Interrupt = CenterTextInColumn("Intrpt") || Interrupt;
-
-	ImGui::NextColumn();
+//	bool Interrupt = DrawTexturedIconCenter(VMI_Interrupt);
+//	Interrupt = CenterTextInColumn("Intrpt") || Interrupt;
+//
+//	ImGui::NextColumn();
 
 	bool connect = DrawTexturedIconCenter(ViceConnected() ? VMI_Connected : VMI_Disconnected);
 	connect = CenterTextInColumn("Vice") || connect;

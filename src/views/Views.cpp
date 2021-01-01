@@ -4,22 +4,26 @@
 #include "ToolBar.h"
 #include "RegView.h"
 #include "MemView.h"
+#include "CodeView.h"
 #include "../6510.h"
 #include "../data/C64_Pro_Mono-STYLE.ttf.h"
 #include "Views.h"
+#include "GLFW/glfw3.h"
 
 
 struct ViewContext {
 	enum { sNumFontSizes = 7 };
-	enum { MaxMemViews = 4 };
+	enum { MaxMemViews = 4, MaxCodeViews = 4 };
 	ToolBar toolBar;
 	RegisterView regView;
 	MemView memView[MaxMemViews];
+	CodeView codeView[MaxMemViews];
 	ImFont* aFonts[sNumFontSizes];
 	int currFont;
 
 	ViewContext();
 	void Draw();
+	void GlobalKeyCheck();
 };
 
 static ViewContext* viewContext = nullptr;
@@ -43,6 +47,7 @@ ViewContext::ViewContext() : currFont(3)
 		assert(aFonts[f] != NULL);
 	}
 	memView[0].open = true;
+	codeView[0].open = true;
 }
 
 void ViewContext::Draw()
@@ -51,9 +56,31 @@ void ViewContext::Draw()
 	toolBar.Draw();
 	regView.Draw();
 	for (int m = 0; m < MaxMemViews; ++m) { memView[m].Draw(m); }
+	for (int c = 0; c < MaxCodeViews; ++c) { codeView[c].Draw(c); }
 	ImGui::PopFont();
 	if (CPU6510* cpu = GetCurrCPU()) {
 		cpu->RefreshMemory();
+	}
+	GlobalKeyCheck();
+}
+
+void ViewContext::GlobalKeyCheck()
+{
+//	CheckRegChange();
+
+	bool shift = ImGui::IsKeyDown(GLFW_KEY_LEFT_SHIFT) || ImGui::IsKeyDown(GLFW_KEY_RIGHT_SHIFT);
+	bool ctrl = ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL) || ImGui::IsKeyDown(GLFW_KEY_RIGHT_CONTROL);
+
+	if (ImGui::IsKeyPressed(GLFW_KEY_F5, false)) {
+		ViceGo();
+//		if (ctrl) {} else if (shift) { CPUReverse(); } else { CPUGo(); }
+	}
+	if (ImGui::IsKeyPressed(GLFW_KEY_F10, false)) {
+		ViceStepOver();
+//		if (ctrl) { StepOverVice(); } else if (shift) { StepOverBack(); } else { StepOver(); }
+	}
+	if (ImGui::IsKeyPressed(GLFW_KEY_F11, false)) {
+		if (ctrl) { /*StepInstructionVice();*/ } else if (shift) { ViceStepOut(); } else { ViceStep(); }
 	}
 }
 

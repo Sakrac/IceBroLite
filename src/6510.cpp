@@ -6,7 +6,7 @@
 static CPU6510* sp6510 = nullptr;
 
 
-CPU6510::CPU6510() : space(VICE_MainMemory), memoryRequestsPending(0)
+CPU6510::CPU6510() : space(VICE_MainMemory), memoryRequestsPending(0), memoryFlush(false)
 {
 	IBMutexInit(&memoryUpdateMutex, "CPU memory sync");
 	ram = (uint8_t*)malloc(64 * 1024);
@@ -15,6 +15,7 @@ CPU6510::CPU6510() : space(VICE_MainMemory), memoryRequestsPending(0)
 void CPU6510::RefreshMemory()
 {
 	IBMutexLock(&memoryUpdateMutex);
+	if (memoryFlush) { currentMem.numRanges = 0; memoryFlush = false; }
 	if (memoryRequestsPending == 0) {
 		MemRanges delta;
 		delta.Delta(currentMem, requestedMem);
@@ -50,6 +51,12 @@ void CPU6510::SetByte(uint16_t addr, uint8_t byte)
 {
 	// TODO: Send byte to VICE
 	ram[addr] = byte;
+}
+
+void CPU6510::SetPC(uint16_t pc)
+{
+	// TODO: Set PC in Vice
+	regs.PC = pc;
 }
 
 void CreateMainCPU()

@@ -11,6 +11,7 @@ void ViceGo();
 void ViceStep();
 void ViceStepOver();
 void ViceStepOut();
+void ViceRunTo(uint16_t addr);
 
 void ViceWaiting();
 
