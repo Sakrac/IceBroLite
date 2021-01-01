@@ -31,6 +31,7 @@
 
 #include "C64Colors.h"
 #include "Image.h"
+#include "6510.h"
 #include "views/Views.h"
 
 void StyleC64();
@@ -89,6 +90,7 @@ int main(int argc, char* argv[])
 
 	LoadIcons();
 	InitStartFolder();
+	CreateMainCPU();
 
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
@@ -206,6 +208,7 @@ int main(int argc, char* argv[])
 		glfwSwapBuffers(window);
 	}
 
+	ShutdownMainCPU();
 	// Cleanup
 	ImGui_ImplOpenGL2_Shutdown();
 	ImGui_ImplGlfw_Shutdown();

@@ -19,31 +19,40 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="6510.h" />
     <ClInclude Include="C64Colors.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="data\C64_Pro_Mono-STYLE.ttf.h" />
+    <ClInclude Include="Expressions.h" />
     <ClInclude Include="FileDialog.h" />
     <ClInclude Include="Files.h" />
     <ClInclude Include="FilesView.h" />
+    <ClInclude Include="HashTable.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="imgui\examples\imgui_impl_glfw.h" />
     <ClInclude Include="imgui\examples\imgui_impl_opengl2.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_internal.h" />
+    <ClInclude Include="ImGui_Helper.h" />
     <ClInclude Include="platform.h" />
     <ClInclude Include="stb\stb_image.h" />
     <ClInclude Include="struse\struse.h" />
     <ClInclude Include="struse\xml.h" />
+    <ClInclude Include="Sym.h" />
     <ClInclude Include="ViceBinInterface.h" />
+    <ClInclude Include="ViceInterface.h" />
+    <ClInclude Include="views\MemView.h" />
+    <ClInclude Include="views\RegView.h" />
     <ClInclude Include="views\ToolBar.h" />
-    <ClInclude Include="views\ViceInterface.h" />
     <ClInclude Include="views\Views.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="6510.cpp" />
     <ClCompile Include="C64Colors.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="data\C64_Pro_Mono-STYLE.ttf.cpp" />
+    <ClCompile Include="Expressions.cpp" />
     <ClCompile Include="FileDialog.cpp" />
     <ClCompile Include="Files.cpp" />
     <ClCompile Include="FilesView.cpp" />
@@ -54,11 +63,15 @@
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
     <ClCompile Include="imgui\imgui_widgets.cpp" />
+    <ClCompile Include="ImGui_Helper.cpp" />
     <ClCompile Include="Platform.cpp" />
     <ClCompile Include="struse.cpp" />
     <ClCompile Include="struse\xml.cpp" />
     <ClCompile Include="IceBroLite.cpp" />
+    <ClCompile Include="sym.cpp" />
     <ClCompile Include="ViceInterface.cpp" />
+    <ClCompile Include="views\MemView.cpp" />
+    <ClCompile Include="views\RegView.cpp" />
     <ClCompile Include="views\ToolBar.cpp" />
     <ClCompile Include="views\Views.cpp" />
   </ItemGroup>

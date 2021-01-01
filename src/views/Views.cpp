@@ -2,13 +2,24 @@
 #include "../imgui/imgui.h"
 #include "../struse/struse.h"
 #include "ToolBar.h"
+#include "RegView.h"
+#include "MemView.h"
+#include "../6510.h"
 #include "../data/C64_Pro_Mono-STYLE.ttf.h"
+#include "Views.h"
 
 
 struct ViewContext {
 	enum { sNumFontSizes = 7 };
+	enum { MaxMemViews = 4 };
 	ToolBar toolBar;
+	RegisterView regView;
+	MemView memView[MaxMemViews];
 	ImFont* aFonts[sNumFontSizes];
+	int currFont;
+
+	ViewContext();
+	void Draw();
 };
 
 static ViewContext* viewContext = nullptr;
@@ -24,22 +35,49 @@ static const ImWchar C64CharRanges[] =
 	//	0,
 };
 
+ViewContext::ViewContext() : currFont(3)
+{
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	for (int f = 0; f < ViewContext::sNumFontSizes; ++f) {
+		aFonts[f] = io.Fonts->AddFontFromMemoryCompressedTTF(GetC64FontData(), GetC64FontSize(), sFontSizes[f], NULL, C64CharRanges);
+		assert(aFonts[f] != NULL);
+	}
+	memView[0].open = true;
+}
+
+void ViewContext::Draw()
+{
+	ImGui::PushFont(aFonts[currFont]);
+	toolBar.Draw();
+	regView.Draw();
+	for (int m = 0; m < MaxMemViews; ++m) { memView[m].Draw(m); }
+	ImGui::PopFont();
+	if (CPU6510* cpu = GetCurrCPU()) {
+		cpu->RefreshMemory();
+	}
+}
+
 void InitViews()
 {
 	viewContext = new ViewContext;
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-	for (int f = 0; f < ViewContext::sNumFontSizes; ++f) {
-		viewContext->aFonts[f] = io.Fonts->AddFontFromMemoryCompressedTTF(GetC64FontData(), GetC64FontSize(), sFontSizes[f], NULL, C64CharRanges);
-		assert(viewContext->aFonts[f] != NULL);
-	}
 }
 
 void ShowViews()
 {
 	if (viewContext) {
-		ImGui::PushFont(viewContext->aFonts[3]);
-		viewContext->toolBar.Draw();
-		ImGui::PopFont();
+		viewContext->Draw();
 	}
+}
+
+float CurrFontSize()
+{
+	return viewContext ? sFontSizes[viewContext->currFont] : 10.0f;
+}
+
+uint8_t InputHex()
+{
+	for (int num = 0; num < 9; ++num) { if (ImGui::IsKeyPressed(num + '0')) return num; }
+	for (int num = 10; num < 16; ++num) { if (ImGui::IsKeyPressed(num + 'A' - 10)) return num; }
+	return 0xff;
 }

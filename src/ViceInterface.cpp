@@ -3,13 +3,17 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <queue>
+#include <vector>
+#include <assert.h>
 
+#include "6510.h"
+
+#include "ViceInterface.h"
 #include "ViceBinInterface.h"
 #include "platform.h"
 #include "struse/struse.h"
 
 //send(s, sendCmd, sendCmdLen, 0);
-
 
 class ViceConnection {
 	enum { RECEIVE_SIZE = 1024*1024 };
@@ -19,6 +23,8 @@ class ViceConnection {
 
 	char ipAddress[32];
 	uint32_t ipPort;
+	bool connected;
+	bool stopped;
 
 	std::queue<ViceMessage*> toSend;
 public:
@@ -28,6 +34,8 @@ public:
 	static IBThreadRet ViceConnectThread(void *data);
 	void connectionThread();
 
+	void updateGetMemory(VICEBinMemGetResponse* resp);
+
 	void updateRegisters(VICEBinRegisterResponse* resp);
 
 	void updateRegisterNames(VICEBinRegisterAvailableResponse* resp);
@@ -36,15 +44,27 @@ public:
 	bool openConnection();
 	void AddMessage(uint8_t *message, int size);
 
+	bool isConnected() { return connected; }
+	bool isStopped() { return stopped; }
+
 	IBMutex msgSendMutex;
 
+};
+
+struct GetMemoryRequest {
+	uint32_t requestID;
+	uint16_t start, end, bank;
+	uint8_t space;
 };
 
 static SOCKET s;
 static IBThread threadHandle;
 static ViceConnection* viceCon = nullptr;
+static uint32_t lastRequestID = 0x10000000;
+static std::vector<GetMemoryRequest> sMemRequests;
+static IBMutex userRequestMutex;
 
-ViceConnection::ViceConnection(const char* ip, uint32_t port) : ipPort(port)
+ViceConnection::ViceConnection(const char* ip, uint32_t port) : ipPort(port), connected(false), stopped(false)
 {
 	IBMutexInit(&msgSendMutex, "VICE Send Message Mutex");
 	strcpy_s(ipAddress, ip);
@@ -95,6 +115,25 @@ void ViceStepOut()
 
 }
 
+bool ViceGetMemory(uint16_t start, uint16_t end, VICEMemSpaces mem)
+{
+	if (viceCon && viceCon->isConnected() && viceCon->isStopped()) {
+		VICEBinMemGetSet getNem(++lastRequestID, false, true, start, end, 0, mem);
+		GetMemoryRequest reqInfo = { lastRequestID, start, end, 0, (uint8_t)mem };
+		IBMutexLock(&userRequestMutex);
+		sMemRequests.push_back(reqInfo);
+		IBMutexRelease(&userRequestMutex);
+#ifdef _DEBUG
+		strown<128> msg("Requested VICE Memory $");
+		msg.append_num(start, 4, 16).append("-$").append_num(end, 4, 16).append("\n");
+		OutputDebugStringA(msg.c_str());
+#endif
+		viceCon->AddMessage((uint8_t*)&getNem, sizeof(getNem));
+		return true;
+	}
+	return false;
+}
+
 void ViceConnection::connectionThread()
 {
 	char* recvBuf = (char*)malloc(RECEIVE_SIZE);
@@ -106,16 +145,18 @@ void ViceConnection::connectionThread()
 	DWORD timeout = 100;// SOCKET_READ_TIMEOUT_SEC*1000;
 	setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(timeout));
 
-	uint32_t lastRequestID = 0x10000000;
 
 	bool activeConnection = true;
 	{
-		VICEBinRegisters regAvailMsg(++lastRequestID, true);
+//		VICEBinRegisters regAvailMsg(++lastRequestID, true);
 		VICEBinRegisters regMsg(++lastRequestID, false);
-		AddMessage((uint8_t*)&regMsg, sizeof(regMsg));
-		AddMessage((uint8_t*)&regAvailMsg, sizeof(regAvailMsg));
+//		AddMessage((uint8_t*)&regMsg, sizeof(regMsg));
+//		AddMessage((uint8_t*)&regAvailMsg, sizeof(regAvailMsg));
 		AddMessage((uint8_t*)&regMsg, sizeof(regMsg));
 	}
+
+	size_t bufferRead = 0;
+	connected = true;
 
 	while (activeConnection) {
 	// close after all commands have been sent?
@@ -126,7 +167,7 @@ void ViceConnection::connectionThread()
 //		}
 
 		// messages to receive
-		int bytesReceived = recv(s, recvBuf, RECEIVE_SIZE, 0);
+		int bytesReceived = recv(s, recvBuf + bufferRead, RECEIVE_SIZE, 0);
 		if (bytesReceived == SOCKET_ERROR) {
 			if (WSAGetLastError() == WSAETIMEDOUT) {
 //				if ((state == Vice_None || state == Vice_Running) && stopRequest) {
@@ -151,16 +192,43 @@ void ViceConnection::connectionThread()
 				break;
 			}
 		} else {
-			int read = 0;
-			if ((size_t)bytesReceived >= sizeof(VICEBinResponse)) {
+			bufferRead += bytesReceived;
+
+			if (bufferRead >= sizeof(VICEBinResponse) && recvBuf[0] == 2) {
 				VICEBinResponse* resp = (VICEBinResponse*)recvBuf;
-				switch (resp->commandType) {
-					case VICE_RegistersGet:
-						updateRegisters((VICEBinRegisterResponse*)resp);
-						break;
-					case VICE_RegistersAvailable:
-						updateRegisterNames((VICEBinRegisterAvailableResponse*)resp);
-						break;
+				uint32_t bytes = resp->GetSize();
+				if (bufferRead >= bytes) {
+#ifdef _DEBUG
+					strown<128> msg("Got VICE respnse: $");
+					msg.append_num(resp->commandType, 2, 16).append(" ReqID:").append_num(resp->GetReqID(), 8, 16);
+					msg.append(" err: ").append_num(resp->errorCode,2,16).append("\n");
+
+					OutputDebugStringA(msg.c_str());
+#endif
+					switch (resp->commandType) {
+						case VICE_RegistersGet:
+							updateRegisters((VICEBinRegisterResponse*)resp);
+							break;
+						case VICE_RegistersAvailable:
+							updateRegisterNames((VICEBinRegisterAvailableResponse*)resp);
+							break;
+						case VICE_MemGet:
+#ifdef _DEBUG
+							OutputDebugStringA("Got Memory!");
+#endif
+							updateGetMemory((VICEBinMemGetResponse*)resp);
+							break;
+						case VICE_Stopped:
+							stopped = true;
+							break;
+					}
+					if (bufferRead > bytes) {
+						memmove(recvBuf, recvBuf + bytes, bufferRead - bytes);
+						bufferRead -= bytes;
+					} else {
+						bufferRead = 0;
+					}
+
 				}
 			}
 		}
@@ -183,10 +251,51 @@ void ViceConnection::connectionThread()
 	}
 }
 
+void ViceConnection::updateGetMemory(VICEBinMemGetResponse* resp)
+{
+	IBMutexLock(&userRequestMutex);
+
+	uint32_t id = resp->GetReqID();
+	uint16_t start, end, bank;
+	uint8_t space;
+	bool found = false;
+	for (size_t i = 0; i < sMemRequests.size(); ++i) {
+		if (sMemRequests[i].requestID == id) {
+			start = sMemRequests[i].start;
+			end = sMemRequests[i].end;
+			bank = sMemRequests[i].bank;
+			space = sMemRequests[i].space;
+			found = true;
+			sMemRequests.erase(sMemRequests.begin() + i);
+			break;
+		}
+	}
+	IBMutexRelease(&userRequestMutex);
+
+	assert(found);
+	if (CPU6510* cpu = GetCPU((VICEMemSpaces)space)) {
+		cpu->MemoryFromVICE(start, start + resp->bytes[0] + (((uint16_t)resp->bytes[1]) << 8) - 1, resp->data);
+	}
+}
+
+
 void ViceConnection::updateRegisters(VICEBinRegisterResponse* resp)
 {
+	CPU6510* cpu = GetMainCPU();
 	for (uint16_t r = 0, n = resp->GetCount(); r < n; ++r) {
 		VICEBinRegisterResponse::regInfo& info = resp->aRegs[r];
+		switch (info.registerID) {
+			case VICE_Acc: cpu->regs.A = info.GetValue8(); break;
+			case VICE_X: cpu->regs.X = info.GetValue8(); break;
+			case VICE_Y: cpu->regs.Y = info.GetValue8(); break;
+			case VICE_PC: cpu->regs.PC = info.GetValue16(); break;
+			case VICE_SP: cpu->regs.SP = info.GetValue8(); break;
+			case VICE_FL: cpu->regs.FL = info.GetValue8(); break;
+			case VICE_LIN: cpu->regs.LIN = info.GetValue16(); break;
+			case VICE_CYC: cpu->regs.CYC = info.GetValue16(); break;
+			case VICE_00: cpu->regs.ZP00 = info.GetValue8(); break;
+			case VICE_01: cpu->regs.ZP01 = info.GetValue8(); break;
+		}
 #ifdef _DEBUG
 		strown<256> d;
 		d.append("Reg: $").append_num(info.registerID, 2, 16);
@@ -276,6 +385,14 @@ bool ViceConnection::open()
 
 void ViceConnection::AddMessage(uint8_t* message, int size)
 {
+#ifdef _DEBUG
+	VICEBinHeader* hdr = (VICEBinHeader*)message;
+	strown<128> str("Send VICE cmd: $");
+	str.append_num(hdr->commandType, 2, 16).append(" ReqID: ").append_num(hdr->GetReqID(), 8, 16);
+	str.append(" len: ").append_num(hdr->GetSize(), 0, 16).append(" / ").append_num(size, 0, 16).append("\n");
+	OutputDebugStringA(str.c_str());
+#endif
+
 	ViceMessage* msg = (ViceMessage*)malloc(sizeof(ViceMessage) + size);
 	msg->size = size;
 	memcpy(&msg->size + 1, message, size);
@@ -286,7 +403,9 @@ void ViceConnection::AddMessage(uint8_t* message, int size)
 
 IBThreadRet ViceConnection::ViceConnectThread(void* data)
 {
+	IBMutexInit(&userRequestMutex, "User request VICE operations");
 	((ViceConnection*)data)->connectionThread();
+	IBMutexDestroy(&userRequestMutex);
 	return 0;
 }
 

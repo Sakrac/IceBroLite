@@ -1,7 +1,7 @@
 #pragma once
 
 enum VICECommandTypes {
-	VICE_MemGet,	// side effects, start address, end address, memspace
+	VICE_MemGet = 0x01,	// side effects, start address, end address, memspace
 	VICE_MemSet,
 	VICE_CheckpointGet = 0x11,
 	VICE_CheckpointSet,
@@ -53,6 +53,19 @@ struct VICEBinHeader {
 		requestID[3] = (uint8_t)(req >> 24);
 		commandType = (uint8_t)cmd;
 	}
+	uint32_t GetReqID()
+	{
+		return (uint32_t)requestID[0] + (((uint32_t)requestID[1]) << 8) + (((uint32_t)requestID[2]) << 16) + (((uint32_t)requestID[3]) << 24);
+	}
+	uint32_t GetLength()
+	{
+		return (uint32_t)length[0] + (((uint32_t)length[1]) << 8) + (((uint32_t)length[2]) << 16) + (((uint32_t)length[3]) << 24);
+	}
+	uint32_t GetSize()
+	{
+		return GetLength() + sizeof(VICEBinHeader);
+	}
+
 };
 
 struct VICEBinResponse {
@@ -66,6 +79,26 @@ struct VICEBinResponse {
 	uint32_t GetLength() {
 		return (uint32_t)length[0] + (((uint32_t)length[1]) << 8) + (((uint32_t)length[2]) << 16) + (((uint32_t)length[3]) << 24);
 	}
+	uint32_t GetSize() {
+		return GetLength() + sizeof(VICEBinResponse);
+	}
+	uint32_t GetReqID()
+	{
+		return (uint32_t)requestID[0] + (((uint32_t)requestID[1]) << 8) + (((uint32_t)requestID[2]) << 16) + (((uint32_t)requestID[3]) << 24);
+	}
+};
+
+enum VICERegID {
+	VICE_Acc,
+	VICE_X,
+	VICE_Y,
+	VICE_PC,			// 16 bits
+	VICE_SP,
+	VICE_FL,
+	VICE_LIN = 0x35,	// 16 bits
+	VICE_CYC,			// 16 bits (??)
+	VICE_00,
+	VICE_01
 };
 
 enum VICEBinResponseErrors {
@@ -77,14 +110,6 @@ enum VICEBinResponseErrors {
 	VICEResponse_InvalidAPI_ID,
 	VICEResponse_Invalid_Cmd,
 	VICEResponse_General_Failure = 0x8f
-};
-
-enum VICEMemSpaces {
-	VICE_MainMemory,
-	VICE_Drive8,
-	VICE_Drive9,
-	VICE_Drive10,
-	VICE_Drive11
 };
 
 enum VICECheckpointOperations {
@@ -101,6 +126,14 @@ enum VICEDisplayFormats {
 	VICEDisplay_BGRA,		// 32 bit
 };
 
+struct VICEBinGetMemory : public VICEBinHeader {
+	uint8_t sideEffects;
+	uint8_t startAddress[2];
+	uint8_t endAddress[2];
+	uint8_t memSpace;
+
+
+};
 
 // same struct for getting and setting, setting is appended by bytes to set
 struct VICEBinMemGetSet : public VICEBinHeader {
@@ -119,7 +152,28 @@ struct VICEBinMemGetSet : public VICEBinHeader {
 	uint16_t GetBank() {
 		return (uint32_t)bankID[0] + (((uint32_t)bankID[1]) << 8);
 	}
+
+	void Setup(uint32_t req, bool sideFX, bool get, uint16_t start, uint16_t end, uint16_t bank, VICEMemSpaces space)
+	{
+		VICEBinHeader::Setup(8, req, get ? VICE_MemGet : VICE_MemSet);
+		sideEffects = (uint8_t)sideFX;
+		startAddress[0] = (uint8_t)start; startAddress[1] = (uint8_t)(start >> 8);
+		endAddress[0] = (uint8_t)end; endAddress[1] = (uint8_t)(end >> 8);
+		bankID[0] = (uint8_t)bank; bankID[1] = (uint8_t)(bank >> 8);
+		memSpace = space;
+	}
+
+	VICEBinMemGetSet(uint32_t req, bool sideFX, bool get, uint16_t start, uint16_t end, uint16_t bank, VICEMemSpaces space = VICE_MainMemory)
+	{
+		Setup(req, sideFX, get, start, end, bank, space);
+	}
 };
+
+struct VICEBinMemGetResponse : public VICEBinResponse {
+	uint8_t bytes[2];
+	uint8_t data[1];
+};
+
 
 // same struct for get and delete
 // also used for checkpoint condition follwed by condition string
@@ -217,6 +271,8 @@ struct VICEBinRegisterResponse : public VICEBinResponse {
 		uint8_t registerSize; // size of register value + 1
 		uint8_t registerID;
 		uint8_t registerValue[2];
+		uint16_t GetValue16() { return registerValue[0] + (((uint16_t)registerValue[1]) << 8); }
+		uint8_t GetValue8() { return registerValue[0]; }
 	};
 	uint8_t numRegs[2];
 	regInfo aRegs[1];
@@ -240,6 +296,9 @@ struct VICEBinRegisterAvailableResponse : public VICEBinResponse {
 		return (uint32_t)numRegs[0] + (((uint32_t)numRegs[1]) << 8);
 	}
 };
+
+
+
 
 // for JAM, Stopped, Resumed
 struct VICEBinStopResponse : public VICEBinResponse {

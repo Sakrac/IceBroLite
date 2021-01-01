@@ -56,13 +56,24 @@
     <ClInclude Include="views\ToolBar.h">
       <Filter>views</Filter>
     </ClInclude>
-    <ClInclude Include="views\ViceInterface.h" />
     <ClInclude Include="views\Views.h">
       <Filter>views</Filter>
     </ClInclude>
     <ClInclude Include="data\C64_Pro_Mono-STYLE.ttf.h">
       <Filter>data</Filter>
     </ClInclude>
+    <ClInclude Include="6510.h" />
+    <ClInclude Include="views\RegView.h">
+      <Filter>views</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui_Helper.h" />
+    <ClInclude Include="views\MemView.h">
+      <Filter>views</Filter>
+    </ClInclude>
+    <ClInclude Include="Expressions.h" />
+    <ClInclude Include="Sym.h" />
+    <ClInclude Include="HashTable.h" />
+    <ClInclude Include="ViceInterface.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\examples\imgui_impl_opengl2.cpp">
@@ -103,6 +114,16 @@
     <ClCompile Include="data\C64_Pro_Mono-STYLE.ttf.cpp">
       <Filter>data</Filter>
     </ClCompile>
+    <ClCompile Include="6510.cpp" />
+    <ClCompile Include="views\RegView.cpp">
+      <Filter>views</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui_Helper.cpp" />
+    <ClCompile Include="views\MemView.cpp">
+      <Filter>views</Filter>
+    </ClCompile>
+    <ClCompile Include="Expressions.cpp" />
+    <ClCompile Include="sym.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="imgui\misc\natvis\imgui.natvis">

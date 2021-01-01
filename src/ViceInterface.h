@@ -12,3 +12,12 @@ void ViceStep();
 void ViceStepOver();
 void ViceStepOut();
 
+enum VICEMemSpaces {
+	VICE_MainMemory,
+	VICE_Drive8,
+	VICE_Drive9,
+	VICE_Drive10,
+	VICE_Drive11
+};
+
+bool ViceGetMemory(uint16_t start, uint16_t end, VICEMemSpaces mem);
