@@ -15,6 +15,10 @@
 
 //send(s, sendCmd, sendCmdLen, 0);
 
+//#ifdef _DEBUG
+#define VICELOG
+//#endif
+
 class ViceConnection {
 	enum { RECEIVE_SIZE = 1024*1024 };
 	struct ViceMessage {
@@ -70,10 +74,47 @@ struct MessageRequestTimeout {
 static SOCKET s;
 static IBThread threadHandle;
 static ViceConnection* viceCon = nullptr;
-static uint32_t lastRequestID = 0x10000000;
+static uint32_t lastRequestID = 0x0fff;
 static std::vector<GetMemoryRequest> sMemRequests;
 static std::vector<MessageRequestTimeout> sMessageTimeouts;
 static IBMutex userRequestMutex;
+static ViceLogger logConsole = nullptr;
+static void* logUser = nullptr;
+
+static bool sResumeMeansStopped = false;
+
+struct { const char* name; uint8_t id; } aCommandNames[] = {
+	{ "MemGet",1 },
+	{ "MemSet", 2},
+	{ "CheckpointGet", 0x11},
+	{ "CheckpointSet", 0x12 },
+	{ "CheckpointDelete", 0x13},
+	{ "CheckpointList", 0x14},
+	{ "CheckpointToggle", 0x15},
+	{ "ConditionSet", 0x22 },
+	{ "RegistersGet", 0x31 },
+	{ "RegistersSet", 0x32},
+	{ "Dump", 0x41 },
+	{ "Undump", 0x42 },
+	{ "ResourceGet", 0x51 },
+	{ "ResourceSet", 0x52 },
+	{ "JAM", 0x61 },
+	{ "Stopped", 0x62 },
+	{ "Resumed", 0x63 },
+	{ "Step", 0x71 },
+	{ "KeyboardFeed", 0x72 },
+	{ "StepOut", 0x73 },
+	{ "Ping", 0x81 },
+	{ "BanksAvailable", 0x82 },
+	{ "RegistersAvailable", 0x83 },
+	{ "DisplayGet", 0x84 },
+	{ "Exit", 0xaa },
+	{ "Quit", 0xbb },
+	{ "Reset", 0xcc },
+	{ "AutoStart", 0xdd }
+};
+
+
 
 ViceConnection::ViceConnection(const char* ip, uint32_t port) : ipPort(port), waitCount(0), connected(false), stopped(false)
 {
@@ -81,9 +122,24 @@ ViceConnection::ViceConnection(const char* ip, uint32_t port) : ipPort(port), wa
 	strcpy_s(ipAddress, ip);
 }
 
+
 ViceConnection::~ViceConnection()
 {
 	IBMutexDestroy(&msgSendMutex);
+}
+
+void ViceLog(const char* str, size_t len)
+{
+	if (logConsole && logUser) {
+		logConsole(logUser, str, len);
+	}
+}
+
+void ViceLog(strref str)
+{
+	if (logConsole && logUser) {
+		logConsole(logUser, str.get(), str.get_len());
+	}
 }
 
 bool ViceConnected()
@@ -103,7 +159,7 @@ void ViceDisconnect()
 
 void VicePing()
 {
-	if (viceCon && viceCon->isConnected() && viceCon->isStopped()) {
+	if (viceCon && viceCon->isConnected()) {
 		VICEBinHeader pingMsg;
 		pingMsg.Setup(0, ++lastRequestID, VICE_Ping);
 		viceCon->AddMessage((uint8_t*)&pingMsg, sizeof(VICEBinHeader));
@@ -133,6 +189,7 @@ void ViceStep()
 		VICEBinStep stepMsg;
 		stepMsg.Setup(++lastRequestID, false);
 		viceCon->AddMessage((uint8_t*)&stepMsg, sizeof(VICEBinStep), true);
+		sResumeMeansStopped = true;
 	}
 }
 
@@ -142,6 +199,7 @@ void ViceStepOver()
 		VICEBinStep stepMsg;
 		stepMsg.Setup(++lastRequestID, true);
 		viceCon->AddMessage((uint8_t*)&stepMsg, sizeof(VICEBinStep), true);
+		sResumeMeansStopped = true;
 	}
 }
 
@@ -151,6 +209,7 @@ void ViceStepOut()
 		VICEBinHeader stepOutMsg;
 		stepOutMsg.Setup(0, ++lastRequestID, VICE_StepOut);
 		viceCon->AddMessage((uint8_t*)&stepOutMsg, sizeof(VICEBinHeader), true);
+		sResumeMeansStopped = true;
 	}
 }
 
@@ -182,6 +241,15 @@ void ViceTickMessage()
 	if (viceCon) { viceCon->Tick(); }
 }
 
+static const int numNames = sizeof(aCommandNames) / sizeof(aCommandNames[0]);
+const char* ViceBinCmdName(uint8_t cmd)
+{
+	for (int i = 0, n = numNames; i < n; ++i) {
+		if (aCommandNames[i].id == cmd) { return aCommandNames[i].name; }
+	}
+	return "?";
+}
+
 bool ViceGetMemory(uint16_t start, uint16_t end, VICEMemSpaces mem)
 {
 	if (viceCon && viceCon->isConnected() && viceCon->isStopped()) {
@@ -190,15 +258,22 @@ bool ViceGetMemory(uint16_t start, uint16_t end, VICEMemSpaces mem)
 		IBMutexLock(&userRequestMutex);
 		sMemRequests.push_back(reqInfo);
 		IBMutexRelease(&userRequestMutex);
-#ifdef _DEBUG
+#ifdef VICELOG
 		strown<128> msg("Requested VICE Memory $");
 		msg.append_num(start, 4, 16).append("-$").append_num(end, 4, 16).append("\n");
+		ViceLog(msg.get_strref());
 		OutputDebugStringA(msg.c_str());
 #endif
 		viceCon->AddMessage((uint8_t*)&getNem, sizeof(getNem), true);
 		return true;
 	}
 	return false;
+}
+
+void ViceAddLogger(ViceLogger logger, void* user)
+{
+	logConsole = logger;
+	logUser = user;
 }
 
 void ViceConnection::connectionThread()
@@ -265,10 +340,16 @@ void ViceConnection::connectionThread()
 				VICEBinResponse* resp = (VICEBinResponse*)recvBuf;
 				uint32_t bytes = resp->GetSize();
 				if (bufferRead >= bytes) {
-#ifdef _DEBUG
-					strown<128> msg("Got VICE respnse: $");
-					msg.append_num(resp->commandType, 2, 16).append(" ReqID:").append_num(resp->GetReqID(), 8, 16);
-					msg.append(" err: ").append_num(resp->errorCode,2,16).append("\n");
+#ifdef VICELOG
+					strown<128> msg("Got resp: $");
+					msg.append_num(resp->commandType, 2, 16);
+					msg.append(" (").append(ViceBinCmdName(resp->commandType)).append(")");
+					msg.append(" ReqID:").append_num(resp->GetReqID(), 0, 16);
+					if (resp->errorCode) {
+						msg.append(" err: ").append_num(resp->errorCode, 2, 16);
+					}
+					msg.append("\n");
+					ViceLog(msg.get_strref());
 					OutputDebugStringA(msg.c_str());
 #endif
 					uint32_t id = resp->GetReqID();
@@ -292,7 +373,7 @@ void ViceConnection::connectionThread()
 							break;
 						case VICE_Resumed:
 #ifdef _DEBUG
-							OutputDebugStringA("Vice resumed");
+							OutputDebugStringA("Vice resumed\n");
 #endif
 							handleStopResume((VICEBinStopResponse*)resp);
 							break;
@@ -307,7 +388,7 @@ void ViceConnection::connectionThread()
 						case VICE_Stopped:
 						case VICE_JAM:
 #ifdef _DEBUG
-							OutputDebugStringA("Vice stopped");
+							OutputDebugStringA("Vice stopped\n");
 #endif
 							handleStopResume((VICEBinStopResponse*)resp);
 							if (CPU6510* cpu = GetCurrCPU()) {
@@ -374,6 +455,12 @@ void ViceConnection::updateGetMemory(VICEBinMemGetResponse* resp)
 
 	assert(found);
 	if (CPU6510* cpu = GetCPU((VICEMemSpaces)space)) {
+#ifdef VICELOG
+		strown<128> msg("updating $");
+		msg.append_num(start, 4, 16).append("-$").append_num(start + resp->bytes[0] + (((uint16_t)resp->bytes[1]) << 8) - 1, 4, 16);
+		msg.append(" mem/bank:").append_num(space, 0, 10).append("/").append_num(bank, 0, 10);
+		ViceLog(msg.get_strref());
+#endif
 		cpu->MemoryFromVICE(start, start + resp->bytes[0] + (((uint16_t)resp->bytes[1]) << 8) - 1, resp->data);
 	}
 }
@@ -382,6 +469,9 @@ void ViceConnection::updateGetMemory(VICEBinMemGetResponse* resp)
 void ViceConnection::updateRegisters(VICEBinRegisterResponse* resp)
 {
 	CPU6510* cpu = GetMainCPU();
+#ifdef VICELOG
+	strown<256> regInfo;
+#endif
 	for (uint16_t r = 0, n = resp->GetCount(); r < n; ++r) {
 		VICEBinRegisterResponse::regInfo& info = resp->aRegs[r];
 		switch (info.registerID) {
@@ -396,6 +486,21 @@ void ViceConnection::updateRegisters(VICEBinRegisterResponse* resp)
 			case VICE_00: cpu->regs.ZP00 = info.GetValue8(); break;
 			case VICE_01: cpu->regs.ZP01 = info.GetValue8(); break;
 		}
+#ifdef VICELOG
+		switch (info.registerID) {
+			case VICE_Acc: regInfo.append("A=$").append_num(info.GetValue8(),2,16); break;
+			case VICE_X: regInfo.append("X=$").append_num(info.GetValue8(), 2, 16); break;
+			case VICE_Y: regInfo.append("Y=$").append_num(info.GetValue8(), 2, 16); break;
+			case VICE_PC: regInfo.append("PC=$").append_num(info.GetValue16(), 4, 16); break;
+			case VICE_SP: regInfo.append("SP=$").append_num(info.GetValue8(), 2, 16); break;
+			case VICE_FL: regInfo.append("FL=$").append_num(info.GetValue8(), 2, 16); break;
+			case VICE_LIN: regInfo.append("LIN=$").append_num(info.GetValue16(), 4, 16); break;
+			case VICE_CYC: regInfo.append("CYC=$").append_num(info.GetValue16(), 4, 16); break;
+			case VICE_00: regInfo.append("00=$").append_num(info.GetValue8(), 2, 16); break;
+			case VICE_01: regInfo.append("01=$").append_num(info.GetValue8(), 2, 16); break;
+		}
+		regInfo.append(' ');
+#endif
 #ifdef _DEBUG
 		strown<256> d;
 		d.append("Reg: $").append_num(info.registerID, 2, 16);
@@ -406,22 +511,38 @@ void ViceConnection::updateRegisters(VICEBinRegisterResponse* resp)
 		OutputDebugStringA(d.c_str());
 #endif
 	}
+#ifdef VICELOG
+	ViceLog(regInfo.get_strref());
+#endif
+
 }
 
 void ViceConnection::handleStopResume(VICEBinStopResponse* resp)
 {
+#ifdef VICELOG
+	strown<256> msg("Stop/Resume PC=$");
+	msg.append_num(resp->GetPC(), 4, 16);
+	ViceLog(msg.get_strref());
+#endif
 	if (CPU6510* cpu = GetCurrCPU()) {
 		cpu->regs.PC = resp->GetPC();
 	}
 	switch (resp->commandType) {
 		case VICE_Resumed:
-			stopped = false;
+			if (sResumeMeansStopped) {
+				stopped = true;
+#ifdef VICELOG
+				ViceLog(strref("Treating Resume to mean Stopped"));
+#endif
+			}
+			else { stopped = false; }
 			break;
 		case VICE_Stopped:
 		case VICE_JAM:
 			stopped = true;
 			break;
 	}
+	sResumeMeansStopped = false;
 }
 
 void ViceConnection::updateRegisterNames(VICEBinRegisterAvailableResponse* resp)
@@ -511,6 +632,18 @@ void ViceConnection::Tick()
 	}
 	IBMutexRelease(&msgSendMutex);
 	if (maxTime > 10) {
+#ifdef VICELOG
+		strown<256> msg("No response for:");
+		IBMutexLock(&msgSendMutex);
+		uint32_t maxTime = 0;
+		for (size_t i = 0, n = sMessageTimeouts.size(); i < n; ++i) {
+			if (i) { msg.append(", "); }
+			msg.append_num(sMessageTimeouts[i].requestID, 0, 16);
+		}
+		IBMutexRelease(&msgSendMutex);
+		msg.append(". Sending Ping to VICE");
+		ViceLog(msg.get_strref());
+#endif
 		VicePing();
 		IBMutexLock(&msgSendMutex);
 		for (size_t i = 0, n = sMessageTimeouts.size(); i < n; ++i) {
@@ -522,11 +655,13 @@ void ViceConnection::Tick()
 
 void ViceConnection::AddMessage(uint8_t* message, int size, bool wantResponse)
 {
-#ifdef _DEBUG
+#ifdef VICELOG
 	VICEBinHeader* hdr = (VICEBinHeader*)message;
-	strown<128> str("Send VICE cmd: $");
-	str.append_num(hdr->commandType, 2, 16).append(" ReqID: ").append_num(hdr->GetReqID(), 8, 16);
+	strown<128> str("Send cmd: $");
+	str.append_num(hdr->commandType, 2, 16).append(" (").append(ViceBinCmdName(hdr->commandType));
+	str.append(") ReqID: ").append_num(hdr->GetReqID(), 0, 16);
 	str.append(" len: ").append_num(hdr->GetSize(), 0, 16).append(" / ").append_num(size, 0, 16).append("\n");
+	ViceLog(str.get_strref());
 	OutputDebugStringA(str.c_str());
 #endif
 

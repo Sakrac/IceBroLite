@@ -927,7 +927,7 @@ public:
 		if(!size) {
 			strl_t mul = 9;
 			size = 1;
-			while( num > mul ) { size++; mul = (mul+1)*10-1; }
+			while( num > mul && size < 8) { size++; mul = (mul+1)*10-1; }
 		}
 		for(strl_t n=1; n<size; ++n) { div *= radix; }
 		for(strl_t a=0; a<size; ++a) {

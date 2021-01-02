@@ -295,80 +295,85 @@ static const char sIceBro_cfg[] = {
 };
 
 static const char sImGui_ini[] = {
-	"[Window][IceBro DockSpace]\n"
-	"Pos=0,0\n"
-	"Size=1280,720\n"
-	"Collapsed=0\n"
+	"[Window] [IceBro DockSpace]\n"
+	"Size = 1280,720\n"
+	"Collapsed = 0\n"
 	"\n"
 	"[Window][Debug##Default]\n"
-	"Pos=0,0\n"
-	"Size=400,400\n"
-	"Collapsed=0\n"
+	"Pos = 182,182\n"
+	"Size = 400,400\n"
+	"Collapsed = 0\n"
 	"\n"
 	"[Window][Toolbar]\n"
-	"Pos=0,10\n"
-	"Size=1280,63\n"
-	"Collapsed=0\n"
-	"DockId=0x00000001,0\n"
+	"Pos = 0,10\n"
+	"Size = 1280,81\n"
+	"Collapsed = 0\n"
+	"DockId = 0x00000001,0\n"
 	"\n"
 	"[Window][Vice Monitor]\n"
-	"Pos=782,116\n"
-	"Size=498,488\n"
-	"Collapsed=0\n"
-	"DockId=0x0000000D,0\n"
+	"Pos = 634,171\n"
+	"Size = 646,771\n"
+	"Collapsed = 0\n"
+	"DockId = 0x0000000C,0\n"
 	"\n"
 	"[Window][Mem1]\n"
-	"Pos=0,365\n"
-	"Size=389,355\n"
-	"Collapsed=0\n"
-	"DockId=0x0000000A,0\n"
+	"Pos = 0,620\n"
+	"Size = 632,322\n"
+	"Collapsed = 0\n"
+	"DockId = 0x0000000A,0\n"
 	"\n"
 	"[Window][###Code1]\n"
-	"Pos=391,75\n"
-	"Size=389,645\n"
-	"Collapsed=0\n"
-	"DockId=0x00000006,0\n"
+	"Pos = 0,93\n"
+	"Size = 632,525\n"
+	"Collapsed = 0\n"
+	"DockId = 0x00000009,0\n"
 	"\n"
 	"[Window][Registers]\n"
-	"Pos=782,75\n"
-	"Size=498,39\n"
-	"Collapsed=0\n"
-	"DockId=0x0000000B,0\n"
+	"Pos = 634,93\n"
+	"Size = 646,76\n"
+	"Collapsed = 0\n"
+	"DockId = 0x0000000B,0\n"
 	"\n"
 	"[Window][Screen1]\n"
-	"Pos=0,75\n"
-	"Size=389,199\n"
-	"Collapsed=0\n"
-	"DockId=0x00000007,0\n"
+	"Pos = 0,75\n"
+	"Size = 389,199\n"
+	"Collapsed = 0\n"
+	"DockId = 0x00000007,0\n"
 	"\n"
 	"[Window][Watch1]\n"
-	"Pos=0,276\n"
-	"Size=389,87\n"
-	"Collapsed=0\n"
-	"DockId=0x00000009,0\n"
+	"Pos = 0,276\n"
+	"Size = 389,87\n"
+	"Collapsed = 0\n"
+	"DockId = 0x00000008,0\n"
 	"\n"
 	"[Window][Breakpoints]\n"
-	"Pos=782,606\n"
-	"Size=498,114\n"
-	"Collapsed=0\n"
-	"DockId=0x0000000E,0\n"
+	"Pos = 782,606\n"
+	"Size = 498,114\n"
+	"Collapsed = 0\n"
+	"DockId = 0x0000000E,0\n"
+	"\n"
+	"[Window][WitchMap Main]\n"
+	"Pos = 0,0\n"
+	"Size = 1280,942\n"
+	"Collapsed = 0\n"
 	"\n"
 	"[Docking][Data]\n"
-	"DockSpace           ID=0x22EE0AEA Window=0xA11B77D4 Pos=604,272 Size=1280,710 Split=Y Selected=0xE59CF797\n"
-	"  DockNode          ID=0x00000001 Parent=0x22EE0AEA SizeRef=1280,63 Selected=0x507852CA\n"
-	"  DockNode          ID=0x00000002 Parent=0x22EE0AEA SizeRef=1280,645 Split=X Selected=0xE59CF797\n"
-	"    DockNode        ID=0x00000003 Parent=0x00000002 SizeRef=780,645 Split=X Selected=0x172AD7AD\n"
-	"      DockNode      ID=0x00000005 Parent=0x00000003 SizeRef=389,645 Split=Y Selected=0x87AB43E7\n"
-	"        DockNode    ID=0x00000007 Parent=0x00000005 SizeRef=389,199 Selected=0x6A67AAE6\n"
-	"        DockNode    ID=0x00000008 Parent=0x00000005 SizeRef=389,444 Split=Y Selected=0x87AB43E7\n"
-	"          DockNode  ID=0x00000009 Parent=0x00000008 SizeRef=389,87 Selected=0x562D6436\n"
-	"          DockNode  ID=0x0000000A Parent=0x00000008 SizeRef=389,355 Selected=0x87AB43E7\n"
-	"      DockNode      ID=0x00000006 Parent=0x00000003 SizeRef=389,645 Selected=0x172AD7AD\n"
-	"    DockNode        ID=0x00000004 Parent=0x00000002 SizeRef=498,645 Split=Y Selected=0xE59CF797\n"
-	"      DockNode      ID=0x0000000B Parent=0x00000004 SizeRef=498,39 Selected=0x837A6095\n"
-	"      DockNode      ID=0x0000000C Parent=0x00000004 SizeRef=498,604 Split=Y Selected=0xE59CF797\n"
-	"        DockNode    ID=0x0000000D Parent=0x0000000C SizeRef=498,488 CentralNode=1 Selected=0xE59CF797\n"
-	"        DockNode    ID=0x0000000E Parent=0x0000000C SizeRef=498,114 Selected=0x0263173C\n\n"
+	"DockSpace       ID = 0x22EE0AEA Pos = 604,272 Size = 1280,710 Split = X Selected = 0xE59CF797\n"
+	"  DockNode      ID = 0x00000003 Parent = 0x22EE0AEA SizeRef = 780,645 Split = Y Selected = 0x172AD7AD\n"
+	"	DockNode    ID = 0x00000007 Parent = 0x00000003 SizeRef = 389,199 Selected = 0x6A67AAE6\n"
+	"	DockNode    ID = 0x00000008 Parent = 0x00000003 SizeRef = 389,444 Selected = 0x87AB43E7\n"
+	"  DockNode      ID = 0x00000004 Parent = 0x22EE0AEA SizeRef = 498,645 Split = Y Selected = 0xE59CF797\n"
+	"	DockNode    ID = 0x0000000D Parent = 0x00000004 SizeRef = 498,488 CentralNode = 1 Selected = 0xE59CF797\n"
+	"	DockNode    ID = 0x0000000E Parent = 0x00000004 SizeRef = 498,114 Selected = 0x0263173C\n"
+	"DockSpace       ID = 0x6322A3BF Window = 0x36029362 Pos = 1014,299 Size = 1280,932 Split = Y Selected = 0x172AD7AD\n"
+	"  DockNode      ID = 0x00000001 Parent = 0x6322A3BF SizeRef = 1280,62 Selected = 0x507852CA\n"
+	"  DockNode      ID = 0x00000002 Parent = 0x6322A3BF SizeRef = 1280,646 Split = X Selected = 0x172AD7AD\n"
+	"	DockNode    ID = 0x00000005 Parent = 0x00000002 SizeRef = 632,646 Split = Y Selected = 0x172AD7AD\n"
+	"	  DockNode  ID = 0x00000009 Parent = 0x00000005 SizeRef = 780,322 CentralNode = 1 Selected = 0x172AD7AD\n"
+	"	  DockNode  ID = 0x0000000A Parent = 0x00000005 SizeRef = 780,322 Selected = 0x87AB43E7\n"
+	"	DockNode    ID = 0x00000006 Parent = 0x00000002 SizeRef = 646,646 Split = Y Selected = 0xE59CF797\n"
+	"	  DockNode  ID = 0x0000000B Parent = 0x00000006 SizeRef = 498,58 Selected = 0x837A6095\n"
+	"	  DockNode  ID = 0x0000000C Parent = 0x00000006 SizeRef = 498,586 Selected = 0xE59CF797\n"
 };
 
 // check if either imgui.ini or icebro.cfg is missing
@@ -379,18 +384,18 @@ void CheckMissingConfig()
 	if (fopen_s(&f, "imgui.ini", "rb") == 0 && f) {
 		fclose(f);
 	} else { replace = true; }
-	if (fopen_s(&f, "IceBro.cfg", "rb") == 0 && f) {
-		fclose(f);
-	} else { replace = true; }
+//	if (fopen_s(&f, "IceBro.cfg", "rb") == 0 && f) {
+//		fclose(f);
+//	} else { replace = true; }
 	if (replace) {
 		if (fopen_s(&f, "imgui.ini", "w") == 0 && f) {
 			fwrite(sImGui_ini, sizeof(sImGui_ini), 1, f);
 			fclose(f);
 		}
-		if (fopen_s(&f, "IceBro.cfg", "w") == 0 && f) {
-			fwrite(sIceBro_cfg, sizeof(sIceBro_cfg), 1, f);
-			fclose(f);
-		}
+//		if (fopen_s(&f, "IceBro.cfg", "w") == 0 && f) {
+//			fwrite(sIceBro_cfg, sizeof(sIceBro_cfg), 1, f);
+//			fclose(f);
+//		}
 	}
 }
 

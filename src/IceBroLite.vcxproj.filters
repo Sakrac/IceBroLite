@@ -78,6 +78,9 @@
       <Filter>views</Filter>
     </ClInclude>
     <ClInclude Include="Mnemonics.h" />
+    <ClInclude Include="views\ConsoleView.h">
+      <Filter>views</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\examples\imgui_impl_opengl2.cpp">
@@ -132,6 +135,9 @@
       <Filter>views</Filter>
     </ClCompile>
     <ClCompile Include="Mnemonics.cpp" />
+    <ClCompile Include="views\ConsoleView.cpp">
+      <Filter>views</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="imgui\misc\natvis\imgui.natvis">

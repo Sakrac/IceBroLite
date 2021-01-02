@@ -5,6 +5,7 @@
 #include "RegView.h"
 #include "MemView.h"
 #include "CodeView.h"
+#include "ConsoleView.h"
 #include "../6510.h"
 #include "../data/C64_Pro_Mono-STYLE.ttf.h"
 #include "Views.h"
@@ -19,6 +20,7 @@ struct ViewContext {
 	MemView memView[MaxMemViews];
 	CodeView codeView[MaxMemViews];
 	ImFont* aFonts[sNumFontSizes];
+	IceConsole console;
 	int currFont;
 
 	ViewContext();
@@ -39,7 +41,7 @@ static const ImWchar C64CharRanges[] =
 	//	0,
 };
 
-ViewContext::ViewContext() : currFont(3)
+ViewContext::ViewContext() : currFont(1)
 {
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	for (int f = 0; f < ViewContext::sNumFontSizes; ++f) {
@@ -48,6 +50,7 @@ ViewContext::ViewContext() : currFont(3)
 	}
 	memView[0].open = true;
 	codeView[0].open = true;
+	console.open = true;
 }
 
 void ViewContext::Draw()
@@ -57,6 +60,7 @@ void ViewContext::Draw()
 	regView.Draw();
 	for (int m = 0; m < MaxMemViews; ++m) { memView[m].Draw(m); }
 	for (int c = 0; c < MaxCodeViews; ++c) { codeView[c].Draw(c); }
+	console.Draw();
 	ImGui::PopFont();
 	if (CPU6510* cpu = GetCurrCPU()) {
 		cpu->RefreshMemory();
@@ -108,4 +112,11 @@ uint8_t InputHex()
 	for (int num = 0; num < 9; ++num) { if (ImGui::IsKeyPressed(num + '0')) return num; }
 	for (int num = 10; num < 16; ++num) { if (ImGui::IsKeyPressed(num + 'A' - 10)) return num; }
 	return 0xff;
+}
+
+void SelectFont(int size)
+{
+	if (viewContext && size >= 0 && size < ViewContext::sNumFontSizes) {
+		viewContext->currFont = size;
+	}
 }

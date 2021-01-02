@@ -16,6 +16,8 @@ void ViceRunTo(uint16_t addr);
 void ViceWaiting();
 void ViceTickMessage();
 
+
+
 enum VICEMemSpaces {
 	VICE_MainMemory,
 	VICE_Drive8,
@@ -25,3 +27,6 @@ enum VICEMemSpaces {
 };
 
 bool ViceGetMemory(uint16_t start, uint16_t end, VICEMemSpaces mem);
+
+typedef void (*ViceLogger)(void*, const char* text, size_t len);
+void ViceAddLogger(ViceLogger logger, void* user);
