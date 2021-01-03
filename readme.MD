@@ -31,3 +31,4 @@ Currently stuck trying to communicate at a reasonable rate with Vice. This is be
 * Reset & Load (Reload) VICE d64 or prg
 * Breakpoint view
 * Watch View
+* Linux Port (I'm bringing my tools over to Raspberry PI 400)
