@@ -37,7 +37,9 @@ public:
 	void Show(const char *folder, bool *setWhenDone = nullptr, char *pathWhenDone = nullptr, int pathWhenDoneSize = 0, const char *filter = nullptr);
 	bool IsOpen() const { return open; }
 	const char* GetSelectedFile() const { return selectedFile; }
-	FVFileView() : open(false), selected(nullptr), pathTarget(nullptr), pathTargetSize(0), selectIndex(0xffffffff) {}
+	FVFileView() : open(false), selected(nullptr), pathTarget(nullptr), pathTargetSize(0), selectIndex(0xffffffff) {
+		userPath[0] = 0; userFile[0] = 0; selectedFile[0] = 0;
+	}
 protected:
 	bool open;
 	bool *selected;

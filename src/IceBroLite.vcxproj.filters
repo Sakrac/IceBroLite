@@ -49,7 +49,6 @@
       <Filter>struse</Filter>
     </ClInclude>
     <ClInclude Include="Files.h" />
-    <ClInclude Include="FilesView.h" />
     <ClInclude Include="ViceBinInterface.h" />
     <ClInclude Include="platform.h" />
     <ClInclude Include="C64Colors.h" />
@@ -81,6 +80,9 @@
     <ClInclude Include="views\ConsoleView.h">
       <Filter>views</Filter>
     </ClInclude>
+    <ClInclude Include="views\FilesView.h">
+      <Filter>views</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\examples\imgui_impl_opengl2.cpp">
@@ -106,7 +108,6 @@
     </ClCompile>
     <ClCompile Include="Files.cpp" />
     <ClCompile Include="IceBroLite.cpp" />
-    <ClCompile Include="FilesView.cpp" />
     <ClCompile Include="struse.cpp" />
     <ClCompile Include="ViceInterface.cpp" />
     <ClCompile Include="Platform.cpp" />
@@ -136,6 +137,9 @@
     </ClCompile>
     <ClCompile Include="Mnemonics.cpp" />
     <ClCompile Include="views\ConsoleView.cpp">
+      <Filter>views</Filter>
+    </ClCompile>
+    <ClCompile Include="views\FilesView.cpp">
       <Filter>views</Filter>
     </ClCompile>
   </ItemGroup>

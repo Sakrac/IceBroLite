@@ -1,5 +1,5 @@
 // attempting a home made file dialog in ImGui for a little more portability
-#include "struse/struse.h"
+#include "../struse/struse.h"
 #include "FilesView.h"
 #include <string.h>
 #include <malloc.h>

@@ -1,4 +1,4 @@
-#include "ImGui.h"
+#include "imgui.h"
 #include "imgui_internal.h"
 
 void ForceKeyboardCanvas(const char* label)

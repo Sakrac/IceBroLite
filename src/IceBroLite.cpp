@@ -27,7 +27,7 @@
 #endif
 #include <GLFW/glfw3.h>
 #include "FileDialog.h"
-#include "FilesView.h"
+#include "views/FilesView.h"
 
 #include "C64Colors.h"
 #include "Image.h"
@@ -173,7 +173,6 @@ int main(int argc, char* argv[])
 		ImGuiID dockspace_id = ImGui::GetID("WitchEdDockSpace");
 		ImGui::DockSpace(dockspace_id);
 
-		DrawFileDialog();
 		ShowViews();
 
 		ImGui::End();

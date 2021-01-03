@@ -3,6 +3,8 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+IceBroLite.exe
+
 src/x64
 src/x86
 imgui.ini
@@ -17,6 +19,7 @@ src/IceBro.cfg
 *.user
 *.userosscache
 *.sln.docstates
+*.o
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

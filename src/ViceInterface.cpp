@@ -284,7 +284,7 @@ void ViceConnection::connectionThread()
 	// Open the connection
 	if (!open()) { return; }
 
-	DWORD timeout = 100;// SOCKET_READ_TIMEOUT_SEC*1000;
+	DWORD timeout = 1000;// SOCKET_READ_TIMEOUT_SEC*1000;
 	setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(timeout));
 
 
@@ -328,7 +328,7 @@ void ViceConnection::connectionThread()
 //					viceRunning = false;
 //					viceReloadSymbols = true;
 //				}
-				Sleep(100);
+				Sleep(50);
 			} else {
 				activeConnection = false;
 				break;
@@ -631,7 +631,7 @@ void ViceConnection::Tick()
 		}
 	}
 	IBMutexRelease(&msgSendMutex);
-	if (maxTime > 10) {
+	if (maxTime > 100) {
 #ifdef VICELOG
 		strown<256> msg("No response for:");
 		IBMutexLock(&msgSendMutex);
