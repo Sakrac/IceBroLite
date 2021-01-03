@@ -73,15 +73,6 @@ void ViewContext::Draw()
 				if (ImGui::MenuItem("Quit", "Alt+F4")) {}
 				ImGui::EndMenu();
 			}
-			if (ImGui::BeginMenu("Edit")) {
-				if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
-				if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
-				ImGui::Separator();
-				if (ImGui::MenuItem("Cut", "CTRL+X")) {}
-				if (ImGui::MenuItem("Copy", "CTRL+C")) {}
-				if (ImGui::MenuItem("Paste", "CTRL+V")) {}
-				ImGui::EndMenu();
-			}
 
 			if (ImGui::BeginMenu("Windows")) {
 				if (ImGui::MenuItem("Ice Console", NULL, console.open)) { console.open = !console.open; }
