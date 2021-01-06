@@ -23,9 +23,9 @@
 #include "struse/struse.h"
 
 
-//#ifdef _DEBUG
+#ifdef _DEBUG
 #define VICELOG
-//#endif
+#endif
 
 #define SEND_IMMEDIATE
 
@@ -214,7 +214,7 @@ void ViceStep()
 		VICEBinStep stepMsg;
 		stepMsg.Setup(++lastRequestID, false);
 		viceCon->AddMessage((uint8_t*)&stepMsg, sizeof(VICEBinStep), true);
-		sResumeMeansStopped = true;
+		//sResumeMeansStopped = true;
 	}
 }
 
@@ -224,7 +224,7 @@ void ViceStepOver()
 		VICEBinStep stepMsg;
 		stepMsg.Setup(++lastRequestID, true);
 		viceCon->AddMessage((uint8_t*)&stepMsg, sizeof(VICEBinStep), true);
-		sResumeMeansStopped = true;
+		//sResumeMeansStopped = true;
 	}
 }
 
@@ -234,7 +234,7 @@ void ViceStepOut()
 		VICEBinHeader stepOutMsg;
 		stepOutMsg.Setup(0, ++lastRequestID, VICE_StepOut);
 		viceCon->AddMessage((uint8_t*)&stepOutMsg, sizeof(VICEBinHeader), true);
-		sResumeMeansStopped = true;
+		//sResumeMeansStopped = true;
 	}
 }
 
@@ -420,9 +420,6 @@ void ViceConnection::connectionThread()
 							OutputDebugStringA("Vice stopped\n");
 #endif
 							handleStopResume((VICEBinStopResponse*)resp);
-							if (CPU6510* cpu = GetCurrCPU()) {
-								cpu->FlushRAM();
-							}
 							break;
 					}
 					if (bufferRead > bytes) {
@@ -565,17 +562,20 @@ void ViceConnection::handleStopResume(VICEBinStopResponse* resp)
 	}
 	switch (resp->commandType) {
 		case VICE_Resumed:
-			if (sResumeMeansStopped) {
-				stopped = true;
-#ifdef VICELOG
-				ViceLog(strref("Treating Resume to mean Stopped"));
-#endif
-			}
-			else { stopped = false; }
+			stopped = false;
+//			if (sResumeMeansStopped) {
+//				stopped = true;
+//#ifdef VICELOG
+//				ViceLog(strref("Treating Resume to mean Stopped"));
+//#endif
+//			}
+//			else { stopped = false; }
 			break;
 		case VICE_Stopped:
 		case VICE_JAM:
 			stopped = true;
+			ViceGetMemory(0x0000, 0x7fff, VICE_MainMemory);
+			ViceGetMemory(0x8000, 0xffff, VICE_MainMemory);
 			break;
 	}
 	sResumeMeansStopped = false;

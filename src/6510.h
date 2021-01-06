@@ -6,28 +6,6 @@
 #include "ViceInterface.h"
 #include "platform.h"
 
-struct MemRanges {
-	enum { MaxRanges = 64 };
-
-	size_t numRanges;
-	uint16_t start[MaxRanges];
-	uint16_t end[MaxRanges];
-
-	void Clear() { numRanges = 0; }
-	void Add(uint16_t addr);
-	void Insert(size_t slot);
-	void Remove(size_t slot);
-
-	void Add(uint16_t a0, uint16_t a1);
-
-	void Delta(const MemRanges& orig, const MemRanges& next);
-	void Merge(MemRanges& delta);
-	bool Exists(uint16_t a0, uint16_t a1) const;
-
-	MemRanges() : numRanges(0) {}
-};
-
-
 struct CPU6510 {
 
 	struct Regs {
@@ -41,12 +19,7 @@ struct CPU6510 {
 	uint8_t *ram;
 	VICEMemSpaces space;
 
-	MemRanges requestedMem;
-	MemRanges currentMem;
-
 	CPU6510();
-
-	void RefreshMemory();
 
 	void MemoryFromVICE(uint16_t start, uint16_t end, uint8_t* bytes);
 
@@ -55,18 +28,9 @@ struct CPU6510 {
 	bool MemoryChange() { return false; }
 	void SetPC(uint16_t pc);
 
-	void FlushRAM() { memoryFlush = true; }
-
 protected:
 	IBMutex memoryUpdateMutex;
-	size_t memoryRequestsPending;
-	bool memoryFlush;
 	bool memoryChanged;
-
-
-
-
-
 };
 
 enum StatusFlags {

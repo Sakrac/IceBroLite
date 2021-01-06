@@ -109,9 +109,6 @@ void ViewContext::Draw()
 
 	fileView.Draw("Select File");
 	ImGui::PopFont();
-	if (CPU6510* cpu = GetCurrCPU()) {
-		cpu->RefreshMemory();
-	}
 	GlobalKeyCheck();
 	ViceTickMessage();
 }

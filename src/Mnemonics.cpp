@@ -759,7 +759,7 @@ int Assemble(CPU6510* cpu, char* cmd, uint16_t addr)
 
 	for (size_t i = 0; i < (sizeof(zsMNM) / sizeof(zsMNM[0])); i++) {
 		if (_strnicmp(zsMNM[i], instr, instr_len) == 0) {
-			mnm = i;
+			mnm = (int)i;
 			break;
 		}
 	}
