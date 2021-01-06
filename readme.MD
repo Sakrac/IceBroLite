@@ -21,6 +21,14 @@ Currently stuck trying to communicate at a reasonable rate with Vice. This is be
 * = prefix in address fields locks the expression, for instance ={$fffe} in a code view will always disassemble the current interrupt code
 * Expressions can be complex, contain parenthesis, etc. et.
 
+### Building IceBroLite on Linux
+
+(I'm using this on a Raspberry PI 400, still need to verify features with RPi400 Vice 3.5)
+
+* Install glfw (sudo apt-get install -y libglfw3-dev)
+* Go to the src folder and run make
+* You should be able to run IceBroLite.exe from the root folder.
+
 ### Planned features
 
 (these are pretty much just going to be copied over from IceBro, with fixes as needed)
@@ -31,4 +39,4 @@ Currently stuck trying to communicate at a reasonable rate with Vice. This is be
 * Reset & Load (Reload) VICE d64 or prg
 * Breakpoint view
 * Watch View
-* Linux Port (I'm bringing my tools over to Raspberry PI 400)
+
