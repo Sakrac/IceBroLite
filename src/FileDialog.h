@@ -14,3 +14,5 @@ void LoadListingDialog();
 void LoadKickDbgDialog();
 void LoadSymbolsDialog();
 void LoadViceCmdDialog();
+
+const char* ReloadProgramFile();

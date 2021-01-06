@@ -128,17 +128,27 @@ void ToolBar::Draw()
 		}
 	}
 
-//	if (load) {
-//		FileLoadThread();
-//	}
+	if (load) {
+		LoadProgramDialog();
+	}
+
+	if (const char* loadPrg = LoadProgramReady()) {
+		ViceStartProgram(loadPrg);
+	}
 //
-//	if (reload) { ReloadBinary(); }
+	if (reload) {
+		if (const char* loadPrg = ReloadProgramFile()) {
+			ViceStartProgram(loadPrg);
+		}
+	}
 //
 //	if (NMI) { CPUNMI(); }
 //
 //	if (Interrupt) { CPUIRQ(); }
 //
-//	if (reset) { CPUReset(); }
+	if (reset) {
+		ViceReset(1);
+	}
 //
 //	if (IsFileLoadReady()) {
 //		ImGui::OpenPopup("Load Binary");

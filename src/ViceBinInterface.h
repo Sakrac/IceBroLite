@@ -331,13 +331,13 @@ struct VICEBinDisplay : public VICEBinHeader {
 	uint8_t useVICII;
 	uint8_t format;
 
-	void Setup(uint32_t reqID, uint8_t fmt) {
+	void Setup(uint32_t reqID, VICEDisplayFormats fmt) {
 		VICEBinHeader::Setup(2, reqID, VICE_DisplayGet);
 		useVICII = 1;
-		format = fmt;
+		format = (uint8_t)fmt;
 	}
 
-	VICEBinDisplay(uint32_t reqID, uint8_t fmt) {
+	VICEBinDisplay(uint32_t reqID, VICEDisplayFormats fmt) {
 		Setup(reqID, fmt);
 	}
 };
@@ -364,7 +364,7 @@ struct VICEBinDisplayResponse : public VICEBinResponse {
 	uint32_t GetWidthImage() { return Get2Bytes(width); }
 	uint32_t GetHeightImage() { return Get2Bytes(height); }
 	uint32_t GetLeftScreen() { return Get2Bytes(offsScreenX); }
-	uint32_t GetRightScreen() { return Get2Bytes(offsScreenY); }
+	uint32_t GetTopScreen() { return Get2Bytes(offsScreenY); }
 	uint32_t GetWidthScreen() { return Get2Bytes(widthScreen); }
 	uint32_t GetHeightScreen() { return Get2Bytes(heightScreen); }
 };
@@ -373,5 +373,10 @@ struct VICEBinAutoStart : public VICEBinHeader {
 	uint8_t startImmediately;
 	uint8_t fileIndex; // The index of the file to execute, if a disk image. 0x00 is the default value.
 	uint8_t fileNameLength;
+	char* filename[1];
 	// filename follows
+};
+
+struct VICEBinReset : public VICEBinHeader {
+	uint8_t resetType; // 0x00: Soft reset system, 0x01 : Hard reset system, 0x08 - 0x0b : Reset drives 8 - 11
 };

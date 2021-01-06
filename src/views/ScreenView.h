@@ -13,8 +13,11 @@ struct ScreenView {
 
 	ImTextureID texture;
 	bool open;
+	bool refresh;
 
 	void Draw();
+	~ScreenView();
+	void Refresh(uint8_t* img, uint16_t w, uint16_t h);
 
 	ScreenView();
 };

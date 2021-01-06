@@ -9,7 +9,7 @@ extern const unsigned char sIcons_Pixels[];
 ImTextureID CreateTexture()
 {
 	// Turn the RGBA pixel data into an OpenGL texture:
-	GLuint my_opengl_texture;
+	GLuint my_opengl_texture = 0;
 	glGenTextures(1, &my_opengl_texture);
 	glBindTexture(GL_TEXTURE_2D, my_opengl_texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

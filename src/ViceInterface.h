@@ -12,6 +12,8 @@ void ViceStep();
 void ViceStepOver();
 void ViceStepOut();
 void ViceRunTo(uint16_t addr);
+void ViceStartProgram(const char* loadPrg);
+void ViceReset(uint8_t resetType);
 
 void ViceWaiting();
 void ViceTickMessage();

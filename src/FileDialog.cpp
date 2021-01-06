@@ -55,7 +55,7 @@ struct FileTypeInfo {
 
 #ifndef CUSTOM_FILEVIEWER
 #else
-static const char sLoadProgramParams[] = "All:*.*,Prg:*.prg,Bin:*.bin";
+static const char sLoadProgramParams[] = "Prg:*.prg,D64:*.d64,Cart:*.crt";
 static const char sLoadListingParams[] = "Listing:*.lst";
 static const char sLoadKickDbgParams[] = "C64Debugger:*.dbg";
 static const char sLoadSymbolsParams[] = "Symbols:*.sym";
@@ -86,6 +86,8 @@ void ResetStartFolder()
 }
 
 bool IsFileDialogOpen() { return sFileDialogOpen; }
+
+const char* ReloadProgramFile() { return sLoadPrgFileName[0] ? sLoadPrgFileName : nullptr; }
 
 const char* LoadProgramReady()
 {

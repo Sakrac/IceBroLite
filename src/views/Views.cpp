@@ -204,6 +204,13 @@ void SelectFont(int size)
 	}
 }
 
+void RefreshScreen(uint8_t* img, uint16_t w, uint16_t h)
+{
+	if (viewContext) {
+		viewContext->screenView.Refresh(img, w, h);
+	}
+}
+
 FVFileView* GetFileView()
 {
 	if (viewContext) {

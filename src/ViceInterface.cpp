@@ -21,7 +21,7 @@
 #include "ViceBinInterface.h"
 #include "platform.h"
 #include "struse/struse.h"
-
+#include "views/Views.h"
 
 #ifdef _DEBUG
 #define VICELOG
@@ -43,7 +43,7 @@ void Sleep(int ms) {
 #endif
 
 class ViceConnection {
-	enum { RECEIVE_SIZE = 1024*1024 };
+	enum { RECEIVE_SIZE = 10*1024*1024 };
 	struct ViceMessage {
 		int size;	// data follows after len..
 	};
@@ -256,6 +256,33 @@ void ViceRunTo(uint16_t addr)
 	}
 }
 
+void ViceStartProgram(const char* loadPrg)
+{
+	if (viceCon && viceCon->isConnected()) {
+		size_t loadFileLen = strlen(loadPrg);
+		VICEBinAutoStart* autoStart = (VICEBinAutoStart*)calloc(1, sizeof(VICEBinAutoStart) + loadFileLen);
+		if (autoStart) {
+			autoStart->Setup((uint32_t)loadFileLen + 3, ++lastRequestID, VICE_AutoStart);
+			autoStart->startImmediately = 1;
+			autoStart->fileIndex = 0;
+			autoStart->fileNameLength = (uint8_t)loadFileLen+1;
+			memcpy(autoStart->filename, loadPrg, loadFileLen+1);
+			viceCon->AddMessage((uint8_t*)autoStart, (uint32_t)(sizeof(VICEBinAutoStart) + loadFileLen));
+		}
+	}
+}
+
+void ViceReset(uint8_t resetType)
+{
+	if (viceCon && viceCon->isConnected()) {
+		VICEBinReset reset;
+		reset.Setup(1, ++lastRequestID, VICE_Reset);
+		reset.resetType = resetType;
+		viceCon->AddMessage((uint8_t*)&reset, sizeof(VICEBinReset), false);
+	}
+}
+
+
 void ViceWaiting()
 {
 	if (viceCon && viceCon->isConnected()) {
@@ -440,13 +467,6 @@ void ViceConnection::connectionThread()
 			}
 		}
 
-//		if (waitCount > 30) {
-//			waitCount = 0;
-//			VICEBinHeader pingMsg;
-//			pingMsg.Setup(0, ++lastRequestID, VICE_Ping);
-//			send(s, (const char*)&pingMsg, sizeof(pingMsg), 0);
-//		}
-
 #ifndef SEND_IMMEDIATE
 		// messages to send
 		{
@@ -462,8 +482,9 @@ void ViceConnection::connectionThread()
 			}
 		}
 #endif
-
 	}
+	// connection with VICE was terminated for some reason
+	free(recvBuf);
 	IBMutexLock(&msgSendMutex);
 	sMessageTimeouts.clear();
 	sMemRequests.clear();
@@ -557,7 +578,15 @@ void ViceConnection::updateRegisters(VICEBinRegisterResponse* resp)
 
 void ViceConnection::handleDisplayGet(VICEBinDisplayResponse* resp)
 {
-	resp = resp;
+	uint8_t* img = resp->lengthBeforeReserved + resp->GetLengthField();
+	uint16_t w = resp->GetWidthImage();
+	uint16_t h = resp->GetHeightImage();
+	uint16_t sx = resp->GetLeftScreen();
+	uint16_t sy = resp->GetTopScreen();
+	uint16_t sw = resp->GetWidthScreen();
+	uint16_t sh = resp->GetHeightScreen();
+
+	RefreshScreen(img, w, h);
 }
 
 void ViceConnection::handleStopResume(VICEBinStopResponse* resp)
@@ -580,7 +609,7 @@ void ViceConnection::handleStopResume(VICEBinStopResponse* resp)
 			ViceGetMemory(0x0000, 0x7fff, VICE_MainMemory);
 			ViceGetMemory(0x8000, 0xffff, VICE_MainMemory);
 
-			VICEBinDisplay getDisplay(++lastRequestID, 1);
+			VICEBinDisplay getDisplay(++lastRequestID, VICEDisplay_RGBA);
 			AddMessage((uint8_t*)&getDisplay, sizeof(VICEBinDisplay));
 
 			break;
@@ -622,35 +651,14 @@ bool ViceConnection::open()
 	// Make sure the user has specified a port
 	if (ipPort < 0 || ipPort > 65535) { return false; }
 
-//	WSADATA wsaData = { 0 };
 	int32_t iResult = 0;
-//
 	int32_t dwRetval;
-//
 	sockaddr_in saGNI;
 	char hostname[NI_MAXHOST];
 	char servInfo[NI_MAXSERV];
-//
-//	// Initialize Winsock
-//	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-//	if (iResult != 0) {
-//		printf("WSAStartup failed: %d\n", iResult);
-//		return false;
-//	}
-//	//-----------------------------------------
-//	// Set up sockaddr_in structure which is passed
-//	// to the getnameinfo function
 	saGNI.sin_family = AF_INET;
-//
 	inet_pton(AF_INET, ipAddress, &(saGNI.sin_addr.s_addr));
-//
-//	//	saGNI.sin_addr.s_addr =
-//	//	InetPton(AF_INET, strIP, &ipv4addr)
-//	//	inet_addr(address);
 	saGNI.sin_port = htons(ipPort);
-//
-//	//-----------------------------------------
-//	// Call getnameinfo
 	dwRetval = getnameinfo((struct sockaddr*)&saGNI,
 						   sizeof(struct sockaddr),
 						   hostname,
