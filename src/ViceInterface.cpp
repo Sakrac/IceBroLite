@@ -27,6 +27,8 @@
 #define VICELOG
 //#endif
 
+#define SEND_IMMEDIATE
+
 #ifdef _WIN32
 #define VI_SOCKET SOCKET
 #else
@@ -52,7 +54,9 @@ class ViceConnection {
 	bool connected;
 	bool stopped;
 
+#ifndef SEND_IMMEDIATE
 	std::queue<ViceMessage*> toSend;
+#endif
 public:
 	ViceConnection(const char* ip, uint32_t port);
 	~ViceConnection();
@@ -305,17 +309,17 @@ void ViceConnection::connectionThread()
 	// Open the connection
 	if (!open()) { return; }
 
-	int32_t timeout = 1000;// SOCKET_READ_TIMEOUT_SEC*1000;
-	setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(timeout));
+	int32_t timeout = 100000;// SOCKET_READ_TIMEOUT_SEC*1000;
+	setsockopt(s, SOL_SOCKET, SO_RCVTIMEO | SO_DEBUG, (char*)&timeout, sizeof(timeout));
 
 
 	bool activeConnection = true;
 	{
 //		VICEBinRegisters regAvailMsg(++lastRequestID, true);
-		VICEBinRegisters regMsg(++lastRequestID, false);
+//		VICEBinRegisters regMsg(++lastRequestID, false);
 //		AddMessage((uint8_t*)&regMsg, sizeof(regMsg));
 //		AddMessage((uint8_t*)&regAvailMsg, sizeof(regAvailMsg));
-		AddMessage((uint8_t*)&regMsg, sizeof(regMsg));
+//		AddMessage((uint8_t*)&regMsg, sizeof(regMsg));
 	}
 
 	size_t bufferRead = 0;
@@ -361,7 +365,7 @@ void ViceConnection::connectionThread()
 		} else {
 			bufferRead += bytesReceived;
 
-			if (bufferRead >= sizeof(VICEBinResponse) && recvBuf[0] == 2) {
+			while (bufferRead >= sizeof(VICEBinResponse) && recvBuf[0] == 2) {
 				VICEBinResponse* resp = (VICEBinResponse*)recvBuf;
 				uint32_t bytes = resp->GetSize();
 				if (bufferRead >= bytes) {
@@ -428,6 +432,8 @@ void ViceConnection::connectionThread()
 						bufferRead = 0;
 					}
 
+				} else {
+					break;
 				}
 			}
 		}
@@ -439,6 +445,7 @@ void ViceConnection::connectionThread()
 //			send(s, (const char*)&pingMsg, sizeof(pingMsg), 0);
 //		}
 
+#ifndef SEND_IMMEDIATE
 		// messages to send
 		{
 			ViceMessage* msg = nullptr;
@@ -452,9 +459,13 @@ void ViceConnection::connectionThread()
 				free(msg);
 			}
 		}
-
+#endif
 
 	}
+	IBMutexLock(&msgSendMutex);
+	sMessageTimeouts.clear();
+	sMemRequests.clear();
+	IBMutexRelease(&msgSendMutex);
 }
 
 void ViceConnection::updateGetMemory(VICEBinMemGetResponse* resp)
@@ -691,6 +702,16 @@ void ViceConnection::AddMessage(uint8_t* message, int size, bool wantResponse)
 	OutputDebugStringA(str.c_str());
 #endif
 
+#ifdef SEND_IMMEDIATE
+	if (wantResponse) {
+		MessageRequestTimeout to = { ((VICEBinHeader*)message)->GetReqID(), 0 };
+		IBMutexLock(&msgSendMutex);
+		sMessageTimeouts.push_back(to);
+		IBMutexRelease(&msgSendMutex);
+	}
+	send(s, (const char*)message, size, 0);
+#else
+
 	ViceMessage* msg = (ViceMessage*)malloc(sizeof(ViceMessage) + size);
 	if (msg) {
 		if (wantResponse) {
@@ -703,6 +724,7 @@ void ViceConnection::AddMessage(uint8_t* message, int size, bool wantResponse)
 		toSend.push(msg);
 		IBMutexRelease(&msgSendMutex);
 	}
+#endif
 }
 
 IBThreadRet ViceConnection::ViceConnectThread(void* data)
