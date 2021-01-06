@@ -173,7 +173,7 @@ int main(int argc, char* argv[])
 		ImGui::Begin("WitchMap Main", &mainWindowOpen, window_flags);
 		ImGui::PopStyleVar(2);
 
-		ImGuiID dockspace_id = ImGui::GetID("WitchEdDockSpace");
+		ImGuiID dockspace_id = ImGui::GetID("IceBroLiteDockSpace");
 		ImGui::DockSpace(dockspace_id);
 
 		ShowViews();

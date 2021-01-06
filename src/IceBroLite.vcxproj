@@ -47,6 +47,7 @@
     <ClInclude Include="views\FilesView.h" />
     <ClInclude Include="views\MemView.h" />
     <ClInclude Include="views\RegView.h" />
+    <ClInclude Include="views\ScreenView.h" />
     <ClInclude Include="views\ToolBar.h" />
     <ClInclude Include="views\Views.h" />
   </ItemGroup>
@@ -78,6 +79,7 @@
     <ClCompile Include="views\FilesView.cpp" />
     <ClCompile Include="views\MemView.cpp" />
     <ClCompile Include="views\RegView.cpp" />
+    <ClCompile Include="views\ScreenView.cpp" />
     <ClCompile Include="views\ToolBar.cpp" />
     <ClCompile Include="views\Views.cpp" />
   </ItemGroup>

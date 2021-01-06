@@ -83,6 +83,9 @@
     <ClInclude Include="views\FilesView.h">
       <Filter>views</Filter>
     </ClInclude>
+    <ClInclude Include="views\ScreenView.h">
+      <Filter>views</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\examples\imgui_impl_opengl2.cpp">
@@ -140,6 +143,9 @@
       <Filter>views</Filter>
     </ClCompile>
     <ClCompile Include="views\FilesView.cpp">
+      <Filter>views</Filter>
+    </ClCompile>
+    <ClCompile Include="views\ScreenView.cpp">
       <Filter>views</Filter>
     </ClCompile>
   </ItemGroup>

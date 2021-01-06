@@ -1,5 +1,6 @@
 #include <assert.h>
 #include "../imgui/imgui.h"
+#include "../imgui/imgui_internal.h"
 #include "../struse/struse.h"
 #include "ToolBar.h"
 #include "RegView.h"
@@ -7,6 +8,7 @@
 #include "CodeView.h"
 #include "ConsoleView.h"
 #include "FilesView.h"
+#include "ScreenView.h"
 #include "../6510.h"
 #include "../data/C64_Pro_Mono-STYLE.ttf.h"
 #include "../FileDialog.h"
@@ -23,8 +25,10 @@ struct ViewContext {
 	CodeView codeView[MaxCodeViews];
 	ImFont* aFonts[sNumFontSizes];
 	IceConsole console;
+	ScreenView screenView;
 	FVFileView fileView;
 	int currFont;
+	bool setupDocking;
 
 	ViewContext();
 	void Draw();
@@ -44,7 +48,7 @@ static const ImWchar C64CharRanges[] =
 	//	0,
 };
 
-ViewContext::ViewContext() : currFont(1)
+ViewContext::ViewContext() : currFont(1), setupDocking(true)
 {
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	for (int f = 0; f < ViewContext::sNumFontSizes; ++f) {
@@ -59,7 +63,6 @@ ViewContext::ViewContext() : currFont(1)
 void ViewContext::Draw()
 {
 	ImGui::PushFont(aFonts[currFont]);
-
 	{
 		if (ImGui::BeginMainMenuBar()) {
 			if (ImGui::BeginMenu("File")) {
@@ -101,11 +104,47 @@ void ViewContext::Draw()
 
 		}
 	}
+
+	if (setupDocking) {
+		setupDocking = false;
+		ImGuiID dockspace_id = ImGui::GetID("IceBroLiteDockSpace");
+
+		ImGui::DockBuilderRemoveNode(dockspace_id); // Clear out existing layout
+		ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace); // Add empty node
+		ImGui::DockBuilderSetNodeSize(dockspace_id, ImVec2(ImGui::GetWindowWidth(), ImGui::GetWindowHeight()));
+
+		ImGuiID dock_main_id = dockspace_id; // This variable will track the document node, however we are not using it here as we aren't docking anything into it.
+		ImGuiID dock_id_toolbar = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.10f, NULL, &dock_main_id);
+		ImGuiID dock_id_code = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.33f, NULL, &dock_main_id);
+		ImGuiID dock_id_code2 = ImGui::DockBuilderSplitNode(dock_id_code, ImGuiDir_Down, 0.25f, NULL, &dock_id_code);
+		ImGuiID dock_id_code3 = ImGui::DockBuilderSplitNode(dock_id_code, ImGuiDir_Down, 0.33f, NULL, &dock_id_code);
+		ImGuiID dock_id_code4 = ImGui::DockBuilderSplitNode(dock_id_code, ImGuiDir_Down, 0.5f, NULL, &dock_id_code);
+		ImGuiID dock_id_regs = ImGui::DockBuilderSplitNode(dock_id_code, ImGuiDir_Up, 0.1f, NULL, &dock_id_code);
+		ImGuiID dock_id_mem = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.5f, NULL, &dock_main_id);
+		ImGuiID dock_id_screen = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.25f, NULL, &dock_main_id);
+
+		ImGui::DockBuilderDockWindow("Toolbar", dock_id_toolbar);
+		ImGui::DockBuilderDockWindow("Vice Monitor", dock_main_id);
+		ImGui::DockBuilderDockWindow("###Code1", dock_id_code);
+		ImGui::DockBuilderDockWindow("###Code2", dock_id_code2);
+		ImGui::DockBuilderDockWindow("###Code3", dock_id_code3);
+		ImGui::DockBuilderDockWindow("###Code4", dock_id_code4);
+		ImGui::DockBuilderDockWindow("Mem1", dock_id_mem);
+		ImGui::DockBuilderDockWindow("Registers", dock_id_regs);
+		ImGui::DockBuilderDockWindow("Screen", dock_id_screen);
+		ImGui::DockBuilderFinish(dockspace_id);
+	}
+
+
+
+
+
 	toolBar.Draw();
 	regView.Draw();
 	for (int m = 0; m < MaxMemViews; ++m) { memView[m].Draw(m); }
 	for (int c = 0; c < MaxCodeViews; ++c) { codeView[c].Draw(c); }
 	console.Draw();
+	screenView.Draw();
 
 	fileView.Draw("Select File");
 	ImGui::PopFont();

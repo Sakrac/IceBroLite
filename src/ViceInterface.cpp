@@ -68,6 +68,8 @@ public:
 
 	void updateRegisters(VICEBinRegisterResponse* resp);
 
+	void handleDisplayGet(VICEBinDisplayResponse* resp);
+
 	void handleStopResume(VICEBinStopResponse* resp);
 
 	void updateRegisterNames(VICEBinRegisterAvailableResponse* resp);
@@ -421,6 +423,9 @@ void ViceConnection::connectionThread()
 #endif
 							handleStopResume((VICEBinStopResponse*)resp);
 							break;
+						case VICE_DisplayGet:
+							handleDisplayGet((VICEBinDisplayResponse*)resp);
+							break;
 					}
 					if (bufferRead > bytes) {
 						memmove(recvBuf, recvBuf + bytes, bufferRead - bytes);
@@ -550,6 +555,11 @@ void ViceConnection::updateRegisters(VICEBinRegisterResponse* resp)
 
 }
 
+void ViceConnection::handleDisplayGet(VICEBinDisplayResponse* resp)
+{
+	resp = resp;
+}
+
 void ViceConnection::handleStopResume(VICEBinStopResponse* resp)
 {
 #ifdef VICELOG
@@ -563,19 +573,16 @@ void ViceConnection::handleStopResume(VICEBinStopResponse* resp)
 	switch (resp->commandType) {
 		case VICE_Resumed:
 			stopped = false;
-//			if (sResumeMeansStopped) {
-//				stopped = true;
-//#ifdef VICELOG
-//				ViceLog(strref("Treating Resume to mean Stopped"));
-//#endif
-//			}
-//			else { stopped = false; }
 			break;
 		case VICE_Stopped:
 		case VICE_JAM:
 			stopped = true;
 			ViceGetMemory(0x0000, 0x7fff, VICE_MainMemory);
 			ViceGetMemory(0x8000, 0xffff, VICE_MainMemory);
+
+			VICEBinDisplay getDisplay(++lastRequestID, 1);
+			AddMessage((uint8_t*)&getDisplay, sizeof(VICEBinDisplay));
+
 			break;
 	}
 	sResumeMeansStopped = false;
