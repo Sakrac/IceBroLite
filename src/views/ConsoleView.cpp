@@ -196,7 +196,7 @@ enum ViceCommands {
 static uint32_t aViceCmdHash[nViceCmds] = {};
 #endif
 
-static IBMutex logSafe_mutex = IBMutex_Clear;
+static IBMutex logSafe_mutex;// = IBMutex_Clear;
 
 IceConsole::IceConsole() : open(true)
 {
@@ -262,7 +262,7 @@ void  IceConsole::ClearLog()
 	ScrollToBottom = true;
 }
 
-void IceConsole::AddLog(const char* fmt, ...) IM_FMTARGS(2)
+void IceConsole::AddLog(const char* fmt, ...)// IM_FMTARGS(2)
 {
 	// FIXME-OPT
 	char buf[1024];

@@ -14,16 +14,19 @@
 CXX = g++
 #CXX = clang++
 
-EXE = ../WitchMap.exe
-SOURCES = WitchMap.cpp Config.cpp Editor.cpp Files.cpp
-SOURCES += Image.cpp LoadLevel.cpp Template.cpp TileSet.cpp
-SOURCES += FileDialog.cpp FilesView.cpp
+EXE = ../IceBroLite.exe
+SOURCES = 6510.cpp C64Colors.cpp Config.cpp Expressions.cpp FileDialog.cpp Files.cpp
+SOURCES += IceBroLite.cpp Icons.cpp Image.cpp ImGui_Helper.cpp Mnemonics.cpp
+SOURCES += Platform.cpp struse.cpp Sym.cpp ViceInterface.cpp
 SOURCES += imgui/examples/imgui_impl_glfw.cpp imgui/examples/imgui_impl_opengl2.cpp
 SOURCES += imgui/imgui.cpp imgui/imgui_demo.cpp imgui/imgui_draw.cpp imgui/imgui_widgets.cpp
+SOURCES += views/CodeView.cpp views/ConsoleView.cpp views/FilesView.cpp
+SOURCES += views/MemView.cpp views/RegView.cpp views/ToolBar.cpp views/Views.cpp
+SOURCES += data/C64_Pro_Mono-STYLE.ttf.cpp
 OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
 UNAME_S := $(shell uname -s)
 
-CXXFLAGS =  -I./imgui -I./imgui/examples -I./imgui/examples/example_glfw_opengl2
+CXXFLAGS = -I./imgui -I./imgui/examples -I./imgui/examples/example_glfw_opengl2
 CXXFLAGS += -g -Wall -Wformat
 LIBS =
 
@@ -33,7 +36,7 @@ LIBS =
 
 ifeq ($(UNAME_S), Linux) #LINUX
 	ECHO_MESSAGE = "Linux"
-	LIBS += -lGL `pkg-config --static --libs glfw3`
+	LIBS += -lGL `pkg-config --static --libs glfw3` -pthread
 
 	CXXFLAGS += `pkg-config --cflags glfw3`
 	CFLAGS = $(CXXFLAGS)
@@ -63,6 +66,12 @@ endif
 ##---------------------------------------------------------------------
 
 %.o:%.cpp
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+%.o:data/%.cpp
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+%.o:views/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 %.o:imgui/%.cpp

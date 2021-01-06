@@ -4,6 +4,10 @@
 #include "struse/struse.h"
 #include "Sym.h"
 
+#ifndef _WIN32
+#define _strnicmp strncasecmp
+#endif
+
 static const char* aAddrModeFmt[] = {
 	"%s ($%02x,x)",			// 00
 	"%s $%02x",				// 01
@@ -753,7 +757,7 @@ int Assemble(CPU6510* cpu, char* cmd, uint16_t addr)
 
 	while (*cmd && *cmd <= ' ') cmd++;
 
-	for (int i = 0; i < (sizeof(zsMNM) / sizeof(zsMNM[0])); i++) {
+	for (size_t i = 0; i < (sizeof(zsMNM) / sizeof(zsMNM[0])); i++) {
 		if (_strnicmp(zsMNM[i], instr, instr_len) == 0) {
 			mnm = i;
 			break;

@@ -1,7 +1,16 @@
+#ifdef _WIN32
 #include "winsock2.h"
 #include <ws2tcpip.h>
+#else
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <sys/errno.h>
+#include <netdb.h>
+#endif
 #include <inttypes.h>
 #include <stdio.h>
+#include <malloc.h>
 #include <queue>
 #include <vector>
 #include <assert.h>
@@ -13,11 +22,23 @@
 #include "platform.h"
 #include "struse/struse.h"
 
-//send(s, sendCmd, sendCmdLen, 0);
 
 //#ifdef _DEBUG
 #define VICELOG
 //#endif
+
+#ifdef _WIN32
+#define VI_SOCKET SOCKET
+#else
+#define VI_SOCKET int
+#define strcpy_s strcpy
+#define OutputDebugStringA printf
+#define SOCKET_ERROR -1
+void Sleep(int ms) {
+	timespec t = { 0, ms * 1000 };
+	nanosleep(&t, &t);
+}
+#endif
 
 class ViceConnection {
 	enum { RECEIVE_SIZE = 1024*1024 };
@@ -71,7 +92,7 @@ struct MessageRequestTimeout {
 	uint32_t timeSincePing;
 };
 
-static SOCKET s;
+static VI_SOCKET s;
 static IBThread threadHandle;
 static ViceConnection* viceCon = nullptr;
 static uint32_t lastRequestID = 0x0fff;
@@ -116,7 +137,7 @@ struct { const char* name; uint8_t id; } aCommandNames[] = {
 
 
 
-ViceConnection::ViceConnection(const char* ip, uint32_t port) : ipPort(port), waitCount(0), connected(false), stopped(false)
+ViceConnection::ViceConnection(const char* ip, uint32_t port) : waitCount(0), ipPort(port), connected(false), stopped(false)
 {
 	IBMutexInit(&msgSendMutex, "VICE Send Message Mutex");
 	strcpy_s(ipAddress, ip);
@@ -284,7 +305,7 @@ void ViceConnection::connectionThread()
 	// Open the connection
 	if (!open()) { return; }
 
-	DWORD timeout = 1000;// SOCKET_READ_TIMEOUT_SEC*1000;
+	int32_t timeout = 1000;// SOCKET_READ_TIMEOUT_SEC*1000;
 	setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(timeout));
 
 
@@ -311,6 +332,7 @@ void ViceConnection::connectionThread()
 		// messages to receive
 		int bytesReceived = recv(s, recvBuf + bufferRead, RECEIVE_SIZE, 0);
 		if (bytesReceived == SOCKET_ERROR) {
+		#ifdef _WIN32
 			if (WSAGetLastError() == WSAETIMEDOUT) {
 //				if ((state == Vice_None || state == Vice_Running) && stopRequest) {
 //					offs = 0;
@@ -333,6 +355,9 @@ void ViceConnection::connectionThread()
 				activeConnection = false;
 				break;
 			}
+		#else
+			Sleep(50);
+		#endif
 		} else {
 			bufferRead += bytesReceived;
 
@@ -435,15 +460,15 @@ void ViceConnection::connectionThread()
 void ViceConnection::updateGetMemory(VICEBinMemGetResponse* resp)
 {
 	IBMutexLock(&userRequestMutex);
-
+	// TODO: Check memory range for end
 	uint32_t id = resp->GetReqID();
-	uint16_t start, end, bank;
+	uint16_t start, /*end,*/ bank;
 	uint8_t space;
 	bool found = false;
 	for (size_t i = 0; i < sMemRequests.size(); ++i) {
 		if (sMemRequests[i].requestID == id) {
 			start = sMemRequests[i].start;
-			end = sMemRequests[i].end;
+			//end = sMemRequests[i].end;
 			bank = sMemRequests[i].bank;
 			space = sMemRequests[i].space;
 			found = true;
@@ -568,45 +593,46 @@ void ViceConnection::updateRegisterNames(VICEBinRegisterAvailableResponse* resp)
 
 bool ViceConnection::open()
 {
+#ifdef _WIN32	
 	WSADATA ws;
 	long status = WSAStartup(0x0101, &ws);
 	if (status != 0) { return false; }
+#endif
 
-//	memset(&addr, 0, sizeof(addr));
 	s = socket(AF_INET, SOCK_STREAM, 0);
 
 	// Make sure the user has specified a port
 	if (ipPort < 0 || ipPort > 65535) { return false; }
 
-	WSADATA wsaData = { 0 };
-	int iResult = 0;
-
-	DWORD dwRetval;
-
-	struct sockaddr_in saGNI;
+//	WSADATA wsaData = { 0 };
+	int32_t iResult = 0;
+//
+	int32_t dwRetval;
+//
+	sockaddr_in saGNI;
 	char hostname[NI_MAXHOST];
 	char servInfo[NI_MAXSERV];
-
-	// Initialize Winsock
-	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	if (iResult != 0) {
-		printf("WSAStartup failed: %d\n", iResult);
-		return false;
-	}
-	//-----------------------------------------
-	// Set up sockaddr_in structure which is passed
-	// to the getnameinfo function
+//
+//	// Initialize Winsock
+//	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+//	if (iResult != 0) {
+//		printf("WSAStartup failed: %d\n", iResult);
+//		return false;
+//	}
+//	//-----------------------------------------
+//	// Set up sockaddr_in structure which is passed
+//	// to the getnameinfo function
 	saGNI.sin_family = AF_INET;
-
+//
 	inet_pton(AF_INET, ipAddress, &(saGNI.sin_addr.s_addr));
-
-	//	saGNI.sin_addr.s_addr =
-	//	InetPton(AF_INET, strIP, &ipv4addr)
-	//	inet_addr(address);
+//
+//	//	saGNI.sin_addr.s_addr =
+//	//	InetPton(AF_INET, strIP, &ipv4addr)
+//	//	inet_addr(address);
 	saGNI.sin_port = htons(ipPort);
-
-	//-----------------------------------------
-	// Call getnameinfo
+//
+//	//-----------------------------------------
+//	// Call getnameinfo
 	dwRetval = getnameinfo((struct sockaddr*)&saGNI,
 						   sizeof(struct sockaddr),
 						   hostname,
@@ -635,7 +661,7 @@ void ViceConnection::Tick()
 #ifdef VICELOG
 		strown<256> msg("No response for:");
 		IBMutexLock(&msgSendMutex);
-		uint32_t maxTime = 0;
+//		uint32_t maxTime = 0;
 		for (size_t i = 0, n = sMessageTimeouts.size(); i < n; ++i) {
 			if (i) { msg.append(", "); }
 			msg.append_num(sMessageTimeouts[i].requestID, 0, 16);

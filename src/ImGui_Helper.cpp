@@ -8,8 +8,6 @@ void ForceKeyboardCanvas(const char* label)
 		return;
 
 	ImGuiContext& g = *GImGui;
-	const ImGuiIO& io = g.IO;
-
 	const ImGuiID id = window->GetID(label);
 
 	if (g.ActiveId!=id) {

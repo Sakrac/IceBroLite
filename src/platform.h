@@ -4,6 +4,8 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 #include <Windows.h>
+#else
+#include "pthread.h"
 #endif
 
 #ifdef _WIN32
@@ -19,7 +21,7 @@ typedef IBThreadRet(WINAPI* IBThreadFunc)(void* data);
 
 #define IBMutex_Clear 0
 #define IBThread_Clear 0
-typedef void IBThreadRet;
+typedef void* IBThreadRet;
 typedef pthread_mutex_t IBMutex;
 typedef pthread_t IBThread;
 typedef IBThreadRet(*IBThreadFunc)(void* data);
@@ -28,7 +30,7 @@ typedef IBThreadRet(*IBThreadFunc)(void* data);
 #endif
 
 void IBMutexInit(IBMutex* mutex, const char* name);
-bool IBMutexDestroy(IBThread* mutex);
+bool IBMutexDestroy(IBMutex* mutex);
 int IBMutexLock(IBMutex* mutex);
 bool IBMutexRelease(IBMutex* mutex);
 bool IBCreateThread(IBThread* thread, size_t stackSize, IBThreadFunc func, void* param);

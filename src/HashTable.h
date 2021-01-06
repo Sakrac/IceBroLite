@@ -12,7 +12,7 @@ template< class ValueType > struct HashTable {
 	uint64_t* keys;
 	ValueType* values;
 
-	static size_t HashValue( uint64_t v ) { return size_t( ( ( v + ( v >> 28 ) + ( v << 28 ) ) + 14695981039346656037 ) * 1099511628211 ); }
+	static size_t HashValue( uint64_t v ) { return size_t( ( ( v + ( v >> 28 ) + ( v << 28 ) ) + 14695981039346656037ull ) * 1099511628211ull ); }
 	static size_t Slot( uint64_t hash, size_t tableSize ) { return hash & (tableSize - 1); }
 	static size_t NextSlot( uint64_t hash, size_t tableSize ) { return (hash + 1) & (tableSize - 1); }
 	static size_t HashSlot( uint64_t key, size_t tableSize ) { return Slot( HashValue( key ), tableSize ); }

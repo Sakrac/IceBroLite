@@ -1,10 +1,12 @@
 #include <inttypes.h>
+#include <stddef.h>
 #include <stdio.h>
 #include "6510.h"
 #include "struse/struse.h"
 #include <map>
 #include <string.h>
 #include "HashTable.h"
+#include "Files.h"
 //#include "Breakpoints.h"
 
 struct SymEntry {
@@ -101,7 +103,7 @@ void AddSymbol( uint16_t address, const char *name, size_t chars )
 		sLabelEntries[ address ].multi->names[ 1 ] = copy;
 	} else {
 		SymList* entries = sLabelEntries[ address ].multi;
-		if( entries->capacity == sLabelCount[ address ].count ) {
+		if( entries->capacity == (size_t)sLabelCount[ address ].count ) {
 			sLabelEntries[ address ].multi = (SymList*)malloc(
 				sizeof( SymList ) + sizeof( const char* ) * (entries->capacity + SymList::GROW_LIST - 1) );
 			sLabelEntries[ address ].multi->capacity = entries->capacity + SymList::GROW_LIST;
@@ -160,18 +162,18 @@ void ReadViceCommandFile(const char *symFile)
 		if (void *voidbuf = malloc(size)) {
 			fread(voidbuf, size, 1, f);
 
-			char *strcurr = nullptr;
-			char *strend = nullptr;
-			char **strtable = nullptr;
-			uint16_t *addresses = nullptr;
-			size_t strcurr_left = 0;
+			//char *strcurr = nullptr;
+			//char *strend = nullptr;
+			//char **strtable = nullptr;
+			//uint16_t *addresses = nullptr;
+			//size_t strcurr_left = 0;
 
-			size_t numChars = 0;
+			//size_t numChars = 0;
 			for (int pass = 0; pass<2; pass++) {
-				uint32_t size_tmp = size;
+				//uint32_t size_tmp = size;
 				strref file((const char*)voidbuf, size);
 				//				const char *buf = (const char*)voidbuf;
-				uint32_t numLabels = 0;
+				//uint32_t numLabels = 0;
 
 				while (strref line = file.line()) {
 					if (strref command = line.get_word()) {
@@ -249,7 +251,7 @@ void ReadSymbolsForBinary(const char *binname)
 	strref origname = strref(binname).before_last('.');
 	if (!origname) { origname = strref(binname); }
 
-	strown<_MAX_PATH> symFile(origname);
+	strown<PATH_MAX_LEN> symFile(origname);
 	symFile.append(".sym");
 
 	if (ReadSymbols(symFile.c_str())) { return; }

@@ -7,7 +7,7 @@
 #include "Config.h"
 #include "FileDialog.h"
 #include "views/FilesView.h"
-#include "views/views.h"
+#include "views/Views.h"
 #include "struse/struse.h"
 #ifdef __linux__
 #include <unistd.h>

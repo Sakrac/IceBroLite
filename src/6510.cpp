@@ -1,3 +1,4 @@
+#include <cstring>
 #include "6510.h"
 #include <malloc.h>
 
@@ -111,7 +112,7 @@ void MemRanges::Delta(const MemRanges& orig, const MemRanges& next)
 {
 	numRanges = 0;
 	size_t on = orig.numRanges, nn = next.numRanges;
-	size_t di = 0, dn = 0;
+	size_t di = 0;
 
 	// anything in next that is not in orig
 	for (size_t ni = 0; ni < nn; ++ni) {

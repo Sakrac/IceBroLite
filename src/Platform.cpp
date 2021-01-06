@@ -5,13 +5,13 @@ void IBMutexInit(IBMutex* mutex, const char* name)
 #ifdef _WIN32
 	*mutex = CreateMutex(NULL, false, "Vice connect mutex");
 #else
-	if (pthread_mutex_init(&mutex, NULL) != 0) {
+	if (pthread_mutex_init(mutex, NULL) != 0) {
 		// error
 	}
 #endif
 }
 
-bool IBMutexDestroy(IBThread* mutex)
+bool IBMutexDestroy(IBMutex* mutex)
 {
 #ifdef _WIN32
 	HANDLE m = *mutex;
@@ -21,7 +21,7 @@ bool IBMutexDestroy(IBThread* mutex)
 	}
 	return false;
 #else
-	pthread_mutex_destroy(mutex);
+	return pthread_mutex_destroy(mutex) == 0;
 #endif
 }
 
@@ -52,9 +52,13 @@ bool IBCreateThread(IBThread* thread, size_t stackSize, IBThreadFunc func, void 
 	*thread = CreateThread(nullptr, stackSize, func, param, 0, nullptr);
 	return *thread != nullptr;
 #else
+	pthread_attr_t attr;
+	pthread_attr_init(&attr);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+
 //	int pthread_create(pthread_t * thread, const pthread_attr_t * attr,
 //					   void* (*start_routine) (void*), void* arg);
-	return pthread_create(thread, )
+	return pthread_create(thread, &attr, func, param);
 #endif
 }
 
@@ -68,6 +72,7 @@ bool IBDestroyThread(IBThread* thread)
 	}
 	return false;
 #else
+	return pthread_cancel(*thread) == 0;
 #endif
 }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <inttypes.h>
+#include <stddef.h>
 
 #include "ViceInterface.h"
 #include "platform.h"

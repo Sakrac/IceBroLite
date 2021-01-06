@@ -1,6 +1,6 @@
 #include <inttypes.h>
 #include "6510.h"
-#include "sym.h"
+#include "Sym.h"
 
 // These are expression tokens in order of precedence (last is highest precedence)
 

@@ -94,7 +94,7 @@ void CodeView::Draw(int index)
 		}
 	}
 
-	uint16_t addrs[MaxDisAsmLines];	// address for each line
+//	uint16_t addrs[MaxDisAsmLines];	// address for each line
 	CPU6510* cpu = GetCurrCPU();
 	const CPU6510::Regs &regs = cpu->regs;	// current registers
 
@@ -151,14 +151,14 @@ void CodeView::Draw(int index)
 		}
 	}
 
-	ImVec2 p0 = ImGui::GetCursorScreenPos();
-	ImVec2 pt = ImGui::GetCursorPos();
+//	ImVec2 p0 = ImGui::GetCursorScreenPos();
+//	ImVec2 pt = ImGui::GetCursorPos();
 	strown<128> line;
 	uint16_t read = addrValue;
 	int lineNum = 0;
-	float fontCharWidth = CurrFontSize();
+//	float fontCharWidth = CurrFontSize();
 	float lineHeight = ImGui::GetTextLineHeightWithSpacing()-2;
-	float lineWidth = fontCharWidth * (1+(showAddress ? 5 : 0)+(showBytes ? 9 : 0)+9);
+//	float lineWidth = fontCharWidth * (1+(showAddress ? 5 : 0)+(showBytes ? 9 : 0)+9);
 
 	if (sY<0) {
 		uint16_t addr = addrValue;
@@ -187,7 +187,7 @@ void CodeView::Draw(int index)
 			ImGui::TextColored(C64_LGREEN, label);
 			lineNum++;
 		}
-		ImVec2 linePos = ImGui::GetCursorPos();
+//		ImVec2 linePos = ImGui::GetCursorPos();
 		int chars = 0;
 		if (lineNum==cursorLine) { addrCursor = read; }
 		if (addrCursor==read && active && !editAsmDone && ImGui::IsKeyPressed(GLFW_KEY_ENTER)) {
@@ -197,7 +197,7 @@ void CodeView::Draw(int index)
 		}
 		line.clear();
 		line.append(regs.PC==read ? '>' : ' ');
-		if (lineNum<MaxDisAsmLines) { addrs[lineNum] = read; }
+//		if (lineNum<MaxDisAsmLines) { addrs[lineNum] = read; }
 		if (showAddress) { line.append_num(read, 4, 16); line.append(' '); }
 		int branchTrg = -1;
 		int bytes = Disassemble(cpu, read, line.end(), line.left(), chars, branchTrg, showBytes, true, showLabels);
@@ -306,7 +306,7 @@ void CodeView::Draw(int index)
 		showPCAddress = !fixedAddress && regs.PC>=addrValue && regs.PC<read && dY==0;
 	}
 
-	float ch = ImGui::GetTextLineHeightWithSpacing();
+	//float ch = ImGui::GetTextLineHeightWithSpacing();
 
 	// TODO: Add breakpoints
 	// breakpoints
