@@ -4,6 +4,8 @@ class FVFileView;
 
 void InitViews();
 void ShowViews();
+void BeginViews();
+void EndViews();
 
 float CurrFontSize();
 uint8_t InputHex();

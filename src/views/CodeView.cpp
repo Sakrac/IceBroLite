@@ -15,7 +15,7 @@
 #include "../Config.h"
 #include "../Sym.h"
 //#include "Listing.h"
-//#include "SourceDebug.h"
+#include "../SourceDebug.h"
 
 CodeView::CodeView() : open(false), evalAddress(false)
 {
@@ -187,7 +187,7 @@ void CodeView::Draw(int index)
 			ImGui::TextColored(C64_LGREEN, label);
 			lineNum++;
 		}
-//		ImVec2 linePos = ImGui::GetCursorPos();
+		ImVec2 linePos = ImGui::GetCursorPos();
 		int chars = 0;
 		if (lineNum==cursorLine) { addrCursor = read; }
 		if (addrCursor==read && active && !editAsmDone && ImGui::IsKeyPressed(GLFW_KEY_ENTER)) {
@@ -277,21 +277,21 @@ void CodeView::Draw(int index)
 				ImGui::Text(line.c_str());
 			}
 			// TODO: Source Level Debugging
-			//if (showSrc) {
-			//	int spaces = 0;
-			//	strref srcLine = GetSourceAt(read, spaces);
-			//	if (!srcLine) { srcLine = GetListing(read, nullptr, nullptr); }
-			//	if (srcLine) {
-			//		ImGui::SameLine();
-			//		strl_t col = (showAddress ? 6 : 0) + (showBytes ? 9 : 0) + (showRefs ? 9 : 0) + (showLabels ? 6 : 0) + 9 + (spaces + 3) / 4;
-			//		ImVec2 srcPos(linePos.x + col * fontCharWidth, linePos.y);
-			//		ImGui::SetCursorPos(srcPos);
-			//		ImGui::PushStyleColor(ImGuiCol_Text, C64_YELLOW);
-			//		line.copy(srcLine);
-			//		ImGui::TextUnformatted(line.c_str());
-			//		ImGui::PopStyleColor();
-			//	}
-			//}
+			if (showSrc) {
+				int spaces = 0;
+				strref srcLine = GetSourceAt(read, spaces);
+				//if (!srcLine) { srcLine = GetListing(read, nullptr, nullptr); }
+				if (srcLine) {
+					ImGui::SameLine();
+					strl_t col = (showAddress ? 6 : 0) + (showBytes ? 9 : 0) + (showRefs ? 9 : 0) + (showLabels ? 6 : 0) + 9 + (spaces + 3) / 4;
+					ImVec2 srcPos(linePos.x + col * CurrFontSize(), linePos.y);
+					ImGui::SetCursorPos(srcPos);
+					ImGui::PushStyleColor(ImGuiCol_Text, C64_YELLOW);
+					line.copy(srcLine);
+					ImGui::TextUnformatted(line.c_str());
+					ImGui::PopStyleColor();
+				}
+			}
 		}
 
 		prevLineAddr = read;

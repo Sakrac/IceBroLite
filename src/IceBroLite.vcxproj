@@ -36,6 +36,7 @@
     <ClInclude Include="ImGui_Helper.h" />
     <ClInclude Include="Mnemonics.h" />
     <ClInclude Include="platform.h" />
+    <ClInclude Include="SourceDebug.h" />
     <ClInclude Include="stb\stb_image.h" />
     <ClInclude Include="struse\struse.h" />
     <ClInclude Include="struse\xml.h" />
@@ -69,6 +70,7 @@
     <ClCompile Include="ImGui_Helper.cpp" />
     <ClCompile Include="Mnemonics.cpp" />
     <ClCompile Include="Platform.cpp" />
+    <ClCompile Include="SourceDebug.cpp" />
     <ClCompile Include="struse.cpp" />
     <ClCompile Include="struse\xml.cpp" />
     <ClCompile Include="IceBroLite.cpp" />

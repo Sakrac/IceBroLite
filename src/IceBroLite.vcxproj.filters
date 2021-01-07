@@ -86,6 +86,7 @@
     <ClInclude Include="views\ScreenView.h">
       <Filter>views</Filter>
     </ClInclude>
+    <ClInclude Include="SourceDebug.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\examples\imgui_impl_opengl2.cpp">
@@ -148,6 +149,7 @@
     <ClCompile Include="views\ScreenView.cpp">
       <Filter>views</Filter>
     </ClCompile>
+    <ClCompile Include="SourceDebug.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="imgui\misc\natvis\imgui.natvis">

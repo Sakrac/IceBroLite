@@ -170,7 +170,7 @@ int main(int argc, char* argv[])
 		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
 		static bool mainWindowOpen = true;
-		ImGui::Begin("WitchMap Main", &mainWindowOpen, window_flags);
+		ImGui::Begin("IceBroLite Main", &mainWindowOpen, window_flags);
 		ImGui::PopStyleVar(2);
 
 		ImGuiID dockspace_id = ImGui::GetID("IceBroLiteDockSpace");

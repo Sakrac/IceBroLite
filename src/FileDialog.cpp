@@ -57,7 +57,7 @@ struct FileTypeInfo {
 #else
 static const char sLoadProgramParams[] = "Prg:*.prg,D64:*.d64,Cart:*.crt";
 static const char sLoadListingParams[] = "Listing:*.lst";
-static const char sLoadKickDbgParams[] = "C64Debugger:*.dbg";
+static const char sLoadKickDbgParams[] = "Kick Asm Debug:*.dbg";
 static const char sLoadSymbolsParams[] = "Symbols:*.sym";
 static const char sLoadViceCmdParams[] = "Vice Commands:*.vs";
 #endif

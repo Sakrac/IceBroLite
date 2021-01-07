@@ -12,6 +12,7 @@
 #include "../6510.h"
 #include "../data/C64_Pro_Mono-STYLE.ttf.h"
 #include "../FileDialog.h"
+#include "../SourceDebug.h"
 #include "Views.h"
 #include "GLFW/glfw3.h"
 
@@ -48,10 +49,11 @@ static const ImWchar C64CharRanges[] =
 	//	0,
 };
 
-ViewContext::ViewContext() : currFont(1), setupDocking(true)
+ViewContext::ViewContext() : currFont(3), setupDocking(true)
 {
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	for (int f = 0; f < ViewContext::sNumFontSizes; ++f) {
+	for (int fa = 0; fa < ViewContext::sNumFontSizes; ++fa) {
+		int f = (fa + 3) % ViewContext::sNumFontSizes;
 		aFonts[f] = io.Fonts->AddFontFromMemoryCompressedTTF(GetC64FontData(), GetC64FontSize(), sFontSizes[f], NULL, C64CharRanges);
 		assert(aFonts[f] != NULL);
 	}
@@ -135,10 +137,6 @@ void ViewContext::Draw()
 		ImGui::DockBuilderFinish(dockspace_id);
 	}
 
-
-
-
-
 	toolBar.Draw();
 	regView.Draw();
 	for (int m = 0; m < MaxMemViews; ++m) { memView[m].Draw(m); }
@@ -150,6 +148,10 @@ void ViewContext::Draw()
 	ImGui::PopFont();
 	GlobalKeyCheck();
 	ViceTickMessage();
+
+	if (const char* kickDbgFile = LoadKickDbgReady()) {
+		ReadC64DbgSrc(kickDbgFile);
+	}
 }
 
 void ViewContext::GlobalKeyCheck()
