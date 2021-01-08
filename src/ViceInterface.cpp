@@ -15,6 +15,7 @@
 #include <vector>
 #include <assert.h>
 
+#include "Files.h"
 #include "6510.h"
 
 #include "ViceInterface.h"
@@ -260,15 +261,14 @@ void ViceStartProgram(const char* loadPrg)
 {
 	if (viceCon && viceCon->isConnected()) {
 		size_t loadFileLen = strlen(loadPrg);
-		VICEBinAutoStart* autoStart = (VICEBinAutoStart*)calloc(1, sizeof(VICEBinAutoStart) + loadFileLen);
-		if (autoStart) {
-			autoStart->Setup((uint32_t)loadFileLen + 3, ++lastRequestID, VICE_AutoStart);
-			autoStart->startImmediately = 1;
-			autoStart->fileIndex = 0;
-			autoStart->fileNameLength = (uint8_t)loadFileLen+1;
-			memcpy(autoStart->filename, loadPrg, loadFileLen+1);
-			viceCon->AddMessage((uint8_t*)autoStart, (uint32_t)(sizeof(VICEBinAutoStart) + loadFileLen));
-		}
+		VICEBinAutoStart autoStart;
+		autoStart.Setup((uint32_t)loadFileLen + 4, ++lastRequestID, VICE_AutoStart);
+		autoStart.startImmediately = 1;
+		autoStart.fileIndex[0] = 0;
+		autoStart.fileIndex[1] = 0;
+		autoStart.fileNameLength = (uint8_t)loadFileLen;
+		memcpy(autoStart.filename, loadPrg, loadFileLen);
+		viceCon->AddMessage((uint8_t*)&autoStart, (uint32_t)(sizeof(VICEBinHeader) + 4 + loadFileLen), true);
 	}
 }
 

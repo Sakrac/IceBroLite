@@ -371,10 +371,10 @@ struct VICEBinDisplayResponse : public VICEBinResponse {
 
 struct VICEBinAutoStart : public VICEBinHeader {
 	uint8_t startImmediately;
-	uint8_t fileIndex; // The index of the file to execute, if a disk image. 0x00 is the default value.
+	uint8_t fileIndex[2]; // The index of the file to execute, if a disk image. 0x00 is the default value.
 	uint8_t fileNameLength;
-	char* filename[1];
 	// filename follows
+	char filename[PATH_MAX_LEN];
 };
 
 struct VICEBinReset : public VICEBinHeader {
