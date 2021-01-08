@@ -1,4 +1,5 @@
 #include <cstring>
+#include "struse/struse.h"
 #include "6510.h"
 #include <malloc.h>
 

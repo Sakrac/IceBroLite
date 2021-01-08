@@ -150,6 +150,7 @@
       <Filter>views</Filter>
     </ClCompile>
     <ClCompile Include="SourceDebug.cpp" />
+    <ClCompile Include="ViceMonitorInterface.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="imgui\misc\natvis\imgui.natvis">

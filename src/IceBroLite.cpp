@@ -27,6 +27,7 @@
 #endif
 #include <stdint.h>
 #include <GLFW/glfw3.h>
+#include "struse/struse.h"
 #include "Files.h"
 #include "FileDialog.h"
 #include "views/FilesView.h"

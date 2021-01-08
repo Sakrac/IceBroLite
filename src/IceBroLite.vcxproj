@@ -76,6 +76,7 @@
     <ClCompile Include="IceBroLite.cpp" />
     <ClCompile Include="sym.cpp" />
     <ClCompile Include="ViceInterface.cpp" />
+    <ClCompile Include="ViceMonitorInterface.cpp" />
     <ClCompile Include="views\CodeView.cpp" />
     <ClCompile Include="views\ConsoleView.cpp" />
     <ClCompile Include="views\FilesView.cpp" />

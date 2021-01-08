@@ -18,6 +18,8 @@ void ViceReset(uint8_t resetType);
 void ViceWaiting();
 void ViceTickMessage();
 
+void ViceLog(strref msg);
+
 
 
 enum VICEMemSpaces {

@@ -1,4 +1,5 @@
 #include <inttypes.h>
+#include "struse/struse.h"
 #include "6510.h"
 #include "Sym.h"
 

@@ -16,12 +16,12 @@
 #include <assert.h>
 
 #include "Files.h"
+#include "struse/struse.h"
 #include "6510.h"
 
 #include "ViceInterface.h"
 #include "ViceBinInterface.h"
 #include "platform.h"
-#include "struse/struse.h"
 #include "views/Views.h"
 
 #ifdef _DEBUG
@@ -77,7 +77,6 @@ public:
 
 	bool open();
 	void Tick();
-	bool openConnection();
 	void AddMessage(uint8_t *message, int size, bool wantResponse = false);
 
 	bool isConnected() { return connected; }

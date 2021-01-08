@@ -1,4 +1,5 @@
 #include <inttypes.h>
+#include "../struse/struse.h"
 #include "Views.h"
 #include "../Config.h"
 #include "ConsoleView.h"
@@ -8,8 +9,7 @@
 #include "../6510.h"
 #include "../platform.h"
 
-static const strref command_separator(" $");
-#if 0
+static const strref command_separator(" $.");
 
 static const char* aViceCmds[] = {
 	"bank", "backtrace", "bt", "cpu",
@@ -194,7 +194,6 @@ enum ViceCommands {
 
 // calculated on startup
 static uint32_t aViceCmdHash[nViceCmds] = {};
-#endif
 
 static IBMutex logSafe_mutex;// = IBMutex_Clear;
 
@@ -203,11 +202,9 @@ IceConsole::IceConsole() : open(true)
 	ClearLog();
 	memset(InputBuf, 0, sizeof(InputBuf));
 	HistoryPos = -1;
-#if 0
 	for (int c = 0; c < nViceCmds; ++c) {
 		aViceCmdHash[c] = strref(aViceCmds[c]).fnv1a_lower();
 	}
-#endif
 	IBMutexInit(&logSafe_mutex, "Vice connect mutex");
 	Init();
 }
@@ -227,11 +224,9 @@ void IceConsole::Init()
 	ClearLog();
 	memset(InputBuf, 0, sizeof(InputBuf));
 	HistoryPos = -1;
-#if 0
 	for (int c = 0; c < nViceCmds; ++c) {
 		aViceCmdHash[c] = strref(aViceCmds[c]).fnv1a_lower();
 	}
-#endif
 	ViceAddLogger(LogCB, this);
 	AddLog("Enter 'cmd' for console commands");
 	AddLog("Enter 'help' for VICE commands when connected");
@@ -398,6 +393,7 @@ void IceConsole::Draw()
 
 	ImGui::End();
 }
+void SendViceMonitorLine(const char* message, int size);
 
 void IceConsole::ExecCommand(const char* command_line)
 {
@@ -419,19 +415,21 @@ void IceConsole::ExecCommand(const char* command_line)
 	if (!cmd) { cmd = param; param.clear(); }
 	uint32_t cmdHash = cmd.fnv1a_lower();
 
-#if 0
 	for (int c = 0; c < nViceCmds; ++c) {
 		if (cmdHash == aViceCmdHash[c]) {
 			// forward command to vice
-			if (ViceConnected()) {
-				ViceSend(line.get(), line.get_len());
-			} else {
-				AddLog("Vice is not connected\n");
-			}
+			strown<512> msg(command_line);
+			msg.append(0x0a);
+			SendViceMonitorLine(msg.get(), msg.get_len());
+//			if (ViceConnected()) {
+//				ViceSend(line.get(), line.get_len());
+//			} else {
+//				AddLog("Vice is not connected\n");
+//			}
 			return;
 		}
 	}
-#endif
+
 	param.trim_whitespace();
 	// command is not a vice command, execute here
 	if (cmd.same_str("connect") || cmd.same_str("cnct")) {

@@ -1,7 +1,7 @@
 #include <stdlib.h>
+#include "struse/struse.h"
 #include "6510.h"
 #include "Mnemonics.h"
-#include "struse/struse.h"
 #include "Sym.h"
 
 #ifndef _WIN32

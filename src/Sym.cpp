@@ -1,8 +1,8 @@
 #include <inttypes.h>
 #include <stddef.h>
 #include <stdio.h>
-#include "6510.h"
 #include "struse/struse.h"
+#include "6510.h"
 #include <map>
 #include <string.h>
 #include "HashTable.h"
