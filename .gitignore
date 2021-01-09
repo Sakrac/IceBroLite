@@ -3,7 +3,7 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
-./IceBroLite.exe
+IceBroLite.exe
 
 src/x64
 src/x86
