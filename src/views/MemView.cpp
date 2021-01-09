@@ -116,7 +116,12 @@ void MemView::Draw(int index)
 		wasActive = active;
 
 		// force font spacing
-		uint32_t charWid = (uint32_t)(ImGui::GetWindowWidth()/CurrFontSize());
+		float fontWidth = ImGui::GetFont()->GetCharAdvance('W');
+		float fontHgt = ImGui::GetFont()->FontSize;
+		uint32_t charWid = (uint32_t)(ImGui::GetWindowWidth()/fontWidth);
+
+		//ImGuiIO &io = ImGui::GetIO();
+		//io.FontDefault
 
 		uint32_t byteChars = (showHex ? 3 : 0)+(showText ? 1 : 0);
 		if (showAddress) { charWid -= 5; }
@@ -129,7 +134,7 @@ void MemView::Draw(int index)
 			ImVec2 winSize = ImGui::GetWindowSize();
 			if (mousePos.x>=winPos.x && mousePos.y>=winPos.y &&
 				mousePos.x<(winPos.x+winSize.x)&&mousePos.y<(winPos.y+winSize.y)) {
-				cursor[0] = int((mousePos.x-winPos.x)/ CurrFontSize());
+				cursor[0] = int((mousePos.x-winPos.x)/ fontWidth);
 				cursor[1] = int((mousePos.y-winPos.y)/ImGui::GetTextLineHeightWithSpacing());
 				if (showAddress && cursor[0]<5) { cursor[0] = 5; }
 			}
@@ -209,9 +214,9 @@ void MemView::Draw(int index)
 			// cursor
 			if (cursorTime>(0.5f*CursorFlashPeriod)) {
 				const ImGuiStyle style = ImGui::GetStyle();
-				ImGui::SetCursorPos(ImVec2(CurrFontSize() * cursor[0], ImGui::GetTextLineHeightWithSpacing() * cursor[1]));
+				ImGui::SetCursorPos(ImVec2(fontWidth * cursor[0], ImGui::GetTextLineHeightWithSpacing() * cursor[1]));
 				const ImVec2 p = ImGui::GetCursorScreenPos();
-				ImGui::GetWindowDrawList()->AddRectFilled(p, ImVec2(p.x+ CurrFontSize(), p.y+ CurrFontSize()),
+				ImGui::GetWindowDrawList()->AddRectFilled(p, ImVec2(p.x+fontWidth, p.y+fontHgt),
 					ImColor(255, 255, 255));
 				strown<16> curChr;
 				if (showHex && cursor[0]<colT) {

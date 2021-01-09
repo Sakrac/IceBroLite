@@ -138,11 +138,15 @@ int main(int argc, char* argv[])
 	//ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
 	//IM_ASSERT(font != NULL);
 
+	io.Fonts->AddFontDefault();
 	InitViews();
 
 	// Our state
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard;
+
+	// first frame stuff
+	bool firstFrame = true;
 
 	// Main loop
 	while (!glfwWindowShouldClose(window)) {
@@ -173,6 +177,10 @@ int main(int argc, char* argv[])
 		static bool mainWindowOpen = true;
 		ImGui::Begin("IceBroLite Main", &mainWindowOpen, window_flags);
 		ImGui::PopStyleVar(2);
+
+		if (firstFrame) {
+			SelectFont(2);
+		}
 
 		ImGuiID dockspace_id = ImGui::GetID("IceBroLiteDockSpace");
 		ImGui::DockSpace(dockspace_id);
@@ -209,6 +217,7 @@ int main(int argc, char* argv[])
 		}
 
 		glfwSwapBuffers(window);
+		firstFrame = false;
 	}
 
 	ShutdownMainCPU();

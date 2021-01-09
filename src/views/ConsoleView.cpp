@@ -285,6 +285,9 @@ void IceConsole::AddLogSafe(strref line)
 	IBMutexLock(&logSafe_mutex);
 	safeItems.push_back(copy);
 	IBMutexRelease(&logSafe_mutex);
+
+	OutputDebugStringA(safeItems[safeItems.size() - 1]);
+
 }
 
 void IceConsole::FlushLogSafe()
@@ -293,6 +296,7 @@ void IceConsole::FlushLogSafe()
 	if (safeItems.size()) { ScrollToBottom = true; }
 	for (int i = 0, n = safeItems.size(); i < n; ++i) {
 		Items.push_back(safeItems[i]);
+		OutputDebugStringA(Items[Items.Size - 1]);
 	}
 	safeItems.clear();
 	IBMutexRelease(&logSafe_mutex);
@@ -355,7 +359,10 @@ void IceConsole::Draw()
 	if (copy_to_clipboard)
 		ImGui::LogToClipboard();
 	ImVec4 col_default_text = ImGui::GetStyleColorVec4(ImGuiCol_Text);
-	for (int i = 0; i < Items.Size; i++) {
+	// don't show more than 4096
+	int first_show = Items.Size < 4096 ? 0 : (Items.Size - 4096);
+
+	for (int i = first_show; i < Items.Size; i++) {
 		const char* item = Items[i];
 		if (!filter.PassFilter(item))
 			continue;

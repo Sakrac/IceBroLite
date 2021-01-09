@@ -51,6 +51,7 @@
     <ClInclude Include="views\ScreenView.h" />
     <ClInclude Include="views\ToolBar.h" />
     <ClInclude Include="views\Views.h" />
+    <ClInclude Include="views\WatchView.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="6510.cpp" />
@@ -86,6 +87,7 @@
     <ClCompile Include="views\ScreenView.cpp" />
     <ClCompile Include="views\ToolBar.cpp" />
     <ClCompile Include="views\Views.cpp" />
+    <ClCompile Include="views\WatchView.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="imgui\misc\natvis\imgui.natvis" />

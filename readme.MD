@@ -20,7 +20,12 @@ Currently stuck trying to communicate at a reasonable rate with Vice. This is be
 * \[addr\] evaluates to an 8 bit value from memory address
 * = prefix in address fields locks the expression, for instance ={$fffe} in a code view will always disassemble the current interrupt code
 * Expressions can be complex, contain parenthesis, etc. et.
-
+* To enable the VICE Console make sure the text monitor interface is enabled as well (port 6510)
+* Load Kick Assembler debug data from the menu bar
+* Click the _Load_ icon in the ToolBar to specify a .prg or .d64 or .crt file to start in VICE (right now it exits back into the debugger immediately AND when then program has loaded, just hit F5 to continue)
+ * Click the _Reload_ icon to reload the program
+* Enter math expressions in Watch View, prefix with \* to view bytes at address, for example *$101+s to see what has been pushed on the stack
+  
 ### Building IceBroLite on Linux
 
 (I'm using this on a Raspberry PI 400, still need to verify features with RPi400 Vice 3.5)
@@ -34,9 +39,8 @@ Currently stuck trying to communicate at a reasonable rate with Vice. This is be
 (these are pretty much just going to be copied over from IceBro, with fixes as needed)
 
 * Load symbols or Vice listings for symbols & breakpoints
-* Load Kick Assembler debug or Listing files for source level debugging
-* View graphics, including off-screen
+* Listing files for source level debugging
+* off-screen graphics
 * Reset & Load (Reload) VICE d64 or prg
 * Breakpoint view
-* Watch View
 

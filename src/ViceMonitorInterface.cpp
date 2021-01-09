@@ -17,6 +17,7 @@
 #ifdef _WIN32
 #define VI_SOCKET SOCKET
 #else
+#define WINAPI
 #define VI_SOCKET int
 #define strcpy_s strcpy
 #define OutputDebugStringA printf
@@ -40,7 +41,7 @@ public:
 	ViceMonitorConnection(const char* ip, uint32_t port);
 	~ViceMonitorConnection();
 
-	static IBThreadRet ViceMonitorThread(void* data);
+	static IBThreadRet WINAPI ViceMonitorThread(void* data);
 	void monitorThread();
 
 	bool open();
@@ -104,7 +105,7 @@ bool ViceMonitorConnection::open()
 	return iResult == 0;
 }
 
-IBThreadRet ViceMonitorConnection::ViceMonitorThread(void* data)
+IBThreadRet WINAPI ViceMonitorConnection::ViceMonitorThread(void* data)
 {
 	((ViceMonitorConnection*)data)->monitorThread();
 	if ((void*)viceMon == data) {
@@ -189,9 +190,12 @@ void ViceMonitorConnection::monitorThread()
 				if (bk < bufferRead) {
 					++bk;
 					ViceLog(strref((const char*)(recvBuf + st), strl_t(bk - st)));
+					//if (bk < bufferRead) { ++bk; }
 				} else {
 					if (st) {
-						memmove(recvBuf, recvBuf + st, bk - st);
+						if (bk> st) {
+							memmove(recvBuf, recvBuf + st, bk - st);
+						}
 						bufferRead -= st;
 						break;
 					}

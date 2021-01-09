@@ -9,6 +9,7 @@
 #include "ConsoleView.h"
 #include "FilesView.h"
 #include "ScreenView.h"
+#include "WatchView.h"
 #include "../6510.h"
 #include "../data/C64_Pro_Mono-STYLE.ttf.h"
 #include "../FileDialog.h"
@@ -19,22 +20,26 @@
 
 struct ViewContext {
 	enum { sNumFontSizes = 7 };
-	enum { MaxMemViews = 4, MaxCodeViews = 4 };
+	enum { MaxMemViews = 4, MaxCodeViews = 4, MaxWatchViews = 4 };
 	ToolBar toolBar;
 	RegisterView regView;
 	MemView memView[MaxMemViews];
 	CodeView codeView[MaxCodeViews];
+	WatchView watchView[MaxWatchViews];
 	ImFont* aFonts[sNumFontSizes];
 	IceConsole console;
 	ScreenView screenView;
 	FVFileView fileView;
 	int currFont;
+	float currFontSize;
 	bool setupDocking;
 
 	ViewContext();
 	void Draw();
 	void GlobalKeyCheck();
 };
+
+void UseDefaultFont();
 
 static ViewContext* viewContext = nullptr;
 static float sFontSizes[ViewContext::sNumFontSizes] = { 8.0f, 10.0f, 12.0, 14.0f, 16.0f, 20.0f, 24.0f };
@@ -57,14 +62,16 @@ ViewContext::ViewContext() : currFont(3), setupDocking(true)
 		aFonts[f] = io.Fonts->AddFontFromMemoryCompressedTTF(GetC64FontData(), GetC64FontSize(), sFontSizes[f], NULL, C64CharRanges);
 		assert(aFonts[f] != NULL);
 	}
+	currFontSize = sFontSizes[currFont];
 	memView[0].open = true;
 	codeView[0].open = true;
+	watchView[0].open = true;
 	console.open = true;
 }
 
 void ViewContext::Draw()
 {
-	ImGui::PushFont(aFonts[currFont]);
+//	ImGui::PushFont(aFonts[currFont]);
 	{
 		if (ImGui::BeginMainMenuBar()) {
 			if (ImGui::BeginMenu("File")) {
@@ -90,10 +97,18 @@ void ViewContext::Draw()
 					ImGui::EndMenu();
 				}
 				if (ImGui::BeginMenu("Code")) {
-					for (int i = 0; i < 4; ++i) {
+					for (int i = 0; i < MaxCodeViews; ++i) {
 						strown<64> name("Code");
 						name.append_num(i + 1, 1, 10).append(' ').append(codeView[i].address);
 						if (ImGui::MenuItem(name.c_str(), NULL, codeView[i].open)) { codeView[i].open = !codeView[i].open; }
+					}
+					ImGui::EndMenu();
+				}
+				if (ImGui::BeginMenu("Watch")) {
+					for (int i = 0; i < MaxWatchViews; ++i) {
+						strown<64> name("Watch");
+						name.append_num(i + 1, 1, 10);
+						if (ImGui::MenuItem(name.c_str(), NULL, watchView[i].open)) { watchView[i].open = !watchView[i].open; }
 					}
 					ImGui::EndMenu();
 				}
@@ -102,6 +117,15 @@ void ViewContext::Draw()
 				ImGui::EndMenu();
 			}
 
+			if (ImGui::BeginMenu("Font")) {
+				for (int i = 0; i < sNumFontSizes; ++i) {
+					strown<16> sz("Font Size ");
+					sz.append_num(i, 0, 10);
+					if (ImGui::MenuItem(sz.c_str())) { SelectFont(i); }
+				}
+				if (ImGui::MenuItem("ImGui default")) { UseDefaultFont(); }
+				ImGui::EndMenu();
+			}
 			ImGui::EndMainMenuBar();
 
 		}
@@ -123,6 +147,7 @@ void ViewContext::Draw()
 		ImGuiID dock_id_code4 = ImGui::DockBuilderSplitNode(dock_id_code, ImGuiDir_Down, 0.5f, NULL, &dock_id_code);
 		ImGuiID dock_id_regs = ImGui::DockBuilderSplitNode(dock_id_code, ImGuiDir_Up, 0.1f, NULL, &dock_id_code);
 		ImGuiID dock_id_mem = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.5f, NULL, &dock_main_id);
+		ImGuiID dock_id_watch = ImGui::DockBuilderSplitNode(dock_id_mem, ImGuiDir_Up, 0.33f, NULL, &dock_id_mem);
 		ImGuiID dock_id_screen = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.25f, NULL, &dock_main_id);
 
 		ImGui::DockBuilderDockWindow("Toolbar", dock_id_toolbar);
@@ -132,6 +157,7 @@ void ViewContext::Draw()
 		ImGui::DockBuilderDockWindow("###Code3", dock_id_code3);
 		ImGui::DockBuilderDockWindow("###Code4", dock_id_code4);
 		ImGui::DockBuilderDockWindow("Mem1", dock_id_mem);
+		ImGui::DockBuilderDockWindow("Watch1", dock_id_watch);
 		ImGui::DockBuilderDockWindow("Registers", dock_id_regs);
 		ImGui::DockBuilderDockWindow("Screen", dock_id_screen);
 		ImGui::DockBuilderFinish(dockspace_id);
@@ -141,11 +167,12 @@ void ViewContext::Draw()
 	regView.Draw();
 	for (int m = 0; m < MaxMemViews; ++m) { memView[m].Draw(m); }
 	for (int c = 0; c < MaxCodeViews; ++c) { codeView[c].Draw(c); }
+	for (int w = 0; w < MaxWatchViews; ++w) { watchView[w].Draw(w); }
 	console.Draw();
 	screenView.Draw();
 
 	fileView.Draw("Select File");
-	ImGui::PopFont();
+//	ImGui::PopFont();
 	GlobalKeyCheck();
 	ViceTickMessage();
 
@@ -177,7 +204,6 @@ void ViewContext::GlobalKeyCheck()
 void InitViews()
 {
 	viewContext = new ViewContext;
-
 }
 
 void ShowViews()
@@ -189,7 +215,7 @@ void ShowViews()
 
 float CurrFontSize()
 {
-	return viewContext ? sFontSizes[viewContext->currFont] : 10.0f;
+	return viewContext ? viewContext->currFontSize : 10.0f;
 }
 
 uint8_t InputHex()
@@ -203,6 +229,17 @@ void SelectFont(int size)
 {
 	if (viewContext && size >= 0 && size < ViewContext::sNumFontSizes) {
 		viewContext->currFont = size;
+		viewContext->currFontSize = sFontSizes[size];
+		ImGui::SetCurrentFont(viewContext->aFonts[viewContext->currFont]);
+		GImGui->IO.FontDefault = viewContext->aFonts[viewContext->currFont];
+	}
+}
+
+void UseDefaultFont()
+{
+	if (viewContext) {
+		viewContext->currFontSize = 7;
+		GImGui->IO.FontDefault = nullptr;
 	}
 }
 

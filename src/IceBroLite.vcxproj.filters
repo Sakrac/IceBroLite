@@ -87,6 +87,9 @@
     <ClInclude Include="imgui\backends\imgui_impl_opengl2.h">
       <Filter>ImGUI\Iimpl</Filter>
     </ClInclude>
+    <ClInclude Include="views\WatchView.h">
+      <Filter>views</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\imgui.cpp">
@@ -153,6 +156,9 @@
     </ClCompile>
     <ClCompile Include="imgui\imgui_tables.cpp">
       <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="views\WatchView.cpp">
+      <Filter>views</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

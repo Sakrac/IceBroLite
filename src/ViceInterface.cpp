@@ -29,10 +29,11 @@
 #endif
 
 #define SEND_IMMEDIATE
-
+										 
 #ifdef _WIN32
 #define VI_SOCKET SOCKET
 #else
+#define WINAPI
 #define VI_SOCKET int
 #define strcpy_s strcpy
 #define OutputDebugStringA printf
@@ -62,7 +63,7 @@ public:
 	ViceConnection(const char* ip, uint32_t port);
 	~ViceConnection();
 
-	static IBThreadRet ViceConnectThread(void *data);
+	static IBThreadRet WINAPI ViceConnectThread(void *data);
 	void connectionThread();
 
 	void updateGetMemory(VICEBinMemGetResponse* resp);
@@ -741,7 +742,7 @@ void ViceConnection::AddMessage(uint8_t* message, int size, bool wantResponse)
 #endif
 }
 
-IBThreadRet ViceConnection::ViceConnectThread(void* data)
+IBThreadRet WINAPI ViceConnection::ViceConnectThread(void* data)
 {
 	IBMutexInit(&userRequestMutex, "User request VICE operations");
 	((ViceConnection*)data)->connectionThread();
