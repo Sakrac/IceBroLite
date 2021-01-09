@@ -68,6 +68,10 @@ public:
 
 	void updateGetMemory(VICEBinMemGetResponse* resp);
 
+	void handleCheckpointList(VICEBinCheckpointList* cpList);
+
+	void handleCheckpointGet(VICEBinCheckpointResponse* cp);
+
 	void updateRegisters(VICEBinRegisterResponse* resp);
 
 	void handleDisplayGet(VICEBinDisplayResponse* resp);
@@ -438,6 +442,12 @@ void ViceConnection::connectionThread()
 						case VICE_MemGet:
 							updateGetMemory((VICEBinMemGetResponse*)resp);
 							break;
+						case VICE_CheckpointList:
+							handleCheckpointList((VICEBinCheckpointList*)resp);
+							break;
+						case VICE_CheckpointGet:
+							handleCheckpointGet((VICEBinCheckpointResponse*)resp);
+							break;
 						case VICE_Step:
 #ifdef _DEBUG
 							OutputDebugStringA("Vice stepped!\n");
@@ -524,6 +534,35 @@ void ViceConnection::updateGetMemory(VICEBinMemGetResponse* resp)
 	}
 }
 
+void ViceConnection::handleCheckpointList(VICEBinCheckpointList* cpList)
+{
+	strown<32> msg;
+	msg.sprintf("%d checkpoints found", cpList->GetCount());
+	ViceLog(msg);
+/*
+	for (uint32_t cp = 0, n = cpList->GetCount(); cp < n; ++cp) {
+		VICEBinCheckpoint cpMsg;
+		cpMsg.Setup(4, ++lastRequestID, VICE_CheckpointGet);
+		cpMsg.SetNumber(cp);
+		AddMessage((uint8_t*)&cpMsg, sizeof(VICEBinCheckpoint));
+	}*/
+}
+
+void ViceConnection::handleCheckpointGet(VICEBinCheckpointResponse* cp)
+{
+	strown<256> m;
+	if (cp->wasHit) { m.append('*'); }
+	if (!cp->stopWhenHit) { m.append("trace "); }
+	if (cp->operation == VICE_LoadMem) { m.append("load "); }
+	else if (cp->operation == VICE_StoreMem) { m.append("store "); }
+	else { m.append("break "); }
+	m.append('#').append_num(cp->GetNumber(), 0, 10).append(" $").append_num(cp->GetStart(), 4, 16);
+	if (cp->GetEnd() > cp->GetStart()) { m.append("-$").append_num(cp->GetEnd(), 2, 16); }
+	if (!cp->enabled) { m.append(" (disabled)"); }
+	if (cp->GetCount()) { m.append(" hits: ").append_num(cp->GetCount(), 0, 10); }
+	if (cp->GetIgnored()) { m.append(" ignored: ").append_num(cp->GetIgnored(), 0, 10); }
+	ViceLog(m.get_strref());
+}
 
 void ViceConnection::updateRegisters(VICEBinRegisterResponse* resp)
 {
@@ -604,15 +643,23 @@ void ViceConnection::handleStopResume(VICEBinStopResponse* resp)
 			stopped = false;
 			break;
 		case VICE_Stopped:
-		case VICE_JAM:
+		case VICE_JAM: {
 			stopped = true;
 			ViceGetMemory(0x0000, 0x7fff, VICE_MainMemory);
 			ViceGetMemory(0x8000, 0xffff, VICE_MainMemory);
 
+			// breakpoint list is just an empty message
+			VICEBinHeader breakList;
+			breakList.Setup(0, ++lastRequestID, VICE_CheckpointList);
+			AddMessage((uint8_t*)&breakList, sizeof(VICEBinHeader));
+
+			// update the vice display
+			// TODO: skip if ScreenView is hidden
 			VICEBinDisplay getDisplay(++lastRequestID, VICEDisplay_RGBA);
 			AddMessage((uint8_t*)&getDisplay, sizeof(VICEBinDisplay));
 
 			break;
+		}
 	}
 	sResumeMeansStopped = false;
 }

@@ -31,6 +31,9 @@ enum VICECommandTypes {
 	VICE_AutoStart = 0xdd,
 };
 
+#define Get4Bytes(x) (x[0] + (((uint32_t)x[1])<<8) + (((uint32_t)x[2])<<16) + (((uint32_t)x[3])<<24))
+#define Get2Bytes(x) (x[0] + (((uint16_t)x[1])<<8))
+
 // Command
 struct VICEBinHeader {
 	uint8_t STX;			// byte 0: 0x02 (STX)
@@ -174,7 +177,12 @@ struct VICEBinMemGetResponse : public VICEBinResponse {
 	uint8_t data[1];
 };
 
-
+struct VICEBinCheckpointList : public VICEBinResponse {
+	uint8_t count[4];
+	uint32_t GetCount() {
+		return Get4Bytes(count);
+	}
+};
 // same struct for get and delete
 // also used for checkpoint condition follwed by condition string
 struct VICEBinCheckpoint : public VICEBinHeader {
@@ -341,9 +349,6 @@ struct VICEBinDisplay : public VICEBinHeader {
 		Setup(reqID, fmt);
 	}
 };
-
-#define Get4Bytes(x) (x[0] + (((uint32_t)x[1])<<8) + (((uint32_t)x[2])<<16) + (((uint32_t)x[3])<<24))
-#define Get2Bytes(x) (x[0] + (((uint16_t)x[1])<<8))
 
 struct VICEBinDisplayResponse : public VICEBinResponse {
 	uint8_t lengthField[4];	// Length of fields before reserved area
