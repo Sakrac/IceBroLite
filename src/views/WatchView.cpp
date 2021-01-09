@@ -1,6 +1,5 @@
 // Expression View
 
-#pragma once
 #include <stdint.h>
 #include "Views.h"
 #include "../struse/struse.h"
