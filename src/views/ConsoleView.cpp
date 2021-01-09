@@ -285,9 +285,6 @@ void IceConsole::AddLogSafe(strref line)
 	IBMutexLock(&logSafe_mutex);
 	safeItems.push_back(copy);
 	IBMutexRelease(&logSafe_mutex);
-
-	OutputDebugStringA(safeItems[safeItems.size() - 1]);
-
 }
 
 void IceConsole::FlushLogSafe()
@@ -296,7 +293,6 @@ void IceConsole::FlushLogSafe()
 	if (safeItems.size()) { ScrollToBottom = true; }
 	for (int i = 0, n = safeItems.size(); i < n; ++i) {
 		Items.push_back(safeItems[i]);
-		OutputDebugStringA(Items[Items.Size - 1]);
 	}
 	safeItems.clear();
 	IBMutexRelease(&logSafe_mutex);
