@@ -28,8 +28,8 @@
     <ClInclude Include="Files.h" />
     <ClInclude Include="HashTable.h" />
     <ClInclude Include="Image.h" />
-    <ClInclude Include="imgui\examples\imgui_impl_glfw.h" />
-    <ClInclude Include="imgui\examples\imgui_impl_opengl2.h" />
+    <ClInclude Include="imgui\backends\imgui_impl_glfw.h" />
+    <ClInclude Include="imgui\backends\imgui_impl_opengl2.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_internal.h" />
@@ -62,10 +62,11 @@
     <ClCompile Include="Files.cpp" />
     <ClCompile Include="Icons.cpp" />
     <ClCompile Include="Image.cpp" />
-    <ClCompile Include="imgui\examples\imgui_impl_glfw.cpp" />
-    <ClCompile Include="imgui\examples\imgui_impl_opengl2.cpp" />
+    <ClCompile Include="imgui\backends\imgui_impl_glfw.cpp" />
+    <ClCompile Include="imgui\backends\imgui_impl_opengl2.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
+    <ClCompile Include="imgui\imgui_tables.cpp" />
     <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="ImGui_Helper.cpp" />
     <ClCompile Include="Mnemonics.cpp" />
@@ -165,7 +166,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>ImGUI;ImGUI\examples;ImGUI\examples\libs\glfw\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>imgui;imgui\backends;imgui\examples\libs\glfw\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -182,7 +183,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>ImGUI;ImGUI\examples;ImGUI\examples\libs\glfw\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>imgui;imgui\backends;imgui\examples\libs\glfw\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -199,7 +200,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>ImGUI;ImGUI\examples;ImGUI\examples\libs\glfw\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>imgui;imgui\backends;imgui\examples\libs\glfw\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -216,7 +217,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>ImGUI;ImGUI\examples;ImGUI\examples\libs\glfw\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>imgui;imgui\backends;imgui\examples\libs\glfw\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

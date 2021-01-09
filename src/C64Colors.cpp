@@ -43,7 +43,6 @@ void StyleC64()
 	colors[ ImGuiCol_PlotHistogram ] = C64_WHITE;
 	colors[ ImGuiCol_PlotHistogramHovered ] = C64_WHITE;
 	colors[ ImGuiCol_TextSelectedBg ] = C64_BLACK;
-	colors[ ImGuiCol_ModalWindowDarkening ] = C64_BLACK;
 	colors[ ImGuiCol_DragDropTarget ] = C64_YELLOW;
 	colors[ ImGuiCol_NavHighlight ] = C64_PURPLE;
 	colors[ ImGuiCol_NavWindowingHighlight ] = C64_PINK;

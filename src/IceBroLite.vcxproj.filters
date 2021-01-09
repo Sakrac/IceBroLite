@@ -21,12 +21,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="imgui\examples\imgui_impl_glfw.h">
-      <Filter>ImGUI\Iimpl</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\examples\imgui_impl_opengl2.h">
-      <Filter>ImGUI\Iimpl</Filter>
-    </ClInclude>
     <ClInclude Include="imgui\imconfig.h">
       <Filter>ImGUI</Filter>
     </ClInclude>
@@ -87,11 +81,14 @@
       <Filter>views</Filter>
     </ClInclude>
     <ClInclude Include="SourceDebug.h" />
+    <ClInclude Include="imgui\backends\imgui_impl_glfw.h">
+      <Filter>ImGUI\Iimpl</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\backends\imgui_impl_opengl2.h">
+      <Filter>ImGUI\Iimpl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="imgui\examples\imgui_impl_opengl2.cpp">
-      <Filter>ImGUI\Iimpl</Filter>
-    </ClCompile>
     <ClCompile Include="imgui\imgui.cpp">
       <Filter>ImGUI</Filter>
     </ClCompile>
@@ -100,9 +97,6 @@
     </ClCompile>
     <ClCompile Include="imgui\imgui_widgets.cpp">
       <Filter>ImGUI</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\examples\imgui_impl_glfw.cpp">
-      <Filter>ImGUI\Iimpl</Filter>
     </ClCompile>
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="Config.cpp" />
@@ -151,6 +145,15 @@
     </ClCompile>
     <ClCompile Include="SourceDebug.cpp" />
     <ClCompile Include="ViceMonitorInterface.cpp" />
+    <ClCompile Include="imgui\backends\imgui_impl_glfw.cpp">
+      <Filter>ImGUI\Iimpl</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\backends\imgui_impl_opengl2.cpp">
+      <Filter>ImGUI\Iimpl</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_tables.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="imgui\misc\natvis\imgui.natvis">
