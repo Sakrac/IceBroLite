@@ -157,8 +157,6 @@ bool C64DbgXMLCB(void* user, strref tag_or_data, const strref* tag_stack, int si
 				strref file = line.split_token_trim(',');
 				strref row = line.split_token_trim(','); // line is now col, last line, last col
 				strref col1 = line.split_token_trim(',');
-				strref row2 = line.split_token_trim(',');
-				strref col2 = line.split_token_trim(',');
 
 
 				if (start && last && file && row) {
@@ -189,7 +187,7 @@ bool C64DbgXMLCB(void* user, strref tag_or_data, const strref* tag_stack, int si
 				//ViceSetUpdateSymbols(false);
 				ShutdownSymbols();
 				while (strref label = tag_or_data.line()) {
-					strref seg = label.split_token_trim(',');
+					/*strref seg =*/ label.split_token_trim(',');
 					strref addr = label.split_token_trim(',');
 					label = label.split_token_trim(',');
 					if (addr.get_first() == '$') { ++addr; }

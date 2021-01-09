@@ -50,7 +50,7 @@ ScreenView::~ScreenView()
 
 void ScreenView::Refresh(uint8_t* img, uint16_t w, uint16_t h)
 {
-	if (bitmap && (width != w) || (height != h)) {
+	if (bitmap && ((width != w) || (height != h))) {
 		free(bitmap);
 		bitmap = nullptr;
 	}

@@ -202,7 +202,7 @@ IceConsole::IceConsole() : open(true)
 	ClearLog();
 	memset(InputBuf, 0, sizeof(InputBuf));
 	HistoryPos = -1;
-	for (int c = 0; c < nViceCmds; ++c) {
+	for (size_t c = 0; c < nViceCmds; ++c) {
 		aViceCmdHash[c] = strref(aViceCmds[c]).fnv1a_lower();
 	}
 	IBMutexInit(&logSafe_mutex, "Vice connect mutex");
@@ -224,7 +224,7 @@ void IceConsole::Init()
 	ClearLog();
 	memset(InputBuf, 0, sizeof(InputBuf));
 	HistoryPos = -1;
-	for (int c = 0; c < nViceCmds; ++c) {
+	for (size_t c = 0; c < nViceCmds; ++c) {
 		aViceCmdHash[c] = strref(aViceCmds[c]).fnv1a_lower();
 	}
 	ViceAddLogger(LogCB, this);
@@ -415,7 +415,7 @@ void IceConsole::ExecCommand(const char* command_line)
 	if (!cmd) { cmd = param; param.clear(); }
 	uint32_t cmdHash = cmd.fnv1a_lower();
 
-	for (int c = 0; c < nViceCmds; ++c) {
+	for (size_t c = 0; c < nViceCmds; ++c) {
 		if (cmdHash == aViceCmdHash[c]) {
 			// forward command to vice
 			strown<512> msg(command_line);
@@ -458,7 +458,7 @@ void IceConsole::ExecCommand(const char* command_line)
 		uint8_t rpn[512];
 		bool mem = param.get_first() == '*';
 		if (mem) { ++param; }
-		uint32_t rpnLen = BuildExpression(param.get(), rpn, sizeof(rpn));
+		/*uint32_t rpnLen =*/ BuildExpression(param.get(), rpn, sizeof(rpn));
 		int value = EvalExpression(rpn);
 		if (mem) {
 			CPU6510* cpu = GetCurrCPU();

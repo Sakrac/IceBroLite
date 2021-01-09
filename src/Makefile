@@ -21,13 +21,14 @@ SOURCES += Platform.cpp SourceDebug.cpp struse.cpp Sym.cpp ViceInterface.cpp Vic
 SOURCES += imgui/examples/imgui_impl_glfw.cpp imgui/examples/imgui_impl_opengl2.cpp
 SOURCES += imgui/imgui.cpp imgui/imgui_demo.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp
 SOURCES += imgui/imgui_widgets.cpp
+SOURCES += struse/xml.cpp
 SOURCES += views/CodeView.cpp views/ConsoleView.cpp views/FilesView.cpp views/ScreenView.cpp
 SOURCES += views/MemView.cpp views/RegView.cpp views/ScreenView.cpp views/ToolBar.cpp views/Views.cpp
 SOURCES += data/C64_Pro_Mono-STYLE.ttf.cpp
 OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
 UNAME_S := $(shell uname -s)
 
-CXXFLAGS = -I./imgui -I./imgui/examples -I./imgui/examples/example_glfw_opengl2
+CXXFLAGS = -I./imgui -I./imgui/backends
 CXXFLAGS += -g -Wall -Wformat
 LIBS =
 
@@ -78,7 +79,10 @@ endif
 %.o:imgui/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-%.o:imgui/examples/%.cpp
+%.o:imgui/backends/%.cpp
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+%.o:struse/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 all: $(EXE)

@@ -10,6 +10,7 @@
 #include <netdb.h>
 #endif
 #include <inttypes.h>
+#include <malloc.h>
 #include "platform.h"
 #include "struse/struse.h"
 #include "ViceInterface.h"
@@ -21,7 +22,7 @@
 #define strcpy_s strcpy
 #define OutputDebugStringA printf
 #define SOCKET_ERROR -1
-void Sleep(int ms)
+static void Sleep(int ms)
 {
 	timespec t = { 0, ms * 1000 };
 	nanosleep(&t, &t);
@@ -146,7 +147,7 @@ void ViceMonitorConnection::monitorThread()
 //			break;
 //		}
 		if (sInitialCommand) {
-			send(s, sInitialCommand.get(), sInitialCommand.get_len(), NULL);
+			send(s, sInitialCommand.get(), sInitialCommand.get_len(), 0);
 			sInitialCommand.clear();
 		}
 		int bytesReceived = recv(s, recvBuf + bufferRead, RECEIVE_SIZE, 0);
@@ -180,7 +181,6 @@ void ViceMonitorConnection::monitorThread()
 		} else {
 			bufferRead += bytesReceived;
 			size_t bk = 0;
-			size_t consumed = 0;
 			while (bufferRead) {
 				size_t st = bk;
 				for (; bk < bufferRead; ++bk) {
@@ -223,7 +223,7 @@ void SendViceMonitorLine(const char* message, int size)
 		sInitialCommand.copy(strref(message, strl_t(size)));
 		ViceMonitorConnect("127.0.0.1", 6510);
 	} else {
-		send(s, message, size, NULL);
+		send(s, message, size, 0);
 	}
 }
 
