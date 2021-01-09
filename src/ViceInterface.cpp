@@ -38,7 +38,7 @@
 #define strcpy_s strcpy
 #define OutputDebugStringA printf
 #define SOCKET_ERROR -1
-void Sleep(int ms) {
+static void Sleep(int ms) {
 	timespec t = { 0, ms * 1000 };
 	nanosleep(&t, &t);
 }
@@ -496,14 +496,14 @@ void ViceConnection::updateGetMemory(VICEBinMemGetResponse* resp)
 	IBMutexLock(&userRequestMutex);
 	// TODO: Check memory range for end
 	uint32_t id = resp->GetReqID();
-	uint16_t start, /*end,*/ bank;
+	uint16_t start/*, end, bank*/;
 	uint8_t space;
 	bool found = false;
 	for (size_t i = 0; i < sMemRequests.size(); ++i) {
 		if (sMemRequests[i].requestID == id) {
 			start = sMemRequests[i].start;
 			//end = sMemRequests[i].end;
-			bank = sMemRequests[i].bank;
+			//bank = sMemRequests[i].bank;
 			space = sMemRequests[i].space;
 			found = true;
 			sMemRequests.erase(sMemRequests.begin() + i);
@@ -581,10 +581,10 @@ void ViceConnection::handleDisplayGet(VICEBinDisplayResponse* resp)
 	uint8_t* img = resp->lengthBeforeReserved + resp->GetLengthField();
 	uint16_t w = resp->GetWidthImage();
 	uint16_t h = resp->GetHeightImage();
-	uint16_t sx = resp->GetLeftScreen();
-	uint16_t sy = resp->GetTopScreen();
-	uint16_t sw = resp->GetWidthScreen();
-	uint16_t sh = resp->GetHeightScreen();
+//	uint16_t sx = resp->GetLeftScreen();
+//	uint16_t sy = resp->GetTopScreen();
+//	uint16_t sw = resp->GetWidthScreen();
+//	uint16_t sh = resp->GetHeightScreen();
 
 	RefreshScreen(img, w, h);
 }

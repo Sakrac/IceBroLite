@@ -10,7 +10,7 @@
 #include "../ImGui_Helper.h"
 #include "GLFW/glfw3.h"
 
-MemView::MemView() : open(false), fixedAddress(false), evalAddress(false)
+MemView::MemView() : fixedAddress(false), open(false), evalAddress(false)
 {
 	SetAddr(0x400);
 
@@ -163,7 +163,7 @@ void MemView::Draw(int index)
 
 		strown<1024> line;
 		uint16_t read = addrValue;
-		float leftPos = ImGui::GetCursorPosX();
+//		float leftPos = ImGui::GetCursorPosX();
 		for(int lineNum = 0; lineNum < lines; ++lineNum) {
 			line.clear();
 			if (showAddress) { line.append_num(read, 4, 16).append(' ');  }

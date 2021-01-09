@@ -13,7 +13,7 @@
 
 constexpr auto CursorFlashPeriod = 64.0f/50.0f;
 
-RegisterView::RegisterView() : open(true), cursorTime(0.0f)
+RegisterView::RegisterView() : cursorTime(0.0f), open(true)
 {
 	cursor = -1;
 }
@@ -52,7 +52,7 @@ void RegisterView::Draw()
 	bool active = KeyboardCanvas("RegisterView");// IsItemActive();
 
 
-	ImVec2 topPos = ImGui::GetCursorPos();
+//	ImVec2 topPos = ImGui::GetCursorPos();
 
 	ImGui::Text("ADDR A  X  Y  SP 00 01 NV-BDIZC LIN CYC");
 	cursorTime += ImGui::GetIO().DeltaTime;
