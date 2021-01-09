@@ -180,6 +180,7 @@ void ViceMonitorConnection::monitorThread()
 			Sleep(50);
 #endif
 		} else {
+			int prevBufferRead = bufferRead;
 			bufferRead += bytesReceived;
 			size_t bk = 0;
 			while (bufferRead) {
@@ -190,15 +191,12 @@ void ViceMonitorConnection::monitorThread()
 				if (bk < bufferRead) {
 					++bk;
 					ViceLog(strref((const char*)(recvBuf + st), strl_t(bk - st)));
-					//if (bk < bufferRead) { ++bk; }
 				} else {
-					if (st) {
-						if (bk> st) {
-							memmove(recvBuf, recvBuf + st, bk - st);
-						}
-						bufferRead -= st;
-						break;
+					if (st && bk>st) {
+						memmove(recvBuf, recvBuf + st, bk - st);
 					}
+					bufferRead -= st;
+					break;
 				}
 			}
 		}
