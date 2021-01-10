@@ -90,6 +90,10 @@
     <ClInclude Include="views\WatchView.h">
       <Filter>views</Filter>
     </ClInclude>
+    <ClInclude Include="Breakpoints.h" />
+    <ClInclude Include="views\BreakpointView.h">
+      <Filter>views</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\imgui.cpp">
@@ -160,6 +164,10 @@
     <ClCompile Include="views\WatchView.cpp">
       <Filter>views</Filter>
     </ClCompile>
+    <ClCompile Include="views\BreakpointView.cpp">
+      <Filter>views</Filter>
+    </ClCompile>
+    <ClCompile Include="Breakpoints.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="imgui\misc\natvis\imgui.natvis">

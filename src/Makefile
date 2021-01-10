@@ -15,14 +15,14 @@ CXX = g++
 #CXX = clang++
 
 EXE = ../IceBroLite.exe
-SOURCES = 6510.cpp C64Colors.cpp Config.cpp Expressions.cpp FileDialog.cpp Files.cpp
+SOURCES = 6510.cpp Breakpoints.cpp C64Colors.cpp Config.cpp Expressions.cpp FileDialog.cpp Files.cpp
 SOURCES += IceBroLite.cpp Icons.cpp Image.cpp ImGui_Helper.cpp Mnemonics.cpp
 SOURCES += Platform.cpp SourceDebug.cpp struse.cpp Sym.cpp ViceInterface.cpp ViceMonitorInterface.cpp
 SOURCES += imgui/backends/imgui_impl_glfw.cpp imgui/backends/imgui_impl_opengl2.cpp
 SOURCES += imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp
 SOURCES += imgui/imgui_widgets.cpp
 SOURCES += struse/xml.cpp
-SOURCES += views/CodeView.cpp views/ConsoleView.cpp views/FilesView.cpp
+SOURCES += views/BreakpointView.cpp views/CodeView.cpp views/ConsoleView.cpp views/FilesView.cpp
 SOURCES += views/ScreenView.cpp views/MemView.cpp views/RegView.cpp views/WatchView.cpp views/ToolBar.cpp views/Views.cpp
 SOURCES += data/C64_Pro_Mono-STYLE.ttf.cpp
 OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))

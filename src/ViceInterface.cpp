@@ -18,6 +18,7 @@
 #include "Files.h"
 #include "struse/struse.h"
 #include "6510.h"
+#include "Breakpoints.h"
 
 #include "ViceInterface.h"
 #include "ViceBinInterface.h"
@@ -550,6 +551,7 @@ void ViceConnection::handleCheckpointList(VICEBinCheckpointList* cpList)
 
 void ViceConnection::handleCheckpointGet(VICEBinCheckpointResponse* cp)
 {
+#ifdef _DEBUG
 	strown<256> m;
 	if (cp->wasHit) { m.append('*'); }
 	if (!cp->stopWhenHit) { m.append("trace "); }
@@ -562,14 +564,24 @@ void ViceConnection::handleCheckpointGet(VICEBinCheckpointResponse* cp)
 	if (cp->GetCount()) { m.append(" hits: ").append_num(cp->GetCount(), 0, 10); }
 	if (cp->GetIgnored()) { m.append(" ignored: ").append_num(cp->GetIgnored(), 0, 10); }
 	ViceLog(m.get_strref());
+#endif
+	uint32_t flags = 0;
+	if (cp->enabled) flags |= Breakpoint::Enabled;
+	if (cp->stopWhenHit) flags |= Breakpoint::Stop;
+	if (cp->operation == VICE_Exec) flags |= Breakpoint::Exec;
+	if (cp->operation == VICE_LoadMem) flags |= Breakpoint::Load;
+	if (cp->operation == VICE_StoreMem) flags |= Breakpoint::Store;
+	if (cp->wasHit) flags |= Breakpoint::Current;
+	if (cp->temporary) flags |= Breakpoint::Temporary;
+	AddBreakpoint(cp->GetNumber(), flags, cp->GetStart(), cp->GetEnd());
 }
 
 void ViceConnection::updateRegisters(VICEBinRegisterResponse* resp)
 {
 	CPU6510* cpu = GetMainCPU();
-#ifdef VICELOG
-	strown<256> regInfo;
-#endif
+//#ifdef VICELOG
+//	strown<256> regInfo;
+//#endif
 	for (uint16_t r = 0, n = resp->GetCount(); r < n; ++r) {
 		VICEBinRegisterResponse::regInfo& info = resp->aRegs[r];
 		switch (info.registerID) {
@@ -584,34 +596,34 @@ void ViceConnection::updateRegisters(VICEBinRegisterResponse* resp)
 			case VICE_00: cpu->regs.ZP00 = info.GetValue8(); break;
 			case VICE_01: cpu->regs.ZP01 = info.GetValue8(); break;
 		}
-#ifdef VICELOG
-		switch (info.registerID) {
-			case VICE_Acc: regInfo.append("A=$").append_num(info.GetValue8(),2,16); break;
-			case VICE_X: regInfo.append("X=$").append_num(info.GetValue8(), 2, 16); break;
-			case VICE_Y: regInfo.append("Y=$").append_num(info.GetValue8(), 2, 16); break;
-			case VICE_PC: regInfo.append("PC=$").append_num(info.GetValue16(), 4, 16); break;
-			case VICE_SP: regInfo.append("SP=$").append_num(info.GetValue8(), 2, 16); break;
-			case VICE_FL: regInfo.append("FL=$").append_num(info.GetValue8(), 2, 16); break;
-			case VICE_LIN: regInfo.append("LIN=$").append_num(info.GetValue16(), 4, 16); break;
-			case VICE_CYC: regInfo.append("CYC=$").append_num(info.GetValue16(), 4, 16); break;
-			case VICE_00: regInfo.append("00=$").append_num(info.GetValue8(), 2, 16); break;
-			case VICE_01: regInfo.append("01=$").append_num(info.GetValue8(), 2, 16); break;
-		}
-		regInfo.append(' ');
-#endif
-#ifdef _DEBUG
-		strown<256> d;
-		d.append("Reg: $").append_num(info.registerID, 2, 16);
-		d.append(" Size: ").append_num(info.registerSize, 2, 10);
-		d.append(" Value: $").append_num((uint16_t)info.registerValue[0] +
-										(((uint16_t)info.registerValue[1])<<8), 4, 16);
-		d.append("\n");
-		OutputDebugStringA(d.c_str());
-#endif
+//#ifdef VICELOG
+//		switch (info.registerID) {
+//			case VICE_Acc: regInfo.append("A=$").append_num(info.GetValue8(),2,16); break;
+//			case VICE_X: regInfo.append("X=$").append_num(info.GetValue8(), 2, 16); break;
+//			case VICE_Y: regInfo.append("Y=$").append_num(info.GetValue8(), 2, 16); break;
+//			case VICE_PC: regInfo.append("PC=$").append_num(info.GetValue16(), 4, 16); break;
+//			case VICE_SP: regInfo.append("SP=$").append_num(info.GetValue8(), 2, 16); break;
+//			case VICE_FL: regInfo.append("FL=$").append_num(info.GetValue8(), 2, 16); break;
+//			case VICE_LIN: regInfo.append("LIN=$").append_num(info.GetValue16(), 4, 16); break;
+//			case VICE_CYC: regInfo.append("CYC=$").append_num(info.GetValue16(), 4, 16); break;
+//			case VICE_00: regInfo.append("00=$").append_num(info.GetValue8(), 2, 16); break;
+//			case VICE_01: regInfo.append("01=$").append_num(info.GetValue8(), 2, 16); break;
+//		}
+//		regInfo.append(' ');
+//#endif
+//#ifdef _DEBUG
+//		strown<256> d;
+//		d.append("Reg: $").append_num(info.registerID, 2, 16);
+//		d.append(" Size: ").append_num(info.registerSize, 2, 10);
+//		d.append(" Value: $").append_num((uint16_t)info.registerValue[0] +
+//										(((uint16_t)info.registerValue[1])<<8), 4, 16);
+//		d.append("\n");
+//		OutputDebugStringA(d.c_str());
+//#endif
 	}
-#ifdef VICELOG
-	ViceLog(regInfo.get_strref());
-#endif
+//#ifdef VICELOG
+//	ViceLog(regInfo.get_strref());
+//#endif
 
 }
 

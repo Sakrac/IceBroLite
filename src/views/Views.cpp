@@ -5,6 +5,7 @@
 #include "ToolBar.h"
 #include "RegView.h"
 #include "MemView.h"
+#include "BreakpointView.h"
 #include "CodeView.h"
 #include "ConsoleView.h"
 #include "FilesView.h"
@@ -26,8 +27,10 @@ struct ViewContext {
 	MemView memView[MaxMemViews];
 	CodeView codeView[MaxCodeViews];
 	WatchView watchView[MaxWatchViews];
+	BreakpointView breakView;
 	ImFont* aFonts[sNumFontSizes];
 	IceConsole console;
+
 	ScreenView screenView;
 	FVFileView fileView;
 	int currFont;
@@ -113,6 +116,7 @@ void ViewContext::Draw()
 					ImGui::EndMenu();
 				}
 				if (ImGui::MenuItem("Registers", NULL, regView.open)) { regView.open = !regView.open; }
+				if (ImGui::MenuItem("Breakpoints", NULL, breakView.open)) { breakView.open = !breakView.open; }
 				if (ImGui::MenuItem("Toolbar", NULL, toolBar.open)) { toolBar.open = !toolBar.open; }
 				ImGui::EndMenu();
 			}
@@ -148,7 +152,8 @@ void ViewContext::Draw()
 		ImGuiID dock_id_regs = ImGui::DockBuilderSplitNode(dock_id_code, ImGuiDir_Up, 0.1f, NULL, &dock_id_code);
 		ImGuiID dock_id_mem = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.5f, NULL, &dock_main_id);
 		ImGuiID dock_id_watch = ImGui::DockBuilderSplitNode(dock_id_mem, ImGuiDir_Up, 0.33f, NULL, &dock_id_mem);
-		ImGuiID dock_id_screen = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.25f, NULL, &dock_main_id);
+		ImGuiID dock_id_screen = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.2f, NULL, &dock_main_id);
+		ImGuiID dock_id_breaks = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.2f, NULL, &dock_main_id);
 
 		ImGui::DockBuilderDockWindow("Toolbar", dock_id_toolbar);
 		ImGui::DockBuilderDockWindow("Vice Monitor", dock_main_id);
@@ -160,6 +165,7 @@ void ViewContext::Draw()
 		ImGui::DockBuilderDockWindow("Watch1", dock_id_watch);
 		ImGui::DockBuilderDockWindow("Registers", dock_id_regs);
 		ImGui::DockBuilderDockWindow("Screen", dock_id_screen);
+		ImGui::DockBuilderDockWindow("Breakpoints", dock_id_breaks);
 		ImGui::DockBuilderFinish(dockspace_id);
 	}
 
@@ -170,6 +176,7 @@ void ViewContext::Draw()
 	for (int w = 0; w < MaxWatchViews; ++w) { watchView[w].Draw(w); }
 	console.Draw();
 	screenView.Draw();
+	breakView.Draw();
 
 	fileView.Draw("Select File");
 //	ImGui::PopFont();

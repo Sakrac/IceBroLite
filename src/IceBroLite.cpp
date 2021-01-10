@@ -30,6 +30,7 @@
 #include "struse/struse.h"
 #include "Files.h"
 #include "FileDialog.h"
+#include "Breakpoints.h"
 #include "views/FilesView.h"
 
 #include "C64Colors.h"
@@ -95,6 +96,7 @@ int main(int argc, char* argv[])
 	LoadIcons();
 	InitStartFolder();
 	CreateMainCPU();
+	InitBreakpoints();
 
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
@@ -220,6 +222,7 @@ int main(int argc, char* argv[])
 		firstFrame = false;
 	}
 
+	ShutdownBreakpoints();
 	ShutdownMainCPU();
 	// Cleanup
 	ImGui_ImplOpenGL2_Shutdown();

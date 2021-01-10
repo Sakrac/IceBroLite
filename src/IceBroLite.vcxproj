@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="6510.h" />
+    <ClInclude Include="Breakpoints.h" />
     <ClInclude Include="C64Colors.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="data\C64_Pro_Mono-STYLE.ttf.h" />
@@ -43,6 +44,7 @@
     <ClInclude Include="Sym.h" />
     <ClInclude Include="ViceBinInterface.h" />
     <ClInclude Include="ViceInterface.h" />
+    <ClInclude Include="views\BreakpointView.h" />
     <ClInclude Include="views\CodeView.h" />
     <ClInclude Include="views\ConsoleView.h" />
     <ClInclude Include="views\FilesView.h" />
@@ -55,6 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="6510.cpp" />
+    <ClCompile Include="Breakpoints.cpp" />
     <ClCompile Include="C64Colors.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="data\C64_Pro_Mono-STYLE.ttf.cpp" />
@@ -79,6 +82,7 @@
     <ClCompile Include="sym.cpp" />
     <ClCompile Include="ViceInterface.cpp" />
     <ClCompile Include="ViceMonitorInterface.cpp" />
+    <ClCompile Include="views\BreakpointView.cpp" />
     <ClCompile Include="views\CodeView.cpp" />
     <ClCompile Include="views\ConsoleView.cpp" />
     <ClCompile Include="views\FilesView.cpp" />
