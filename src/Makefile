@@ -18,8 +18,8 @@ EXE = ../IceBroLite.exe
 SOURCES = 6510.cpp C64Colors.cpp Config.cpp Expressions.cpp FileDialog.cpp Files.cpp
 SOURCES += IceBroLite.cpp Icons.cpp Image.cpp ImGui_Helper.cpp Mnemonics.cpp
 SOURCES += Platform.cpp SourceDebug.cpp struse.cpp Sym.cpp ViceInterface.cpp ViceMonitorInterface.cpp
-SOURCES += imgui/examples/imgui_impl_glfw.cpp imgui/examples/imgui_impl_opengl2.cpp
-SOURCES += imgui/imgui.cpp imgui/imgui_demo.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp
+SOURCES += imgui/backends/imgui_impl_glfw.cpp imgui/backends/imgui_impl_opengl2.cpp
+SOURCES += imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp
 SOURCES += imgui/imgui_widgets.cpp
 SOURCES += struse/xml.cpp
 SOURCES += views/CodeView.cpp views/ConsoleView.cpp views/FilesView.cpp
@@ -29,7 +29,7 @@ OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
 UNAME_S := $(shell uname -s)
 
 CXXFLAGS = -I./imgui -I./imgui/backends
-CXXFLAGS += -g -Wall -Wformat
+CXXFLAGS += -g -O2 -Wall -Wformat
 LIBS =
 
 ##---------------------------------------------------------------------

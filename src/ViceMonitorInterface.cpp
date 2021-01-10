@@ -180,7 +180,6 @@ void ViceMonitorConnection::monitorThread()
 			Sleep(50);
 #endif
 		} else {
-			int prevBufferRead = bufferRead;
 			bufferRead += bytesReceived;
 			size_t bk = 0;
 			while (bufferRead) {
