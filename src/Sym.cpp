@@ -1,13 +1,14 @@
 #include <inttypes.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <vector>
 #include "struse/struse.h"
 #include "6510.h"
-#include <map>
 #include <string.h>
+#include <malloc.h>
 #include "HashTable.h"
 #include "Files.h"
-//#include "Breakpoints.h"
 
 struct SymEntry {
 	int16_t count;
@@ -29,12 +30,13 @@ union SymRef {
 
 static SymEntry* sLabelCount = nullptr;
 static SymRef* sLabelEntries = nullptr;
-
-static HashTable<uint32_t> sReverseLookup;
+static std::vector<uint16_t> sortedSymAddrs;
+static HashTable<uint64_t, uint32_t> sReverseLookup;
 
 void ResetSymbols()
 {
 	sReverseLookup.Clear();
+	sortedSymAddrs.clear();
 	if( sLabelCount ) {
 		for( size_t adr = 0; adr < 0x10000; ++adr ) {
 			if( sLabelCount[ adr ].count == 1 ) {
@@ -49,7 +51,9 @@ void ResetSymbols()
 						if( *ppStr ) { free( (void*)*ppStr ); }
 						++ppStr;
 					}
-					free( sLabelEntries[ adr ].multi );
+					if (sLabelEntries && sLabelEntries[adr].multi) {
+						free(sLabelEntries[adr].multi);
+					}
 				}
 			}
 		}
@@ -60,6 +64,43 @@ void ResetSymbols()
 	}
 }
 
+size_t GetLabelSlot(uint16_t addr)
+{
+	size_t lb = 0, ub = sortedSymAddrs.size();
+
+	while ((ub-lb)>1) {
+		size_t cb = (ub + lb) >> 1;
+		uint16_t addr_cmp = sortedSymAddrs[cb];
+		if (addr == addr_cmp) {
+			return cb;
+		} else if (addr > addr_cmp) {
+			lb = cb;
+		} else {
+			ub = cb;
+		}
+	}
+	return lb;
+}
+
+const char* NearestLabel(uint16_t addr, uint16_t& offs)
+{
+	size_t i = GetLabelSlot(addr);
+	if (i < sortedSymAddrs.size() && addr >= sortedSymAddrs[i]) {
+		uint16_t prevAddr = sortedSymAddrs[i];
+		offs = addr - prevAddr;
+		if (sLabelEntries[prevAddr].unique) {
+			return sLabelEntries[prevAddr].unique;
+		} else if (SymList* syms = sLabelEntries[prevAddr].multi) {
+			return sLabelCount[prevAddr].count ? syms->names[0] : nullptr;
+		} else {
+			return nullptr;
+		}
+	}
+	offs = addr;
+	return nullptr;
+}
+
+
 void AddSymbol( uint16_t address, const char *name, size_t chars )
 {
 	// make sure label array exists
@@ -67,6 +108,8 @@ void AddSymbol( uint16_t address, const char *name, size_t chars )
 		sLabelCount = (SymEntry*)calloc( 1, sizeof( SymEntry ) * 0x10000 );
 		sLabelEntries = (SymRef*)calloc( 1, sizeof( SymRef ) * 0x10000 );
 	}
+	if (sLabelEntries == nullptr || sLabelCount == nullptr) { return; }
+
 	// check for dupes
 	strref lbl( name, (strl_t)chars );
 	if( sLabelCount[ address ].count ) {
@@ -82,13 +125,27 @@ void AddSymbol( uint16_t address, const char *name, size_t chars )
 		}
 	}
 
+	char* copy = (char*)malloc(chars + 1);
+	if (copy == nullptr) { return; }
+
 	uint64_t hash = lbl.fnv1a_64();
 	if( !sReverseLookup.Exists( hash ) ) {
 		sReverseLookup.Insert( hash, address);
 	}
 
 	// not a dupe
-	char* copy = (char*)malloc( chars + 1 );
+	size_t slot = GetLabelSlot(address);
+	if (slot < sortedSymAddrs.size()) {
+		if (address < sortedSymAddrs[slot]) {
+			sortedSymAddrs.insert(sortedSymAddrs.begin() + slot, address);
+		} else if (address > sortedSymAddrs[slot]) {
+			sortedSymAddrs.insert(sortedSymAddrs.begin() + slot+1, address);
+		}
+	} else {
+		sortedSymAddrs.push_back(address);
+	}
+
+
 	memcpy( copy, name, chars );
 	copy[ chars ] = 0;
 	if( !sLabelCount[ address ].count ) {

@@ -14,6 +14,8 @@ void ViceStepOut();
 void ViceRunTo(uint16_t addr);
 void ViceStartProgram(const char* loadPrg);
 void ViceReset(uint8_t resetType);
+void ViceRemoveBreakpoint(uint32_t number);
+void ViceAddBreakpoint(uint16_t address);
 
 void ViceWaiting();
 void ViceTickMessage();

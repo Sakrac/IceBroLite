@@ -27,4 +27,4 @@ void AddBreakpoint(uint32_t number, uint32_t flags, uint16_t start, uint16_t end
 void RemoveBreakpoint(uint32_t number);
 size_t NumBreakpoints();
 Breakpoint GetBreakpoint(size_t index);
-
+bool BreakpointAt(uint16_t address, Breakpoint& bp);

@@ -116,9 +116,9 @@ enum VICEBinResponseErrors {
 };
 
 enum VICECheckpointOperations {
-	VICE_LoadMem,
-	VICE_StoreMem,
-	VICE_Exec
+	VICE_LoadMem = 1,
+	VICE_StoreMem = 2,
+	VICE_Exec = 4
 };
 
 enum VICEDisplayFormats {

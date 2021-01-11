@@ -7,7 +7,7 @@
 #include "../C64Colors.h"
 #include "../6510.h"
 #include "../Mnemonics.h"
-//#include "Breakpoints.h"
+#include "../Breakpoints.h"
 #include "../ViceInterface.h"
 #include "../ImGui_Helper.h"
 #include "GLFW/glfw3.h"
@@ -146,9 +146,6 @@ void CodeView::Draw(int index)
 				cursorLine = int((mousePos.y - winPos.y) / ImGui::GetTextLineHeightWithSpacing());
 			}
 		}
-		if (ImGui::IsKeyPressed(GLFW_KEY_F9, false)) {
-			// TODO: Toggle breakpoints!
-		}
 	}
 
 //	ImVec2 p0 = ImGui::GetCursorScreenPos();
@@ -156,7 +153,7 @@ void CodeView::Draw(int index)
 	strown<128> line;
 	uint16_t read = addrValue;
 	int lineNum = 0;
-//	float fontCharWidth = CurrFontSize();
+	float fontCharWidth = CurrFontSize();
 	float lineHeight = ImGui::GetTextLineHeightWithSpacing()-2;
 //	float lineWidth = fontCharWidth * (1+(showAddress ? 5 : 0)+(showBytes ? 9 : 0)+9);
 
@@ -195,6 +192,24 @@ void CodeView::Draw(int index)
 			editAsmAddr = read;
 			editAsmFocusRequested = true;
 		}
+
+
+		// breakpoints
+		Breakpoint bp;
+		if (BreakpointAt(read, bp)) {
+			//ImGui::SetCursorPos(ImVec2(pt.x, pt.y+ch * l));
+			DrawTexturedIcon(VMI_BreakPoint, false, fontCharWidth);
+			ImGui::SetCursorPos(linePos);
+			if (addrCursor == read && ImGui::IsKeyPressed(GLFW_KEY_F9, false)) {
+				// remove breakpoint
+				ViceRemoveBreakpoint(bp.number);
+			}
+		} else if (addrCursor == read && ImGui::IsKeyPressed(GLFW_KEY_F9, false)) {
+			// add exec breakpoint
+			ViceAddBreakpoint(read);
+		}
+
+
 		line.clear();
 		line.append(regs.PC==read ? '>' : ' ');
 //		if (lineNum<MaxDisAsmLines) { addrs[lineNum] = read; }
@@ -284,7 +299,7 @@ void CodeView::Draw(int index)
 				if (srcLine) {
 					ImGui::SameLine();
 					strl_t col = (showAddress ? 6 : 0) + (showBytes ? 9 : 0) + (showRefs ? 9 : 0) + (showLabels ? 6 : 0) + 9 + (spaces + 3) / 4;
-					ImVec2 srcPos(linePos.x + col * CurrFontSize(), linePos.y);
+					ImVec2 srcPos(linePos.x + col * fontCharWidth, linePos.y);
 					ImGui::SetCursorPos(srcPos);
 					ImGui::PushStyleColor(ImGuiCol_Text, C64_YELLOW);
 					line.copy(srcLine);
@@ -308,21 +323,6 @@ void CodeView::Draw(int index)
 
 	//float ch = ImGui::GetTextLineHeightWithSpacing();
 
-	// TODO: Add breakpoints
-	// breakpoints
-//	{
-//		for (uint16_t b = 0, n = GetNumPCBreakpoints(); b<n; ++b) {
-//			uint16_t bp = GetPCBreakpoints()[b];
-//			if (bp>=addrValue && bp<read) {
-//				for (int l = 0; l<lineNum; ++l) {
-//					if (addrs[l]==bp) {
-//						ImGui::SetCursorPos(ImVec2(pt.x, pt.y+ch * l));
-//						DrawTexturedIcon(VMI_BreakPoint, false, fontCharWidth);
-//					}
-//				}
-//			}
-//		}
-//	}
 
 	// if pressing tab and PC is not on screen find an address 3 lines above
 	if (!fixedAddress&&(goToPC||focusPC)) {

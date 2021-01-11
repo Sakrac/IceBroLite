@@ -246,6 +246,44 @@ void ViceStepOut()
 	}
 }
 
+void ViceRemoveBreakpoint(uint32_t number)
+{
+	if (viceCon && viceCon->isConnected()) {
+		VICEBinCheckpoint chkpt;
+		chkpt.Setup(4, ++lastRequestID, VICE_CheckpointDelete);
+		chkpt.SetNumber(number);
+		viceCon->AddMessage((uint8_t*)&chkpt, sizeof(chkpt));
+		
+		// reset breakpoints
+		ClearBreakpoints();
+		VICEBinHeader breakList;
+		breakList.Setup(0, ++lastRequestID, VICE_CheckpointList);
+		viceCon->AddMessage((uint8_t*)&breakList, sizeof(VICEBinHeader));
+	}
+}
+
+void ViceAddBreakpoint(uint16_t address)
+{
+	if (viceCon && viceCon->isConnected()) {
+		VICEBinCheckpointSet chkpt;
+		chkpt.Setup(8, ++lastRequestID, VICE_CheckpointSet);
+		chkpt.SetStart(address);
+		chkpt.SetEnd(address);
+		chkpt.stopWhenHit = 1;
+		chkpt.enabled = 1;
+		chkpt.operation = VICE_Exec;
+		chkpt.temporary = 0;
+		viceCon->AddMessage((uint8_t*)&chkpt, sizeof(chkpt));
+
+		// reset breakpoints
+		ClearBreakpoints();
+		VICEBinHeader breakList;
+		breakList.Setup(0, ++lastRequestID, VICE_CheckpointList);
+		viceCon->AddMessage((uint8_t*)&breakList, sizeof(VICEBinHeader));
+	}
+}
+
+
 void ViceRunTo(uint16_t addr)
 {
 	if (viceCon && viceCon->isConnected() && viceCon->isStopped()) {
@@ -568,9 +606,9 @@ void ViceConnection::handleCheckpointGet(VICEBinCheckpointResponse* cp)
 	uint32_t flags = 0;
 	if (cp->enabled) flags |= Breakpoint::Enabled;
 	if (cp->stopWhenHit) flags |= Breakpoint::Stop;
-	if (cp->operation == VICE_Exec) flags |= Breakpoint::Exec;
-	if (cp->operation == VICE_LoadMem) flags |= Breakpoint::Load;
-	if (cp->operation == VICE_StoreMem) flags |= Breakpoint::Store;
+	if (cp->operation & VICE_Exec) flags |= Breakpoint::Exec;
+	if (cp->operation & VICE_LoadMem) flags |= Breakpoint::Load;
+	if (cp->operation & VICE_StoreMem) flags |= Breakpoint::Store;
 	if (cp->wasHit) flags |= Breakpoint::Current;
 	if (cp->temporary) flags |= Breakpoint::Temporary;
 	AddBreakpoint(cp->GetNumber(), flags, cp->GetStart(), cp->GetEnd());
@@ -661,6 +699,7 @@ void ViceConnection::handleStopResume(VICEBinStopResponse* resp)
 			ViceGetMemory(0x8000, 0xffff, VICE_MainMemory);
 
 			// breakpoint list is just an empty message
+			ClearBreakpoints();
 			VICEBinHeader breakList;
 			breakList.Setup(0, ++lastRequestID, VICE_CheckpointList);
 			AddMessage((uint8_t*)&breakList, sizeof(VICEBinHeader));
