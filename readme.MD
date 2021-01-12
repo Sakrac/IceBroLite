@@ -2,6 +2,9 @@
 
 This is a debugger in development for the new external binary monitor protocol in Vice 3.5. It is not ready for use quite yet.
 
+![IceBroLite](img/window.png)
+Debugger is showing FrostBite code and art from Tony Savona, Saul Cross and STE'86. This is used because Kick Assembler has better debug information and I'm not using it for my personal projects.
+
 ### Differences from IceBro
 
 IceBro Lite doesn't contain its own 6502 emulator for debugging "post mortem" which makes it a lot simpler to understand. When it is ready it should function similar to the command line monitor of vice only with a graphical user interface and more visualizations of the current state.
@@ -13,7 +16,7 @@ Currently stuck trying to communicate at a reasonable rate with Vice. This is be
 ## Quick Usage Info
 
 * This tool is built on dear ImGui docking branch and uses the docking feature. Drag windows onto guides in the main window to set them up as panes.
-* F10 = Step Over, F11 = Step Into, Shift+F11 = Step Out (after next rts), F5 = Go, F6 = Run until cursor (from Code View)
+* F9 - Toggle Breakpoint, F10 = Step Over, F11 = Step Into, Shift+F11 = Step Out (after next rts), F5 = Go, F6 = Run until cursor (from Code View)
 * Disassembler seems a bit broken right now, mostly works.
 * Any addrews field can be filled out with expressions, hex numbers require $ prefix
 * {addr} evaluates to a 16 bit value from memory adress
@@ -25,7 +28,47 @@ Currently stuck trying to communicate at a reasonable rate with Vice. This is be
 * Click the _Load_ icon in the ToolBar to specify a .prg or .d64 or .crt file to start in VICE (right now it exits back into the debugger immediately AND when then program has loaded, just hit F5 to continue)
  * Click the _Reload_ icon to reload the program
 * Enter math expressions in Watch View, prefix with \* to view bytes at address, for example *$101+s to see what has been pushed on the stack
-  
+
+### Available Views
+
+__Code__
+* Show disassembly, source, bytes, referenced byte, etc.
+* Move cursor with cursor up/down or page up/down
+* Press F9 to toggle breakpoint at cursor
+* Press F6 to run until cursor
+* Press enter to edit assembly
+* Up to 4 separate code views
+
+__Memory__
+* View bytes, text
+* Edit memory (TODO: write back to VICE)
+* Up to 4 separate memory views
+
+__Registers__
+* Edit registers by clicking on value and edit (TODO: Write back to VICE)
+
+__VICE Console__
+* Enter VICE monitor commands in the input field
+* Scroll back up in history
+* Enter some extra commands for the debugger
+
+__Breakpoints__
+* Shows current breakpoints
+* Display symbol prior to breakpoint plus offset
+* Double click on breakpoint to go to code
+
+__Screen__
+* The current screen from VICE
+
+__Toolbar__
+* Various buttons to control the debugger
+* Click hte Load icon to select a program, disk or cartridge to send to VICE
+* Click Reload to repeat the load command
+
+__Watch__
+* Enter expressions to see the evaluated results
+* Up to 4 separate watch views
+
 ### Building IceBroLite on Linux
 
 (I'm using this on a Raspberry PI 400, still need to verify features with RPi400 Vice 3.5)
@@ -42,5 +85,4 @@ Currently stuck trying to communicate at a reasonable rate with Vice. This is be
 * Listing files for source level debugging
 * off-screen graphics
 * Reset & Load (Reload) VICE d64 or prg
-* Breakpoint view
 

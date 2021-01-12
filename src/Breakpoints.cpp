@@ -81,8 +81,8 @@ Breakpoint GetBreakpoint(size_t index)
 
 bool BreakpointAt(uint16_t address, Breakpoint& bp)
 {
+	IBMutexLock(&sBreakpointMutex);
 	if (uint32_t* number = sBreakpointLookup.Value(address)) {
-		IBMutexLock(&sBreakpointMutex);
 		uint32_t num = *number;
 		for (size_t index = 0, n = sBreakpoints.size(); index < n; ++index) {
 			if (sBreakpoints[index].number == num) {
@@ -91,7 +91,7 @@ bool BreakpointAt(uint16_t address, Breakpoint& bp)
 				return true;
 			}
 		}
-		IBMutexRelease(&sBreakpointMutex);
 	}
+	IBMutexRelease(&sBreakpointMutex);
 	return false;
 }

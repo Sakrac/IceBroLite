@@ -33,6 +33,8 @@ static SymRef* sLabelEntries = nullptr;
 static std::vector<uint16_t> sortedSymAddrs;
 static HashTable<uint64_t, uint32_t> sReverseLookup;
 
+bool SymbolsLoaded() { return sortedSymAddrs.size() > 0; }
+
 void ResetSymbols()
 {
 	sReverseLookup.Clear();

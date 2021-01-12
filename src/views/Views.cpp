@@ -225,6 +225,18 @@ float CurrFontSize()
 	return viewContext ? viewContext->currFontSize : 10.0f;
 }
 
+void SetCodeViewAddr(uint16_t addr)
+{
+	if (viewContext) {
+		for (size_t i = 0; i < ViewContext::MaxCodeViews; ++i) {
+			if (viewContext->codeView[i].open) {
+				viewContext->codeView[i].SetAddr(addr);
+				break;
+			}
+		}
+	}
+}
+
 uint8_t InputHex()
 {
 	for (int num = 0; num < 9; ++num) { if (ImGui::IsKeyPressed(num + '0')) return num; }
