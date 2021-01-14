@@ -4,6 +4,9 @@
 #include "platform.h"
 #include "Breakpoints.h"
 #include "HashTable.h"
+#include "struse/struse.h"
+#include "ViceInterface.h"
+
 
 static IBMutex sBreakpointMutex;
 static std::vector<Breakpoint> sBreakpoints;
@@ -46,6 +49,7 @@ void AddBreakpoint(uint32_t number, uint32_t flags, uint16_t start, uint16_t end
 	}
 	IBMutexRelease(&sBreakpointMutex);
 }
+
 void RemoveBreakpoint(uint32_t number)
 {
 	IBMutexLock(&sBreakpointMutex);
@@ -60,6 +64,17 @@ void RemoveBreakpoint(uint32_t number)
 			break;
 		}
 	}
+	IBMutexRelease(&sBreakpointMutex);
+}
+
+void RemoveAllBreakpoints()
+{
+	IBMutexLock(&sBreakpointMutex);
+	for (size_t i = 0; i < sBreakpoints.size(); ++i) {
+		ViceRemoveBreakpointNoList(sBreakpoints[i].number);
+	}
+	sBreakpoints.clear();
+	sBreakpointLookup.Clear();
 	IBMutexRelease(&sBreakpointMutex);
 }
 

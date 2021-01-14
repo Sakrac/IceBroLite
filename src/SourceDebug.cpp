@@ -4,6 +4,8 @@
 #include "Files.h"
 #include <malloc.h>
 #include <vector>
+#include "ViceInterface.h"
+#include "Breakpoints.h"
 
 // Format:
 //	parse as XML
@@ -161,10 +163,10 @@ bool C64DbgXMLCB(void* user, strref tag_or_data, const strref* tag_stack, int si
 				if (start && last && file && row) {
 					if (start.get_first() == '$') { ++start; }
 					if (last.get_first() == '$') { ++last; }
-					size_t file_num = file.atoui();
+					size_t file_num = (size_t)file.atoui();
 					if (file_num < parse->files.size()) {
 						ParseDebugSource* source = parse->files[file_num];
-						size_t row_num = row.atoui();
+						size_t row_num = (size_t)row.atoui();
 						if (row_num && source->file && row_num <= source->lineOffsets.size()) {
 							strref srcTxt = strref((const char*)source->file, strl_t(source->size));
 							strl_t c1 = (strl_t)col1.atoui();
@@ -195,6 +197,18 @@ bool C64DbgXMLCB(void* user, strref tag_or_data, const strref* tag_stack, int si
 					}
 				}
 			}
+		} else if (tag_stack->get_word().same_str("Breakpoints")) {
+			//<Breakpoints values="SEGMENT,ADDRESS,ARGUMENT">
+			tag_or_data.trim_whitespace();
+			if (tag_or_data) { RemoveAllBreakpoints(); }
+			while (strref bkpt = tag_or_data.line()) {
+				/*strref seg =*/ bkpt.split_token_trim(',');
+				strref addr = bkpt.split_token_trim(',');
+				strref cond = bkpt.split_token_trim(',');
+				if (addr.get_first() == '$') { ++addr; }
+				ViceAddBreakpoint((uint16_t)addr.ahextoui());
+			}
+
 		}
 	} else if (type == XML_TYPE_TAG_OPEN) {
 		if (tag_or_data.get_word().same_str("Segment")) {

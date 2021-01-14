@@ -246,6 +246,17 @@ void ViceStepOut()
 	}
 }
 
+
+void ViceRemoveBreakpointNoList(uint32_t number)
+{
+	if (viceCon && viceCon->isConnected()) {
+		VICEBinCheckpoint chkpt;
+		chkpt.Setup(4, ++lastRequestID, VICE_CheckpointDelete);
+		chkpt.SetNumber(number);
+		viceCon->AddMessage((uint8_t*)&chkpt, sizeof(chkpt));
+	}
+}
+
 void ViceRemoveBreakpoint(uint32_t number)
 {
 	if (viceCon && viceCon->isConnected()) {
