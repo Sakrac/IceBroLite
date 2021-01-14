@@ -158,7 +158,6 @@ bool C64DbgXMLCB(void* user, strref tag_or_data, const strref* tag_stack, int si
 				strref row = line.split_token_trim(','); // line is now col, last line, last col
 				strref col1 = line.split_token_trim(',');
 
-
 				if (start && last && file && row) {
 					if (start.get_first() == '$') { ++start; }
 					if (last.get_first() == '$') { ++last; }
@@ -256,7 +255,7 @@ void ReadC64DbgSrc(const char* filename)
 						for (size_t l = 0; l < blk->lines.size(); ++l) {
 							ParseDebugLine* lin = &blk->lines[l];
 							uint16_t ft = lin->first, lt = lin->last;
-							if (ft < lt) {
+							if (ft <= lt) {
 								for (uint16_t a = ft; a <= lt; ++a) {
 									SourceDebugLine* ln = segSrc->lines + (a-addrFirst);
 									ln->block = (uint8_t)b;
