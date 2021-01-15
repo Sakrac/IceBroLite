@@ -11,6 +11,7 @@
 #include "FilesView.h"
 #include "ScreenView.h"
 #include "WatchView.h"
+#include "SymbolView.h"
 #include "../6510.h"
 #include "../data/C64_Pro_Mono-STYLE.ttf.h"
 #include "../FileDialog.h"
@@ -28,6 +29,7 @@ struct ViewContext {
 	CodeView codeView[MaxCodeViews];
 	WatchView watchView[MaxWatchViews];
 	BreakpointView breakView;
+	SymbolView symbolView;
 	ImFont* aFonts[sNumFontSizes];
 	IceConsole console;
 
@@ -74,16 +76,13 @@ ViewContext::ViewContext() : currFont(3), setupDocking(true)
 
 void ViewContext::Draw()
 {
-//	ImGui::PushFont(aFonts[currFont]);
 	{
 		if (ImGui::BeginMainMenuBar()) {
 			if (ImGui::BeginMenu("File")) {
-				//bool updatingViceSymbls = ViceUpdatingSymbols();
 				if (ImGui::MenuItem("Load KickAsm Debug")) { LoadKickDbgDialog(); }
 				if (ImGui::MenuItem("Load Listing")) { LoadListingDialog(); }
 				if (ImGui::MenuItem("Load Sym File")) { LoadSymbolsDialog(); }
 				if (ImGui::MenuItem("Load Vice Command Symbols")) { LoadViceCmdDialog(); }
-//				if (ImGui::MenuItem("Update Symbols With Vice Sync", nullptr, updatingViceSymbls)) { ViceSetUpdateSymbols(!updatingViceSymbls); }
 
 				if (ImGui::MenuItem("Quit", "Alt+F4")) {}
 				ImGui::EndMenu();
@@ -117,6 +116,7 @@ void ViewContext::Draw()
 				}
 				if (ImGui::MenuItem("Registers", NULL, regView.open)) { regView.open = !regView.open; }
 				if (ImGui::MenuItem("Breakpoints", NULL, breakView.open)) { breakView.open = !breakView.open; }
+				if (ImGui::MenuItem("Symbols", NULL, symbolView.open)) { symbolView.open = !symbolView.open; }
 				if (ImGui::MenuItem("Toolbar", NULL, toolBar.open)) { toolBar.open = !toolBar.open; }
 				ImGui::EndMenu();
 			}
@@ -154,6 +154,7 @@ void ViewContext::Draw()
 		ImGuiID dock_id_watch = ImGui::DockBuilderSplitNode(dock_id_mem, ImGuiDir_Up, 0.33f, NULL, &dock_id_mem);
 		ImGuiID dock_id_screen = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.2f, NULL, &dock_main_id);
 		ImGuiID dock_id_breaks = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.2f, NULL, &dock_main_id);
+		ImGuiID dock_id_symbols = ImGui::DockBuilderSplitNode(dock_id_code, ImGuiDir_Down, 0.25f, NULL, &dock_id_code);
 
 		ImGui::DockBuilderDockWindow("Toolbar", dock_id_toolbar);
 		ImGui::DockBuilderDockWindow("Vice Monitor", dock_main_id);
@@ -166,6 +167,7 @@ void ViewContext::Draw()
 		ImGui::DockBuilderDockWindow("Registers", dock_id_regs);
 		ImGui::DockBuilderDockWindow("Screen", dock_id_screen);
 		ImGui::DockBuilderDockWindow("Breakpoints", dock_id_breaks);
+		ImGui::DockBuilderDockWindow("Symbols", dock_id_symbols);
 		ImGui::DockBuilderFinish(dockspace_id);
 	}
 
@@ -177,9 +179,9 @@ void ViewContext::Draw()
 	console.Draw();
 	screenView.Draw();
 	breakView.Draw();
+	symbolView.Draw();
 
 	fileView.Draw("Select File");
-//	ImGui::PopFont();
 	GlobalKeyCheck();
 	ViceTickMessage();
 

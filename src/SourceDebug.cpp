@@ -188,14 +188,15 @@ bool C64DbgXMLCB(void* user, strref tag_or_data, const strref* tag_stack, int si
 				//ViceSetUpdateSymbols(false);
 				ShutdownSymbols();
 				while (strref label = tag_or_data.line()) {
-					/*strref seg =*/ label.split_token_trim(',');
+					strref seg = label.split_token_trim(',');
 					strref addr = label.split_token_trim(',');
 					label = label.split_token_trim(',');
 					if (addr.get_first() == '$') { ++addr; }
 					if (label) {
-						AddSymbol((uint16_t)addr.ahextoui(), label.get(), label.get_len());
+						AddSymbol((uint16_t)addr.ahextoui(), label.get(), label.get_len(), seg.get(), seg.get_len());
 					}
 				}
+				FilterSectionSymbols();
 			}
 		} else if (tag_stack->get_word().same_str("Breakpoints")) {
 			//<Breakpoints values="SEGMENT,ADDRESS,ARGUMENT">

@@ -9,6 +9,7 @@
 #include <malloc.h>
 #include "HashTable.h"
 #include "Files.h"
+#include "Sym.h"
 
 struct SymEntry {
 	int16_t count;
@@ -28,10 +29,20 @@ union SymRef {
 	SymList* multi;
 };
 
+struct SymbolInfo {
+	uint32_t address;
+	uint32_t section;
+	char* label;
+};
+
 static SymEntry* sLabelCount = nullptr;
 static SymRef* sLabelEntries = nullptr;
 static std::vector<uint16_t> sortedSymAddrs;
 static HashTable<uint64_t, uint32_t> sReverseLookup;
+static HashTable<uint64_t, uint32_t> sDuplicateCheck;	// look up from section + symbol + value
+static std::vector<char*> sectionNames;
+static std::vector<SymbolInfo> labelList;
+static std::vector<uint64_t> hiddenSections;			// hashed value of section name
 
 bool SymbolsLoaded() { return sortedSymAddrs.size() > 0; }
 
@@ -41,21 +52,9 @@ void ResetSymbols()
 	sortedSymAddrs.clear();
 	if( sLabelCount ) {
 		for( size_t adr = 0; adr < 0x10000; ++adr ) {
-			if( sLabelCount[ adr ].count == 1 ) {
-				if( sLabelEntries[ adr ].unique ) {
-					free( (void*)sLabelEntries[ adr ].unique );
-					sLabelEntries[ adr ].unique = nullptr;
-				}
-			}
-			else if( sLabelCount[ adr ].count ) {
-				if( const char** ppStr = sLabelEntries[ adr ].multi->names ) {
-					for( size_t i = 0, n = sLabelCount[ adr ].count; i < n; ++i ) {
-						if( *ppStr ) { free( (void*)*ppStr ); }
-						++ppStr;
-					}
-					if (sLabelEntries && sLabelEntries[adr].multi) {
-						free(sLabelEntries[adr].multi);
-					}
+			if( sLabelCount[ adr ].count > 1 ) {
+				if (sLabelEntries && sLabelEntries[adr].multi) {
+					free(sLabelEntries[adr].multi);
 				}
 			}
 		}
@@ -102,81 +101,152 @@ const char* NearestLabel(uint16_t addr, uint16_t& offs)
 	return nullptr;
 }
 
-
-void AddSymbol( uint16_t address, const char *name, size_t chars )
+void BeginAddingSymbols()
 {
-	// make sure label array exists
-	if( !sLabelCount ) {
-		sLabelCount = (SymEntry*)calloc( 1, sizeof( SymEntry ) * 0x10000 );
-		sLabelEntries = (SymRef*)calloc( 1, sizeof( SymRef ) * 0x10000 );
+	sDuplicateCheck.Clear();
+	for (size_t i = 0, n = sectionNames.size(); i < n; ++i) {
+		if (char* sectName = sectionNames[i]) {
+			sectionNames[i] = nullptr;
+			free(sectName);
+		}
 	}
-	if (sLabelEntries == nullptr || sLabelCount == nullptr) { return; }
+	sectionNames.clear();
+	for (size_t i = 0, n = labelList.size(); i < n; ++i) {
+		if (char* symName = labelList[i].label) {
+			labelList[i].label = nullptr;
+			free(symName);
+		}
+	}
+	labelList.clear();
+	hiddenSections.clear();
+}
 
-	// check for dupes
-	strref lbl( name, (strl_t)chars );
-	if( sLabelCount[ address ].count ) {
-		if( sLabelCount[ address ].count == 1 ) {
-			if( lbl.same_str_case( sLabelEntries[ address ].unique ) ) { return; }
-		} else {
-			if( const char** ppStr = sLabelEntries[ address ].multi->names ) {
-				for( size_t i = 0, n = sLabelCount[ address ].count; i < n; ++i ) {
-					if( lbl.same_str( *ppStr ) ) { return; }
-					++ppStr;
-				}
+// discard all symbol lookups and fill out with a filtered set of sections
+// call after loading symbols
+void FilterSectionSymbols()
+{
+	size_t numSects = sectionNames.size();
+	uint8_t* hidden = (uint8_t*)calloc(1, numSects);
+	if (hidden == nullptr) { return; }
+	for (std::vector<uint64_t>::iterator i = hiddenSections.begin(); i != hiddenSections.end(); ++i) {
+		uint64_t hiddenName = *i;
+		for (size_t j = 0; j < numSects; ++j ) {
+			if (strref(sectionNames[j]).fnv1a_64() == hiddenName) {
+				hidden[j] = 1;
+				break;
 			}
 		}
 	}
+	ResetSymbols();
 
-	char* copy = (char*)malloc(chars + 1);
-	if (copy == nullptr) { return; }
-
-	uint64_t hash = lbl.fnv1a_64();
-	if( !sReverseLookup.Exists( hash ) ) {
-		sReverseLookup.Insert( hash, address);
+	// make sure label array exists
+	if (!sLabelCount) {
+		sLabelCount = (SymEntry*)malloc(sizeof(SymEntry) * 0x10000);
+		sLabelEntries = (SymRef*)malloc(sizeof(SymRef) * 0x10000);
 	}
+	if (sLabelEntries == nullptr || sLabelCount == nullptr) { return; }
 
-	// not a dupe
-	size_t slot = GetLabelSlot(address);
-	if (slot < sortedSymAddrs.size()) {
-		if (address < sortedSymAddrs[slot]) {
-			sortedSymAddrs.insert(sortedSymAddrs.begin() + slot, address);
-		} else if (address > sortedSymAddrs[slot]) {
-			sortedSymAddrs.insert(sortedSymAddrs.begin() + slot+1, address);
+	memset(sLabelCount, 0, sizeof(SymEntry) * 0x10000);
+	memset(sLabelEntries, 0, sizeof(SymRef) * 0x10000);
+
+	for (std::vector<SymbolInfo>::iterator sym = labelList.begin(); sym != labelList.end(); ++sym) {
+		if (hidden[sym->section]) { continue; }	// if this section is hidden don't add it!
+		if (sym->label == nullptr) { continue; }
+
+		strref lbl(sym->label);
+
+		// 32 bit vymbol support
+		uint64_t hash = lbl.fnv1a_64();
+		if (!sReverseLookup.Exists(hash)) {
+			sReverseLookup.Insert(hash, sym->address);
 		}
-	} else {
-		sortedSymAddrs.push_back(address);
-	}
 
+		// 16 bit symbol support
+		if (sym->address < 0x10000) {
+			uint16_t address = (uint16_t)sym->address;
+			if (sLabelCount[address].count) {
+				if (sLabelCount[address].count == 1) {
+					if (lbl.same_str_case(sLabelEntries[address].unique)) { return; }
+				} else {
+					if (const char** ppStr = sLabelEntries[address].multi->names) {
+						for (size_t i = 0, n = sLabelCount[address].count; i < n; ++i) {
+							if (lbl.same_str(*ppStr)) { continue; }
+							++ppStr;
+						}
+					}
+				}
+			}
 
-	memcpy( copy, name, chars );
-	copy[ chars ] = 0;
-	if( !sLabelCount[ address ].count ) {
-		sLabelCount[ address ].count = 1;
-		sLabelEntries[ address ].unique = copy;
-	} else if( sLabelCount[ address ].count == 1 ) {
-		const char* prev = sLabelEntries[ address ].unique;
-		sLabelEntries[ address ].multi = (SymList*)malloc( sizeof( SymList ) + sizeof( const char* ) * (SymList::MIN_LIST - 1) );
-		sLabelEntries[ address ].multi->capacity = SymList::MIN_LIST;
-		sLabelCount[ address ].count = 2;
-		sLabelEntries[ address ].multi->names[ 0 ] = prev;
-		sLabelEntries[ address ].multi->names[ 1 ] = copy;
-	} else {
-		SymList* entries = sLabelEntries[ address ].multi;
-		if( entries->capacity == (size_t)sLabelCount[ address ].count ) {
-			sLabelEntries[ address ].multi = (SymList*)malloc(
-				sizeof( SymList ) + sizeof( const char* ) * (entries->capacity + SymList::GROW_LIST - 1) );
-			sLabelEntries[ address ].multi->capacity = entries->capacity + SymList::GROW_LIST;
-			memcpy( sLabelEntries[ address ].multi->names, entries->names, sizeof( const char* ) * sLabelCount[ address ].count );
-			free( entries );
-			entries = sLabelEntries[ address ].multi;
+			if (!sLabelCount[address].count) {
+				sLabelCount[address].count = 1;
+				sLabelEntries[address].unique = sym->label;
+			} else if (sLabelCount[address].count == 1) {
+				const char* prev = sLabelEntries[address].unique;
+				sLabelEntries[address].multi = (SymList*)malloc(sizeof(SymList) + sizeof(const char*) * (SymList::MIN_LIST - 1));
+				sLabelEntries[address].multi->capacity = SymList::MIN_LIST;
+				sLabelCount[address].count = 2;
+				sLabelEntries[address].multi->names[0] = prev;
+				sLabelEntries[address].multi->names[1] = sym->label;
+			} else {
+				SymList* entries = sLabelEntries[address].multi;
+				if (entries->capacity == (size_t)sLabelCount[address].count) {
+					sLabelEntries[address].multi = (SymList*)malloc(
+						sizeof(SymList) + sizeof(const char*) * (entries->capacity + SymList::GROW_LIST - 1));
+					sLabelEntries[address].multi->capacity = entries->capacity + SymList::GROW_LIST;
+					memcpy(sLabelEntries[address].multi->names, entries->names, sizeof(const char*) * sLabelCount[address].count);
+					free(entries);
+					entries = sLabelEntries[address].multi;
+				}
+				entries->names[sLabelCount[address].count++] = sym->label;
+			}
+
+			// insert into range slot array
+			size_t slot = GetLabelSlot(address);
+			if (slot < sortedSymAddrs.size()) {
+				if (address < sortedSymAddrs[slot]) {
+					sortedSymAddrs.insert(sortedSymAddrs.begin() + slot, address);
+				} else if (address > sortedSymAddrs[slot]) {
+					sortedSymAddrs.insert(sortedSymAddrs.begin() + slot + 1, address);
+				}
+			} else {
+				sortedSymAddrs.push_back(address);
+			}
 		}
-		entries->names[ sLabelCount[ address ].count++ ] = copy;
 	}
+	free(hidden);
+}
+
+void AddSymbol(uint32_t address, const char *symbol, size_t symbolLen, const char *section, size_t sectionLen)
+{
+	strref sym(symbol, (strl_t)symbolLen);
+	strref sect(section, (strl_t)sectionLen);
+
+	//sDuplicateCheck
+	uint64_t hash = sect.fnv1a_64(((uint64_t)address<<16) + 14695981039346656037ULL);
+	hash = sym.fnv1a_64(hash);
+
+	if (sDuplicateCheck.Exists(hash)) { return; }
+	sDuplicateCheck.Insert(hash, address);
+
+	size_t sectIdx = 0, numSects = sectionNames.size();
+	for (; sectIdx < numSects; ++sectIdx) {
+		if (sect.same_str(sectionNames[sectIdx])) { break; }
+	}
+	if (sectIdx == numSects) {
+		char* sectionCopy = (char*)calloc(1, sect.get_len() + 1);
+		memcpy(sectionCopy, sect.get(), sect.get_len());
+		sectionNames.push_back(sectionCopy);
+	}
+	char* copy = (char*)calloc(1, sym.get_len() + 1);
+	memcpy(copy, sym.get(), sym.get_len());
+	SymbolInfo symInfo = { address, (uint32_t)sectIdx, copy };
+	labelList.push_back(symInfo);
 }
 
 void ShutdownSymbols()
 {
 	ResetSymbols();
+	BeginAddingSymbols();
 }
 
 const char* GetSymbol(uint16_t address)
@@ -221,18 +291,8 @@ void ReadViceCommandFile(const char *symFile)
 		if (void *voidbuf = malloc(size)) {
 			fread(voidbuf, size, 1, f);
 
-			//char *strcurr = nullptr;
-			//char *strend = nullptr;
-			//char **strtable = nullptr;
-			//uint16_t *addresses = nullptr;
-			//size_t strcurr_left = 0;
-
-			//size_t numChars = 0;
 			for (int pass = 0; pass<2; pass++) {
-				//uint32_t size_tmp = size;
 				strref file((const char*)voidbuf, size);
-				//				const char *buf = (const char*)voidbuf;
-				//uint32_t numLabels = 0;
 
 				while (strref line = file.line()) {
 					if (strref command = line.get_word()) {
@@ -252,7 +312,7 @@ void ReadViceCommandFile(const char *symFile)
 							addr = (uint16_t)line.ahextoui_skip();
 							line.skip_whitespace();
 							if (addr < 0x10000) {
-								AddSymbol(addr, line.get(), line.get_len());
+								AddSymbol(addr, line.get(), line.get_len(), nullptr, 0);
 							}
 						}
 					}
@@ -266,13 +326,14 @@ void ReadViceCommandFile(const char *symFile)
 
 bool ReadSymbols(const char *filename)
 {
-	ResetSymbols();
+//	ResetSymbols();
 	FILE *f;
-	if (fopen_s(&f, filename, "rb") == 0) {
+	if (fopen_s(&f, filename, "rb") == 0 && f != nullptr) {
 		fseek(f, 0, SEEK_END);
 		uint32_t size = ftell(f);
 		fseek(f, 0, SEEK_SET);
 		if (void *voidbuf = malloc(size)) {
+			BeginAddingSymbols();
 			fread(voidbuf, size, 1, f);
 			strref file((const char*)voidbuf, size);
 			while (file) {
@@ -290,7 +351,7 @@ bool ReadSymbols(const char *filename)
 								// TODO: Set breakpoint in VICE
 									//SetViceBP((uint16_t)addr, (uint16_t)addr, -1, true, VBP_Break, false);
 								} else {
-									AddSymbol((uint16_t)addr, label.get(), label.get_len());
+									AddSymbol((uint16_t)addr, label.get(), label.get_len(), nullptr, 0);
 								}
 							}
 						}
@@ -300,6 +361,7 @@ bool ReadSymbols(const char *filename)
 			free(voidbuf);
 		}
 		fclose(f);
+		FilterSectionSymbols();
 		return true;
 	}
 	return false;
