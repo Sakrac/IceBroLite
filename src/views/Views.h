@@ -6,7 +6,8 @@ void InitViews();
 void ShowViews();
 void BeginViews();
 void EndViews();
-void SetCodeViewAddr(uint16_t addr);
+void SetCodeViewAddr(uint16_t addr, int view = -1);
+void SetMemoryViewAddr(uint16_t addr, int view = -1);
 
 float CurrFontSize();
 uint8_t InputHex();

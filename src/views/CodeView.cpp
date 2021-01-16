@@ -94,6 +94,23 @@ void CodeView::Draw(int index)
 		}
 	}
 
+	{	// make entire window a drag and drop target
+		ImVec2 origCursor = ImGui::GetCursorPos();
+		ImGui::InvisibleButton("CodeX", ImGui::GetWindowSize());
+
+		if (ImGui::BeginDragDropTarget()) {
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("AddressDragDrop")) {
+				IM_ASSERT(payload->DataSize == sizeof(uint32_t));
+				uint32_t addr = *(uint32_t*)payload->Data;
+				if (addr < 0x10000) {
+					SetAddr((uint16_t)addr);
+				}
+			}
+			ImGui::EndDragDropTarget();
+		}
+		ImGui::SetCursorPos(origCursor);
+	}
+
 //	uint16_t addrs[MaxDisAsmLines];	// address for each line
 	CPU6510* cpu = GetCurrCPU();
 	const CPU6510::Regs &regs = cpu->regs;	// current registers

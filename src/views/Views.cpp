@@ -227,14 +227,34 @@ float CurrFontSize()
 	return viewContext ? viewContext->currFontSize : 10.0f;
 }
 
-void SetCodeViewAddr(uint16_t addr)
+void SetCodeViewAddr(uint16_t addr, int index)
 {
 	if (viewContext) {
-		for (size_t i = 0; i < ViewContext::MaxCodeViews; ++i) {
-			if (viewContext->codeView[i].open) {
-				viewContext->codeView[i].SetAddr(addr);
-				break;
+		if (index < 0) {
+			for (size_t i = 0; i < ViewContext::MaxCodeViews; ++i) {
+				if (viewContext->codeView[i].open) {
+					viewContext->codeView[i].SetAddr(addr);
+					break;
+				}
 			}
+		} else if (index < ViewContext::MaxCodeViews) {
+			viewContext->codeView[index].SetAddr(addr);
+		}
+	}
+}
+
+void SetMemoryViewAddr(uint16_t addr, int index)
+{
+	if (viewContext) {
+		if (index < 0) {
+			for (size_t i = 0; i < ViewContext::MaxMemViews; ++i) {
+				if (viewContext->memView[i].open) {
+					viewContext->memView[i].SetAddr(addr);
+					break;
+				}
+			}
+		} else if (index < ViewContext::MaxCodeViews) {
+			viewContext->memView[index].SetAddr(addr);
 		}
 	}
 }

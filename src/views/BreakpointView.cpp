@@ -8,7 +8,7 @@
 #include "Views.h"
 #include "BreakpointView.h"
 
-BreakpointView::BreakpointView() : open(true)
+BreakpointView::BreakpointView() : open(true), selected_row(-1)
 {
 
 }
@@ -32,10 +32,10 @@ void BreakpointView::Draw()
         return;
     }
 
-    const ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | 
-        ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Resizable |
+    const ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg |
+        ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Resizable | ImGuiTableFlags_Sortable |
         ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV |
-        ImGuiTableFlags_ContextMenuInBody;
+        ImGuiTableFlags_ScrollY;
 
     ImVec2 cursorScreen = ImGui::GetCursorScreenPos();
     ImVec2 outer_size(-FLT_MIN, 0.0f);
@@ -63,19 +63,17 @@ void BreakpointView::Draw()
         ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("Addr ", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupScrollFreeze(0, 1); // Make row always visible
+        ImGui::TableHeadersRow();
 
         for(size_t bpIdx = 0; bpIdx < numBreakpoints; bpIdx++) {
             Breakpoint bp = GetBreakpoint(bpIdx);
             int col = 0;
-            if (goToBP) {
-                float y = ImGui::GetCursorPosY() - bpHitY;
-                if (y > 0 && y < (fontHgt + 3.0f)) {
-                    SetCodeViewAddr(bp.start);
-                }
-            }
+
             if (bp.number != 0xffffffff) {
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(col++);
+
                 DrawTexturedIcon(VMI_BreakPoint, false, ImGui::GetFont()->FontSize);
                 ImGui::TableSetColumnIndex(col++);
                 strown<64> num;
