@@ -23,6 +23,13 @@ void SymbolView::ReadConfig(strref config)
 
 }
 
+enum MyItemColumnID {
+    SymbolColumnID_Address,
+    SymbolColumnID_Symbol,
+    SymbolColumnID_Section,
+};
+
+
 void SymbolView::Draw()
 {
     if (!open) { return; }
@@ -43,7 +50,7 @@ void SymbolView::Draw()
     }
 
     const ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg |
-        ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Resizable |
+        ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Resizable | ImGuiTableFlags_Sortable |
         ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV |
         ImGuiTableFlags_ContextMenuInBody | ImGuiTableFlags_ScrollY;
 
@@ -67,11 +74,20 @@ void SymbolView::Draw()
     bool haveSymbols = SymbolsLoaded();
     int numColumns = haveSymbols ? 4 : 3;
     if (ImGui::BeginTable("##symbolstable", 3, flags)) {
-        ImGui::TableSetupColumn("Addr", ImGuiTableColumnFlags_WidthFixed);
-        ImGui::TableSetupColumn("Symbol", ImGuiTableColumnFlags_WidthStretch);
-        ImGui::TableSetupColumn("Section ", ImGuiTableColumnFlags_WidthStretch);
-
+        ImGui::TableSetupColumn("Addr", ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_WidthFixed, -1.0f, SymbolColumnID_Address);
+        ImGui::TableSetupColumn("Symbol", ImGuiTableColumnFlags_WidthStretch, -1.0f, SymbolColumnID_Symbol);
+        ImGui::TableSetupColumn("Section ", ImGuiTableColumnFlags_NoSort | ImGuiTableColumnFlags_WidthStretch, -1.0f, SymbolColumnID_Section);
+        ImGui::TableSetupScrollFreeze(0, 1); // Make row always visible
         ImGui::TableHeadersRow();
+
+        if (ImGuiTableSortSpecs* sorts_specs = ImGui::TableGetSortSpecs()) {
+            if (sorts_specs->SpecsDirty) {
+                sorts_specs->SpecsDirty = false;
+                SortSymbols(sorts_specs->Specs->SortDirection == ImGuiSortDirection_Ascending, sorts_specs->Specs->ColumnUserID == SymbolColumnID_Symbol);
+                SearchSymbols(searchField, case_sensitive);
+            }
+        }
+
 
         for (size_t s = 0, n = NumSymbolSearchMatches(); s < n; ++s) {
             const char* section;
@@ -87,11 +103,12 @@ void SymbolView::Draw()
                 bool item_is_selected = (size_t)selected_row == s;
                 if (ImGui::Selectable(selRow.c_str(), item_is_selected, selectable_flags)) {
                     selected_row = (int)s;
+                    if (address < 0x10000) { SetCodeViewAddr(address); }
                 }
                 ImGui::SameLine();
 
                 strown<16> str;
-                str.append('$').append_num(address, 0, 16);
+                str.append('$').append_num(address, address < 0x10000 ? 4 : 0, 16);
                 ImGui::Text(str.c_str());
 
                 ImGui::TableSetColumnIndex(1);

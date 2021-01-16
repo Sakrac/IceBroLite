@@ -11,6 +11,7 @@ void AddSymbol(uint32_t address, const char* symbol, size_t symbolLen, const cha
 void FilterSectionSymbols();
 const char* NearestLabel(uint16_t addr, uint16_t& offs);
 
+void SortSymbols(bool up, bool name);
 size_t NumSymbolSearchMatches();
 const char* GetSymbolSearchMatch(size_t i, uint32_t* address, const char** section);
 void SearchSymbols(const char* pattern, bool case_sensitive);
