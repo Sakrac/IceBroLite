@@ -186,7 +186,7 @@ bool C64DbgXMLCB(void* user, strref tag_or_data, const strref* tag_stack, int si
 			tag_or_data.trim_whitespace();
 			if (tag_or_data) {
 				//ViceSetUpdateSymbols(false);
-				ShutdownSymbols();
+				ClearSymbols();
 				while (strref label = tag_or_data.line()) {
 					strref seg = label.split_token_trim(',');
 					strref addr = label.split_token_trim(',');
@@ -219,13 +219,14 @@ bool C64DbgXMLCB(void* user, strref tag_or_data, const strref* tag_stack, int si
 	return true;
 }
 
-void ReadC64DbgSrc(const char* filename)
+bool ReadC64DbgSrc(const char* filename)
 {
 	ParseDebugText parse;
 	parse.path = strref(filename).before_last('/', '\\');
 	parse.segment.clear(); // just in case there are blocks without segments I guess
 	if (parse.path.get_len()) { parse.path = strref(parse.path.get(), parse.path.get_len() + 1); }
 	size_t size;
+	bool success = false;
 	if (void* voidbuf = LoadBinary(filename, size)) {
 		if (ParseXML(strref((const char*)voidbuf, (strl_t)size), C64DbgXMLCB, &parse)) {
 			ShutdownSourceDebug();
@@ -289,6 +290,7 @@ void ReadC64DbgSrc(const char* filename)
 					}
 				}
 			}
+			success = true;
 		}
 		// clear up ParseDebugText
 		while (parse.files.size()) {
@@ -304,5 +306,6 @@ void ReadC64DbgSrc(const char* filename)
 			parse.segments.pop_back();
 		}
 	}
+	return success;
 }
 

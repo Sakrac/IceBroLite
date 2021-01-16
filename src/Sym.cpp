@@ -9,7 +9,9 @@
 #include <malloc.h>
 #include "HashTable.h"
 #include "Files.h"
+#include "SourceDebug.h"
 #include "Sym.h"
+#include "platform.h"
 
 struct SymEntry {
 	int16_t count;
@@ -42,14 +44,33 @@ static HashTable<uint64_t, uint32_t> sReverseLookup;
 static HashTable<uint64_t, uint32_t> sDuplicateCheck;	// look up from section + symbol + value
 static std::vector<char*> sectionNames;
 static std::vector<SymbolInfo> labelList;
+static std::vector<SymbolInfo> sortedLabelList;			// this is a copy of labelList without ownership of values
 static std::vector<uint64_t> hiddenSections;			// hashed value of section name
+static std::vector<uint32_t> matchedLabelList;			// search result
+static bool lastSortedName = false;
+static bool lastSortedUp = true;
+static IBMutex symbolMutex;
+
 
 bool SymbolsLoaded() { return sortedSymAddrs.size() > 0; }
 
+void InitSymbols()
+{
+	IBMutexInit(&symbolMutex, "Symbol");
+}
+
+void ShutdownSymbols()
+{
+	IBMutexDestroy(&symbolMutex);
+}
+
+
 void ResetSymbols()
 {
+	IBMutexLock(&symbolMutex);
 	sReverseLookup.Clear();
 	sortedSymAddrs.clear();
+	sortedLabelList.clear();
 	if( sLabelCount ) {
 		for( size_t adr = 0; adr < 0x10000; ++adr ) {
 			if( sLabelCount[ adr ].count > 1 ) {
@@ -63,6 +84,7 @@ void ResetSymbols()
 		free( sLabelEntries );
 		sLabelEntries = nullptr;
 	}
+	IBMutexRelease(&symbolMutex);
 }
 
 size_t GetLabelSlot(uint16_t addr)
@@ -85,24 +107,143 @@ size_t GetLabelSlot(uint16_t addr)
 
 const char* NearestLabel(uint16_t addr, uint16_t& offs)
 {
+	IBMutexLock(&symbolMutex);
 	size_t i = GetLabelSlot(addr);
+	const char* ret = nullptr;
+	offs = addr;
 	if (i < sortedSymAddrs.size() && addr >= sortedSymAddrs[i]) {
 		uint16_t prevAddr = sortedSymAddrs[i];
 		offs = addr - prevAddr;
 		if (sLabelEntries[prevAddr].unique) {
-			return sLabelEntries[prevAddr].unique;
+			ret = sLabelEntries[prevAddr].unique;
 		} else if (SymList* syms = sLabelEntries[prevAddr].multi) {
-			return sLabelCount[prevAddr].count ? syms->names[0] : nullptr;
-		} else {
-			return nullptr;
+			ret = sLabelCount[prevAddr].count ? syms->names[0] : nullptr;
 		}
 	}
-	offs = addr;
+	IBMutexRelease(&symbolMutex);
+	return ret;
+}
+
+static int _compareSymAddrUp(const void* A, const void* B)
+{
+	return (int)((const SymbolInfo*)A)->address - (int)((const SymbolInfo*)B)->address;
+}
+
+static int _compareSymAddrDown(const void* A, const void* B)
+{
+	return (int)((const SymbolInfo*)B)->address - (int)((const SymbolInfo*)A)->address;
+}
+
+static int _compareSymNameUp(const void* A, const void* B)
+{
+	const char* sA = ((const SymbolInfo*)A)->label;
+	const char* sB = ((const SymbolInfo*)B)->label;
+	while (*sA && *sB) {
+		char cA = *sA++; if (cA >= 'a' && cA <= 'z') { cA -= 'a' - 'A'; }
+		char cB = *sB++; if (cB >= 'a' && cB <= 'z') { cB -= 'a' - 'A'; }
+		if (cA != cB) { return cA - cB; }
+	}
+	if (!*sA && !*sB) { return 0; }
+	if (*sB) { return 1; }
+	return -1;
+}
+
+static int _compareSymNameDown(const void* A, const void* B)
+{
+	const char* sA = ((const SymbolInfo*)A)->label;
+	const char* sB = ((const SymbolInfo*)B)->label;
+	while (*sA && *sB) {
+		char cA = *sA++; if (cA >= 'a' && cA <= 'z') { cA -= 'a' - 'A'; }
+		char cB = *sB++; if (cB >= 'a' && cB <= 'z') { cB -= 'a' - 'A'; }
+		if (cA != cB) { return cB - cA; }
+	}
+	if (!*sA && !*sB) { return 0; }
+	if (*sA) { return 1; }
+	return -1;
+}
+
+void SortSymbols(bool up, bool name)
+{
+	IBMutexLock(&symbolMutex);
+	lastSortedName = name;
+	lastSortedUp = up;
+	size_t numSymbols = sortedLabelList.size();
+	if (numSymbols) {
+		SymbolInfo* symbols = &sortedLabelList[0];
+		if (name) {
+			if (up) {
+				qsort(symbols, numSymbols, sizeof(SymbolInfo), _compareSymNameUp);
+			} else {
+				qsort(symbols, numSymbols, sizeof(SymbolInfo), _compareSymNameDown);
+			}
+		} else {
+			if (up) {
+				qsort(symbols, numSymbols, sizeof(SymbolInfo), _compareSymAddrUp);
+			} else {
+				qsort(symbols, numSymbols, sizeof(SymbolInfo), _compareSymAddrDown);
+			}
+		}
+	}
+	IBMutexRelease(&symbolMutex);
+}
+
+size_t NumSymbolSearchMatches() { return matchedLabelList.size() ? matchedLabelList.size() : sortedLabelList.size(); }
+const char* GetSymbolSearchMatch(size_t i, uint32_t* address, const char** section)
+{
+	IBMutexLock(&symbolMutex);
+	if (!matchedLabelList.size()) {
+		if (i < sortedLabelList.size()) {
+			SymbolInfo sym = sortedLabelList[i];
+			if ((size_t)sym.section < sectionNames.size()) {
+				*section = sectionNames[sym.section];
+			} else { *section = ""; }
+			*address = sym.address;
+			IBMutexRelease(&symbolMutex);
+			return sym.label;
+		}
+	} else if (i < matchedLabelList.size()) {
+		uint32_t o = matchedLabelList[i];
+		if ((size_t)o < sortedLabelList.size()) {
+			SymbolInfo sym = sortedLabelList[o];
+			if ((size_t)sym.section < sectionNames.size()) {
+				*section = sectionNames[sym.section];
+			} else { *section = ""; }
+			*address = sym.address;
+			IBMutexRelease(&symbolMutex);
+			return sym.label;
+		}
+	}
+	IBMutexRelease(&symbolMutex);
 	return nullptr;
 }
 
+void SearchSymbols(const char* pattern, bool case_sensitive)
+{
+	matchedLabelList.clear();
+	if (!*pattern) { return; }	// clear search string -> show all
+
+	strown<512> wildcard;
+	if (*pattern == '*') {
+		wildcard.copy(pattern + 1);	// substring
+	} else {
+		wildcard.append('@').append(pattern);
+	}
+
+	for (size_t i = 0, n = sortedLabelList.size(); i < n; ++i) {
+		const char* str = sortedLabelList[i].label;
+		if (str && str[0]) {
+			if (strref(str).find_wildcard(wildcard.get_strref(), 0, case_sensitive)) {
+				matchedLabelList.push_back((uint32_t)i);
+			}
+		}
+	}
+}
+
+
+
 void BeginAddingSymbols()
 {
+	IBMutexLock(&symbolMutex);
 	sDuplicateCheck.Clear();
 	for (size_t i = 0, n = sectionNames.size(); i < n; ++i) {
 		if (char* sectName = sectionNames[i]) {
@@ -119,6 +260,7 @@ void BeginAddingSymbols()
 	}
 	labelList.clear();
 	hiddenSections.clear();
+	IBMutexRelease(&symbolMutex);
 }
 
 // discard all symbol lookups and fill out with a filtered set of sections
@@ -139,6 +281,9 @@ void FilterSectionSymbols()
 	}
 	ResetSymbols();
 
+	sortedLabelList.clear();
+
+	IBMutexLock(&symbolMutex);
 	// make sure label array exists
 	if (!sLabelCount) {
 		sLabelCount = (SymEntry*)malloc(sizeof(SymEntry) * 0x10000);
@@ -154,6 +299,8 @@ void FilterSectionSymbols()
 		if (sym->label == nullptr) { continue; }
 
 		strref lbl(sym->label);
+
+		sortedLabelList.push_back(*sym);
 
 		// 32 bit vymbol support
 		uint64_t hash = lbl.fnv1a_64();
@@ -214,6 +361,9 @@ void FilterSectionSymbols()
 		}
 	}
 	free(hidden);
+	IBMutexRelease(&symbolMutex);
+
+	SortSymbols(lastSortedUp, lastSortedName);
 }
 
 void AddSymbol(uint32_t address, const char *symbol, size_t symbolLen, const char *section, size_t sectionLen)
@@ -226,6 +376,7 @@ void AddSymbol(uint32_t address, const char *symbol, size_t symbolLen, const cha
 	hash = sym.fnv1a_64(hash);
 
 	if (sDuplicateCheck.Exists(hash)) { return; }
+	IBMutexLock(&symbolMutex);
 	sDuplicateCheck.Insert(hash, address);
 
 	size_t sectIdx = 0, numSects = sectionNames.size();
@@ -241,9 +392,10 @@ void AddSymbol(uint32_t address, const char *symbol, size_t symbolLen, const cha
 	memcpy(copy, sym.get(), sym.get_len());
 	SymbolInfo symInfo = { address, (uint32_t)sectIdx, copy };
 	labelList.push_back(symInfo);
+	IBMutexRelease(&symbolMutex);
 }
 
-void ShutdownSymbols()
+void ClearSymbols()
 {
 	ResetSymbols();
 	BeginAddingSymbols();
@@ -251,32 +403,27 @@ void ShutdownSymbols()
 
 const char* GetSymbol(uint16_t address)
 {
+	const char* sym = nullptr;
 	if( sLabelCount ) {
-		if( !sLabelCount[ address ].count ) { return nullptr; }
-		if( sLabelCount[ address ].count == 1 ) { return sLabelEntries[ address ].unique; }
-		return sLabelEntries[ address ].multi->names[ 0 ];
+		IBMutexLock(&symbolMutex);
+		if( !sLabelCount[ address ].count ) { sym = nullptr; }
+		else if( sLabelCount[ address ].count == 1 ) { sym = sLabelEntries[ address ].unique; }
+		else { sym = sLabelEntries[address].multi->names[0]; }
+		IBMutexRelease(&symbolMutex);
 	}
-	return nullptr;
-}
-
-static uint64_t fnv1a_64(const char *string, size_t length, uint64_t seed = 14695981039346656037ULL)
-{
-	uint64_t hash = seed;
-	if (string) {
-		size_t left = length;
-		while (left--)
-			hash = (*string++ ^ hash) * 1099511628211;
-	}
-	return hash;
+	return sym;
 }
 
 bool GetAddress( const char *name, size_t chars, uint16_t &addr )
 {
-	uint64_t key = fnv1a_64( name, chars );
+	uint64_t key = strref(name, (strl_t)chars).fnv1a_64();
+	IBMutexLock(&symbolMutex);
 	if( uint32_t* value = sReverseLookup.Value( key ) ) {
 		addr = (uint16_t)*value;
+		IBMutexRelease(&symbolMutex);
 		return true;
 	}
+	IBMutexRelease(&symbolMutex);
 	return false;
 }
 
@@ -373,13 +520,15 @@ void ReadSymbolsForBinary(const char *binname)
 	if (!origname) { origname = strref(binname); }
 
 	strown<PATH_MAX_LEN> symFile(origname);
-	symFile.append(".sym");
 
+	symFile.append(".dbg");
+	if (ReadC64DbgSrc(symFile.c_str())) { return; }
+
+	symFile.append(".sym");
 	if (ReadSymbols(symFile.c_str())) { return; }
 
 	symFile.copy(origname);
 	symFile.append(".vs");
-
 	ReadViceCommandFile(symFile.c_str());
 }
 

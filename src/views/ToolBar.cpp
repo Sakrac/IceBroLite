@@ -5,6 +5,7 @@
 #include "../C64Colors.h"
 #include "../Config.h"
 #include "../FileDialog.h"
+#include "../Sym.h"
 #include "ToolBar.h"
 
 ToolBar::ToolBar() : open(true) {}
@@ -134,11 +135,13 @@ void ToolBar::Draw()
 
 	if (const char* loadPrg = LoadProgramReady()) {
 		ViceStartProgram(loadPrg);
+		ReadSymbolsForBinary(loadPrg);
 	}
 //
 	if (reload) {
 		if (const char* loadPrg = ReloadProgramFile()) {
 			ViceStartProgram(loadPrg);
+			ReadSymbolsForBinary(loadPrg);
 		}
 	}
 //

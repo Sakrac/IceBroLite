@@ -2501,7 +2501,7 @@ int strref::find_esc(const strref str, strl_t pos) const
 	strl_t compare_left = str.length;
 
 	// get first character
-	uint8_t c = (uint8_t)*compare++;
+	uint8_t c = (uint8_t)tolower(*compare++);
 	compare_left--;
 	if (c=='\\' && compare_left) {
 		strl_t skip = int_get_esc_code(compare, compare_left, c);
@@ -2511,7 +2511,7 @@ int strref::find_esc(const strref str, strl_t pos) const
 
 	// sweep the scan buffer for the matching string
 	while (scan_left) {
-		if (*scan++ == c) {
+		if ((uint8_t)tolower(*scan++) == c) {
 			const uint8_t *chk_scan = scan;
 			const uint8_t *chk_compare = compare;
 			strl_t chk_scan_left = scan_left;
