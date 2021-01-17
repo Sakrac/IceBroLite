@@ -7,12 +7,12 @@ struct SymbolView {
 
     bool open;
     bool case_sensitive;
-    int selected_row;
-    int context_row;
-    uint32_t context_address;
+    uint32_t start, end;
 
     char searchField[kSearchFieldSize];
     char contextLabel[kContextSymbolSize];
+    char startStr[32];
+    char endStr[32];
 
     SymbolView();
     void WriteConfig(UserData& config);

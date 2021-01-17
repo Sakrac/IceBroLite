@@ -88,28 +88,28 @@ void CodeView::Draw(int index)
 		title.append("Code").append_num(index+1, 1, 10).append(" $").append_num(addrValue, 4, 16).append("###Code").append_num(index+1, 1, 10);
 		ImGui::SetNextWindowPos(ImVec2(872, 93), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(544, 425), ImGuiCond_FirstUseEver);
-		if (!ImGui::Begin(title.c_str(), &open)) {
+		bool active = ImGui::Begin(title.c_str(), &open);
+
+		if (ImGui::BeginDragDropTarget()) {
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("AddressDragDrop")) {
+				IM_ASSERT(payload->DataSize == sizeof(SymbolDragDrop));
+				SymbolDragDrop* drop = (SymbolDragDrop*)payload->Data;
+				if (drop->address < 0x10000) {
+					addrValue = (uint16_t)drop->address;
+					strovl addrStr(address, sizeof(address));
+					addrStr.copy(drop->symbol); addrStr.c_str();
+					open = true;
+				}
+			}
+			ImGui::EndDragDropTarget();
+		}
+
+		if( !active ) {
 			ImGui::End();
 			return;
 		}
 	}
 
-	{	// make entire window a drag and drop target
-		ImVec2 origCursor = ImGui::GetCursorPos();
-		ImGui::InvisibleButton("CodeX", ImGui::GetWindowSize());
-
-		if (ImGui::BeginDragDropTarget()) {
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("AddressDragDrop")) {
-				IM_ASSERT(payload->DataSize == sizeof(uint32_t));
-				uint32_t addr = *(uint32_t*)payload->Data;
-				if (addr < 0x10000) {
-					SetAddr((uint16_t)addr);
-				}
-			}
-			ImGui::EndDragDropTarget();
-		}
-		ImGui::SetCursorPos(origCursor);
-	}
 
 //	uint16_t addrs[MaxDisAsmLines];	// address for each line
 	CPU6510* cpu = GetCurrCPU();

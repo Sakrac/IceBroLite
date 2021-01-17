@@ -15,10 +15,11 @@ struct WatchView {
 	int numExpressions;
 	int editExpression;
 	int prevWidth;
-	strown<64> expressions[MaxExp];
-	strown<64> rpnExp[MaxExp];
+	strown<128> expressions[MaxExp];
+	strown<128> rpnExp[MaxExp];
 	strown<64> results[MaxExp];
 	WatchType types[MaxExp];
+	int values[MaxExp];
 	bool open;
 	bool rebuildAll;
 	bool recalcAll;

@@ -4,7 +4,7 @@
 struct UserData;
 
 struct MemView {
-	char address[16];
+	char address[128];
 	char span[16];
 
 	uint32_t addrValue;

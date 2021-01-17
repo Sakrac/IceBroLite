@@ -8,10 +8,12 @@
 #include "Views.h"
 #include "SymbolView.h"
 
-SymbolView::SymbolView() : open(false), case_sensitive(true), selected_row(-1)
+SymbolView::SymbolView() : open(false), case_sensitive(true), start(0), end(0xffffffff)
 {
     searchField[0] = 0;
     contextLabel[0] = 0;
+    startStr[0] = 0;
+    endStr[0] = 0;
 }
 
 void SymbolView::WriteConfig(UserData& config)
@@ -30,6 +32,17 @@ enum MyItemColumnID {
     SymbolColumnID_Section,
 };
 
+static void LimitHexStr(char* buf, size_t len)
+{
+    char* chk = buf, * fix = chk;
+    while (*chk && (chk - buf) < (len - 1)) {
+        char c = *chk++;
+        if (c == '$' || (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')) {
+            *fix++ = c;
+        }
+    }
+    *fix = 0;
+}
 
 void SymbolView::Draw()
 {
@@ -49,6 +62,20 @@ void SymbolView::Draw()
         case_sensitive = !case_sensitive;
         SearchSymbols(searchField, case_sensitive);
     }
+    ImGui::Columns(2);
+    if (ImGui::InputText("start", startStr, sizeof(startStr))) {
+        LimitHexStr(startStr, sizeof(startStr));
+        if (*startStr == '$') { start = (uint32_t)strref(startStr + 1).ahextoui(); }
+        else { start = (uint32_t)strref(startStr + 1).atoui();  }
+    }
+    ImGui::NextColumn();
+    if (ImGui::InputText("end", endStr, sizeof(endStr))) {
+        LimitHexStr(endStr, sizeof(endStr));
+        if (*endStr == '$') { end = (uint32_t)strref(endStr + 1).ahextoui(); }
+        else if (*endStr == 0) { end = 0xffffffff; }
+        else{ end = (uint32_t)strref(startStr + 1).atoui(); }
+    }
+    ImGui::Columns(1);
 
     const ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg |
         ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Resizable | ImGuiTableFlags_Sortable |
@@ -97,75 +124,32 @@ void SymbolView::Draw()
             const char* section;
             uint32_t address;
             const char* symbol = GetSymbolSearchMatch(s, &address, &section);
+            if (address < start || address > end) { continue; }
             if (symbol) {
                 ImGui::TableNextRow();
-
-                ImVec2 ul = ImGui::GetCursorPos();
-                ul.x += winPos.x; ul.y += winPos.y;
-                ImVec2 br(ul.x + winSize.x, ul.y + fontHgt);
-                if (ImGui::IsMouseHoveringRect(ul, br)) {
-                }
-
-
-
                 ImGui::TableSetColumnIndex(0);
 
                 strown<16> str;
                 str.append('$').append_num(address, address < 0x10000 ? 4 : 0, 16);
                 ImGui::Text(str.c_str());
 
-                bool hov = ImGui::IsItemHovered();
                 ImGui::TableSetColumnIndex(1);
-                ImGui::PushID(address);
                 ImGui::Text(symbol);
 
                 if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-                    // Set payload to carry the index of our item (could be anything)
-                    ImGui::SetDragDropPayload("AddressDragDrop", &address, sizeof(uint32_t));
-                    // Display preview (could be anything, e.g. when dragging an image we could decide to display
-                    // the filename and a small preview of the image, etc.)
+                    SymbolDragDrop drag;
+                    drag.address = address;
+                    strovl lblStr(drag.symbol, sizeof(drag.symbol));
+                    lblStr.copy(symbol); lblStr.c_str();
+                    ImGui::SetDragDropPayload("AddressDragDrop", &drag, sizeof(drag));
                     ImGui::Text("%s: $%04x", symbol, address);
                     ImGui::EndDragDropSource();
                 }
-                ImGui::PopID();
 
-
-                hov = hov || ImGui::IsItemHovered();
                 ImGui::TableSetColumnIndex(2);
                 ImGui::Text(section);
-
-                if (hov || ImGui::IsItemHovered()) {
-                    hovered_row = (int)s;
-                    hovered_addr = address;
-                    hovName = symbol;
-                }
             }
         }
-
-        if (hovered_row >= 0 && ImGui::IsMouseReleased(1)) {
-            context_row = hovered_row;
-            context_address = hovered_addr;
-            strovl ctxSym(contextLabel, kContextSymbolSize);
-            ctxSym.copy(hovName);
-            ctxSym.c_str();
-            ImGui::OpenPopup("SymbolContextMenu", ImGuiPopupFlags_NoOpenOverExistingPopup);
-        }
-
-        if (ImGui::BeginPopup("SymbolContextMenu")) {
-            ImGui::Text("%s $%04x", contextLabel, context_address);
-            if (ImGui::MenuItem("Add Breakpoint")) { ViceAddBreakpoint(context_address); }
-            if (ImGui::MenuItem("Set Code 1")) { SetCodeViewAddr(context_address, 0); ImGui::CloseCurrentPopup(); }
-            if (ImGui::MenuItem("Set Code 2")) { SetCodeViewAddr(context_address, 1); ImGui::CloseCurrentPopup(); }
-            if (ImGui::MenuItem("Set Code 3")) { SetCodeViewAddr(context_address, 2); ImGui::CloseCurrentPopup(); }
-            if (ImGui::MenuItem("Set Code 4")) { SetCodeViewAddr(context_address, 3); ImGui::CloseCurrentPopup(); }
-            if (ImGui::MenuItem("Set Memory 1")) { SetMemoryViewAddr(context_address, 0); ImGui::CloseCurrentPopup(); }
-            if (ImGui::MenuItem("Set Memory 2")) { SetMemoryViewAddr(context_address, 1); ImGui::CloseCurrentPopup(); }
-            if (ImGui::MenuItem("Set Memory 3")) { SetMemoryViewAddr(context_address, 2); ImGui::CloseCurrentPopup(); }
-            if (ImGui::MenuItem("Set Memory 4")) { SetMemoryViewAddr(context_address, 3); ImGui::CloseCurrentPopup(); }
-            if (ImGui::Button("Close")) { ImGui::CloseCurrentPopup(); }
-            ImGui::EndPopup();
-        }
-
 
         ImGui::EndTable();
     }

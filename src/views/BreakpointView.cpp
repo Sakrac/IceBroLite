@@ -5,6 +5,7 @@
 #include "../Image.h"
 #include "../Breakpoints.h"
 #include "../Sym.h"
+#include "../ViceInterface.h"
 #include "Views.h"
 #include "BreakpointView.h"
 
@@ -27,7 +28,20 @@ void BreakpointView::Draw()
 {
     ImGui::SetNextWindowPos(ImVec2(400, 150), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2(520, 400), ImGuiCond_FirstUseEver);
-    if (!ImGui::Begin("Breakpoints", &open)) {
+
+    bool active = ImGui::Begin("Breakpoints", &open);
+    if (ImGui::BeginDragDropTarget()) {
+        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("AddressDragDrop")) {
+            IM_ASSERT(payload->DataSize == sizeof(SymbolDragDrop));
+            SymbolDragDrop* drop = (SymbolDragDrop*)payload->Data;
+            if (drop->address < 0x10000) {
+                ViceAddBreakpoint((uint16_t)drop->address);
+                open = true;
+            }
+        }
+        ImGui::EndDragDropTarget();
+    }
+    if( !active) {
         ImGui::End();
         return;
     }
@@ -88,6 +102,15 @@ void BreakpointView::Draw()
                     num.append("-$").append_num(bp.end, 4, 16);
                 }
                 ImGui::Text(num.c_str());
+                if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+                    SymbolDragDrop drag;
+                    drag.address = bp.start;
+                    strovl lblStr(drag.symbol, sizeof(drag.symbol));
+                    lblStr.copy(num); lblStr.c_str();
+                    ImGui::SetDragDropPayload("AddressDragDrop", &drag, sizeof(drag));
+                    ImGui::Text(num.c_str());
+                    ImGui::EndDragDropSource();
+                }
                 ImGui::TableSetColumnIndex(col++);
                 uint16_t offs;
                 if (const char* label = NearestLabel(bp.start, offs)) {
@@ -95,6 +118,16 @@ void BreakpointView::Draw()
                     num.append(label);
                     if (offs) { num.append("+$").append_num(offs, 4, 16); }
                     ImGui::Text(num.c_str());
+
+                    if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+                        SymbolDragDrop drag;
+                        drag.address = bp.start;
+                        strovl lblStr(drag.symbol, sizeof(drag.symbol));
+                        lblStr.copy(num); lblStr.c_str();
+                        ImGui::SetDragDropPayload("AddressDragDrop", &drag, sizeof(drag));
+                        ImGui::Text("%s: $%04x", num, bp.start);
+                        ImGui::EndDragDropSource();
+                    }
                 }
             }
         }

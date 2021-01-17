@@ -8,6 +8,7 @@
 //#include "ViceConnect.h"
 #include "../Config.h"
 #include "../ImGui_Helper.h"
+#include "../Sym.h"
 #include "GLFW/glfw3.h"
 
 MemView::MemView() : fixedAddress(false), open(false), evalAddress(false)
@@ -61,7 +62,23 @@ void MemView::Draw(int index)
 
 		ImGui::SetNextWindowPos(ImVec2(400, 150), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(520, 400), ImGuiCond_FirstUseEver);
-		if (!ImGui::Begin(title.c_str(), &open)) {
+		bool active = ImGui::Begin(title.c_str(), &open);
+
+		if (ImGui::BeginDragDropTarget()) {
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("AddressDragDrop")) {
+				IM_ASSERT(payload->DataSize == sizeof(SymbolDragDrop));
+				SymbolDragDrop* drop = (SymbolDragDrop*)payload->Data;
+				if (drop->address < 0x10000) {
+					addrValue = drop->address;
+					strovl addrStr(address, sizeof(address));
+					addrStr.copy(drop->symbol); addrStr.c_str();
+					open = true;
+				}
+			}
+			ImGui::EndDragDropTarget();
+		}
+
+		if( !active ) {
 			ImGui::End();
 			return;
 		}

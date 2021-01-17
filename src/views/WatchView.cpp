@@ -4,13 +4,14 @@
 #include "Views.h"
 #include "../struse/struse.h"
 #include "WatchView.h"
-#include "imgui.h"
-#include "imgui_internal.h"
+#include "../imgui/imgui.h"
+#include "../imgui/imgui_internal.h"
 #include "../C64Colors.h"
 #include "../Expressions.h"
 #include "../Config.h"
 #include "../6510.h"
 #include "../Mnemonics.h"
+#include "../Sym.h"
 
 WatchView::WatchView() : open(false), rebuildAll(false), recalcAll(false)
 {
@@ -35,8 +36,8 @@ void WatchView::Evaluate(int index)
 		type = WT_BYTES;
 		++expression;
 	} else if (expression.has_prefix("dis")) {
-		wchar_t c = expression[3];
-		if (!((c >= L'A' && c <= 'Z') || (c >= L'0' && c <= '9') || (c >= L'a' && c <= 'z'))) {
+		char c = expression[3];
+		if (!((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || (c >= 'a' && c <= 'z'))) {
 			type = WT_DISASM;
 			expression += 3;
 		}
@@ -58,6 +59,7 @@ void WatchView::EvaluateItem(int index)
 		CPU6510 *cpu = GetCurrCPU();
 		if (types[index] == WT_NORMAL) {
 			int result = EvalExpression(rpn);
+			values[index] = result;
 			if (result < 0) {
 				buf.append('-');
 				result = -result;
@@ -73,6 +75,7 @@ void WatchView::EvaluateItem(int index)
 		} else if (types[index] == WT_BYTES) {
 			int addr = EvalExpression(rpn);
 			buf.append('$').append_num(addr, 4, 16);
+			values[index] = addr;
 			int num_bytes = int(((ImGui::GetWindowWidth() - ImGui::GetColumnWidth()) - 6 * CurrFontSize()) / (3 * CurrFontSize()));
 			for (int b = 0; b < num_bytes && buf.left() > 3; b++) {
 				buf.append(' ');
@@ -82,6 +85,7 @@ void WatchView::EvaluateItem(int index)
 			int addr = EvalExpression(rpn);
 			int disChars = 0, branchTrg = 0;
 			buf.append('$').append_num(addr, 4, 16).append(' ');
+			values[index] = addr;
 			Disassemble(cpu, addr, buf.charend(), buf.left(), disChars, branchTrg, true, true, true);
 			buf.add_len(disChars);
 		}
@@ -137,6 +141,22 @@ void WatchView::Draw(int index)
 			return;
 		}
 	}
+
+	if (ImGui::BeginDragDropTarget()) {
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("AddressDragDrop")) {
+			IM_ASSERT(payload->DataSize == sizeof(SymbolDragDrop));
+			SymbolDragDrop* drop = (SymbolDragDrop*)payload->Data;
+			if (numExpressions < MaxExp) {
+				expressions[numExpressions].clear();
+				if (drop->address < 0x10000) { expressions[numExpressions].append('*'); }
+				expressions[numExpressions].append(drop->symbol).c_str();
+				++numExpressions;
+				rebuildAll = true;
+			}
+		}
+		ImGui::EndDragDropTarget();
+	}
+
 	CPU6510* cpu = GetCurrCPU();
 	int currWidth = -1;
 	int numLines = numExpressions < MaxExp ? (numExpressions + 1) : MaxExp;
@@ -170,6 +190,18 @@ void WatchView::Draw(int index)
 		if (currWidth < 0) { currWidth = (int)ImGui::GetColumnWidth(); }
 		if ((i & 1) != 0) { DrawBlueTextLine(); }
 		ImGui::Text(results[i].c_str());
+
+		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+			SymbolDragDrop drag;
+			drag.address = values[i];
+			strovl lblStr(drag.symbol, sizeof(drag.symbol));
+			lblStr.copy(expressions[i]); lblStr.c_str();
+			ImGui::SetDragDropPayload("AddressDragDrop", &drag, sizeof(drag));
+			ImGui::Text("%s: $%04x", expressions[i], values[i]);
+			ImGui::EndDragDropSource();
+		}
+
+
 		ImGui::NextColumn();
 	}
 	rebuildAll = false;
