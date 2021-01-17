@@ -20,5 +20,11 @@ size_t NumSymbolSearchMatches();
 const char* GetSymbolSearchMatch(size_t i, uint32_t* address, const char** section);
 void SearchSymbols(const char* pattern, bool case_sensitive);
 
+size_t NumHiddenSections();
+uint64_t GetHiddenSection(size_t index);
+void HideSection(uint64_t section, bool hide);
+size_t NumSections();
+const char* GetSectionName(size_t index);
+
 void InitSymbols();
 void ShutdownSymbols();

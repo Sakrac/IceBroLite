@@ -35,11 +35,12 @@ enum MyItemColumnID {
 static void LimitHexStr(char* buf, size_t len)
 {
     char* chk = buf, * fix = chk;
-    while (*chk && (chk - buf) < (len - 1)) {
+    while (*chk && len>1) {
         char c = *chk++;
         if (c == '$' || (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')) {
             *fix++ = c;
         }
+        --len;
     }
     *fix = 0;
 }

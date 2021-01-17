@@ -48,6 +48,8 @@
     <ClInclude Include="views\CodeView.h" />
     <ClInclude Include="views\ConsoleView.h" />
     <ClInclude Include="views\FilesView.h" />
+    <ClInclude Include="views\GfxView.h" />
+    <ClInclude Include="views\SectionView.h" />
     <ClInclude Include="views\SymbolView.h" />
     <ClInclude Include="views\MemView.h" />
     <ClInclude Include="views\RegView.h" />
@@ -87,6 +89,8 @@
     <ClCompile Include="views\CodeView.cpp" />
     <ClCompile Include="views\ConsoleView.cpp" />
     <ClCompile Include="views\FilesView.cpp" />
+    <ClCompile Include="views\GfxView.cpp" />
+    <ClCompile Include="views\SectionView.cpp" />
     <ClCompile Include="views\SymbolView.cpp" />
     <ClCompile Include="views\MemView.cpp" />
     <ClCompile Include="views\RegView.cpp" />

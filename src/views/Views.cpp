@@ -12,6 +12,8 @@
 #include "ScreenView.h"
 #include "WatchView.h"
 #include "SymbolView.h"
+#include "SectionView.h"
+#include "GfxView.h"
 #include "../6510.h"
 #include "../data/C64_Pro_Mono-STYLE.ttf.h"
 #include "../FileDialog.h"
@@ -19,17 +21,18 @@
 #include "Views.h"
 #include "GLFW/glfw3.h"
 
-
 struct ViewContext {
 	enum { sNumFontSizes = 7 };
-	enum { MaxMemViews = 4, MaxCodeViews = 4, MaxWatchViews = 4 };
+	enum { MaxMemViews = 4, MaxCodeViews = 4, MaxWatchViews = 4, kMaxGfxViews = 2 };
 	ToolBar toolBar;
 	RegisterView regView;
 	MemView memView[MaxMemViews];
 	CodeView codeView[MaxCodeViews];
 	WatchView watchView[MaxWatchViews];
+	GfxView gfxView[kMaxGfxViews];
 	BreakpointView breakView;
 	SymbolView symbolView;
+	SectionView sectionView;
 	ImFont* aFonts[sNumFontSizes];
 	IceConsole console;
 
@@ -114,9 +117,18 @@ void ViewContext::Draw()
 					}
 					ImGui::EndMenu();
 				}
+				if (ImGui::BeginMenu("Graphics")) {
+					for (int i = 0; i < kMaxGfxViews; ++i) {
+						strown<64> name("Graphics");
+						name.append_num(i + 1, 1, 10);
+						if (ImGui::MenuItem(name.c_str(), NULL, gfxView[i].open)) { gfxView[i].open = !gfxView[i].open; }
+					}
+					ImGui::EndMenu();
+				}
 				if (ImGui::MenuItem("Registers", NULL, regView.open)) { regView.open = !regView.open; }
 				if (ImGui::MenuItem("Breakpoints", NULL, breakView.open)) { breakView.open = !breakView.open; }
 				if (ImGui::MenuItem("Symbols", NULL, symbolView.open)) { symbolView.open = !symbolView.open; }
+				if (ImGui::MenuItem("Sections", NULL, sectionView.open)) { sectionView.open = !sectionView.open; }
 				if (ImGui::MenuItem("Toolbar", NULL, toolBar.open)) { toolBar.open = !toolBar.open; }
 				ImGui::EndMenu();
 			}
@@ -163,11 +175,13 @@ void ViewContext::Draw()
 		ImGui::DockBuilderDockWindow("###Code3", dock_id_code3);
 		ImGui::DockBuilderDockWindow("###Code4", dock_id_code4);
 		ImGui::DockBuilderDockWindow("Mem1", dock_id_mem);
+		ImGui::DockBuilderDockWindow("Graphics1", dock_id_mem);
 		ImGui::DockBuilderDockWindow("Watch1", dock_id_watch);
 		ImGui::DockBuilderDockWindow("Registers", dock_id_regs);
 		ImGui::DockBuilderDockWindow("Screen", dock_id_screen);
 		ImGui::DockBuilderDockWindow("Breakpoints", dock_id_breaks);
 		ImGui::DockBuilderDockWindow("Symbols", dock_id_symbols);
+		ImGui::DockBuilderDockWindow("Sections", dock_id_symbols);
 		ImGui::DockBuilderFinish(dockspace_id);
 	}
 
@@ -176,10 +190,12 @@ void ViewContext::Draw()
 	for (int m = 0; m < MaxMemViews; ++m) { memView[m].Draw(m); }
 	for (int c = 0; c < MaxCodeViews; ++c) { codeView[c].Draw(c); }
 	for (int w = 0; w < MaxWatchViews; ++w) { watchView[w].Draw(w); }
+	for (int g = 0; g < kMaxGfxViews; ++g) { gfxView[g].Draw(g); }
 	console.Draw();
 	screenView.Draw();
 	breakView.Draw();
 	symbolView.Draw();
+	sectionView.Draw();
 
 	fileView.Draw("Select File");
 	GlobalKeyCheck();

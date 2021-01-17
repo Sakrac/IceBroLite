@@ -1,0 +1,47 @@
+#include <inttypes.h>
+#include "../imgui/imgui.h"
+#include "../Sym.h"
+#include "../struse/struse.h"
+#include "Views.h"
+#include "SectionView.h"
+
+SectionView::SectionView() : open(false)
+{
+}
+
+void SectionView::WriteConfig(UserData& config)
+{
+}
+
+void SectionView::ReadConfig(strref config)
+{
+}
+
+#define kMaxHiddenSections 128
+
+void SectionView::Draw()
+{
+    if (!open) { return; }
+    ImGui::SetNextWindowPos(ImVec2(400, 150), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(520, 400), ImGuiCond_FirstUseEver);
+    if (!ImGui::Begin("Sections", &open)) {
+        ImGui::End();
+        return;
+    }
+
+    size_t nHidden = NumHiddenSections();
+    size_t nSections = NumSections();
+    for (size_t s = 0; s < nSections; ++s) {
+        const char* name = GetSectionName(s);
+        uint64_t hash = strref(name).fnv1a_64();
+        bool enabled = true;
+        for (size_t h = 0; h < nHidden; ++h) {
+            if (hash == GetHiddenSection(h)) { enabled = false; break; }
+        }
+        if (ImGui::Checkbox(name[0] ? name : "<empty>", &enabled)) {
+            HideSection(hash, !enabled);
+        }
+    }
+
+    ImGui::End();
+}

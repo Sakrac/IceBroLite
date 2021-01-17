@@ -11,7 +11,7 @@ static CPU6510* sp6510 = nullptr;
 CPU6510::CPU6510() : space(VICE_MainMemory)
 {
 	IBMutexInit(&memoryUpdateMutex, "CPU memory sync");
-	ram = (uint8_t*)malloc(64 * 1024);
+	ram = (uint8_t*)calloc(1, 64 * 1024);
 }
 
 void CPU6510::MemoryFromVICE(uint16_t start, uint16_t end, uint8_t *bytes)

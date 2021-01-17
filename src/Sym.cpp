@@ -239,6 +239,25 @@ void SearchSymbols(const char* pattern, bool case_sensitive)
 	}
 }
 
+size_t NumHiddenSections() { return hiddenSections.size(); }
+uint64_t GetHiddenSection(size_t index) { return hiddenSections[index]; }
+void HideSection(uint64_t section, bool hide)
+{
+	bool found = false;
+	for (std::vector<uint64_t>::iterator h = hiddenSections.begin(); h != hiddenSections.end(); ++h) {
+		if (*h == section) {
+			if (!hide) {
+				hiddenSections.erase(h);
+				FilterSectionSymbols();
+			}
+			return; // removed if shown or already hidden
+		}
+	}
+	hiddenSections.push_back(section);
+	FilterSectionSymbols();
+}
+size_t NumSections() { return sectionNames.size(); }
+const char* GetSectionName(size_t index) { return sectionNames[index]; }
 
 
 void BeginAddingSymbols()
@@ -381,11 +400,11 @@ void AddSymbol(uint32_t address, const char *symbol, size_t symbolLen, const cha
 
 	size_t sectIdx = 0, numSects = sectionNames.size();
 	for (; sectIdx < numSects; ++sectIdx) {
-		if (sect.same_str(sectionNames[sectIdx])) { break; }
+		if (sect.same_str(sectionNames[sectIdx]) || (!sect.valid() && !sectionNames[sectIdx][0])) { break; }
 	}
 	if (sectIdx == numSects) {
 		char* sectionCopy = (char*)calloc(1, sect.get_len() + 1);
-		memcpy(sectionCopy, sect.get(), sect.get_len());
+		if (sect.get_len()) { memcpy(sectionCopy, sect.get(), sect.get_len()); }
 		sectionNames.push_back(sectionCopy);
 	}
 	char* copy = (char*)calloc(1, sym.get_len() + 1);

@@ -97,6 +97,12 @@
     <ClInclude Include="views\SymbolView.h">
       <Filter>views</Filter>
     </ClInclude>
+    <ClInclude Include="views\GfxView.h">
+      <Filter>views</Filter>
+    </ClInclude>
+    <ClInclude Include="views\SectionView.h">
+      <Filter>views</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\imgui.cpp">
@@ -172,6 +178,12 @@
     </ClCompile>
     <ClCompile Include="Breakpoints.cpp" />
     <ClCompile Include="views\SymbolView.cpp">
+      <Filter>views</Filter>
+    </ClCompile>
+    <ClCompile Include="views\GfxView.cpp">
+      <Filter>views</Filter>
+    </ClCompile>
+    <ClCompile Include="views\SectionView.cpp">
       <Filter>views</Filter>
     </ClCompile>
   </ItemGroup>
