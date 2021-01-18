@@ -15,6 +15,7 @@
 #include "SectionView.h"
 #include "GfxView.h"
 #include "../6510.h"
+#include "../Config.h"
 #include "../data/C64_Pro_Mono-STYLE.ttf.h"
 #include "../FileDialog.h"
 #include "../SourceDebug.h"
@@ -35,14 +36,16 @@ struct ViewContext {
 	SectionView sectionView;
 	ImFont* aFonts[sNumFontSizes];
 	IceConsole console;
-
 	ScreenView screenView;
+
 	FVFileView fileView;
 	int currFont;
 	float currFontSize;
 	bool setupDocking;
 
 	ViewContext();
+	void SaveState(UserData& conf);
+	void LoadState(strref config);
 	void Draw();
 	void GlobalKeyCheck();
 };
@@ -61,7 +64,43 @@ static const ImWchar C64CharRanges[] =
 	//	0xA640, 0xA69F, // Cyrillic Extended-B
 	//	0,
 };
+void ResetWindowLayout()
+{
+	ImGuiID dockspace_id = ImGui::GetID("IceBroLiteDockSpace");
 
+	ImGui::DockBuilderRemoveNode(dockspace_id); // Clear out existing layout
+	ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace); // Add empty node
+	ImGui::DockBuilderSetNodeSize(dockspace_id, ImVec2(ImGui::GetWindowWidth(), ImGui::GetWindowHeight()));
+
+	ImGuiID dock_main_id = dockspace_id; // This variable will track the document node, however we are not using it here as we aren't docking anything into it.
+	ImGuiID dock_id_toolbar = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.10f, NULL, &dock_main_id);
+	ImGuiID dock_id_code = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.33f, NULL, &dock_main_id);
+	ImGuiID dock_id_code2 = ImGui::DockBuilderSplitNode(dock_id_code, ImGuiDir_Down, 0.25f, NULL, &dock_id_code);
+	ImGuiID dock_id_code3 = ImGui::DockBuilderSplitNode(dock_id_code, ImGuiDir_Down, 0.33f, NULL, &dock_id_code);
+	ImGuiID dock_id_code4 = ImGui::DockBuilderSplitNode(dock_id_code, ImGuiDir_Down, 0.5f, NULL, &dock_id_code);
+	ImGuiID dock_id_regs = ImGui::DockBuilderSplitNode(dock_id_code, ImGuiDir_Up, 0.1f, NULL, &dock_id_code);
+	ImGuiID dock_id_mem = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.5f, NULL, &dock_main_id);
+	ImGuiID dock_id_watch = ImGui::DockBuilderSplitNode(dock_id_mem, ImGuiDir_Up, 0.33f, NULL, &dock_id_mem);
+	ImGuiID dock_id_screen = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.2f, NULL, &dock_main_id);
+	ImGuiID dock_id_breaks = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.2f, NULL, &dock_main_id);
+	ImGuiID dock_id_symbols = ImGui::DockBuilderSplitNode(dock_id_code, ImGuiDir_Down, 0.25f, NULL, &dock_id_code);
+
+	ImGui::DockBuilderDockWindow("Toolbar", dock_id_toolbar);
+	ImGui::DockBuilderDockWindow("Vice Monitor", dock_main_id);
+	ImGui::DockBuilderDockWindow("###Code1", dock_id_code);
+	ImGui::DockBuilderDockWindow("###Code2", dock_id_code2);
+	ImGui::DockBuilderDockWindow("###Code3", dock_id_code3);
+	ImGui::DockBuilderDockWindow("###Code4", dock_id_code4);
+	ImGui::DockBuilderDockWindow("Mem1", dock_id_mem);
+	ImGui::DockBuilderDockWindow("Graphics1", dock_id_mem);
+	ImGui::DockBuilderDockWindow("Watch1", dock_id_watch);
+	ImGui::DockBuilderDockWindow("Registers", dock_id_regs);
+	ImGui::DockBuilderDockWindow("Screen", dock_id_screen);
+	ImGui::DockBuilderDockWindow("Breakpoints", dock_id_breaks);
+	ImGui::DockBuilderDockWindow("Symbols", dock_id_symbols);
+	ImGui::DockBuilderDockWindow("Sections", dock_id_symbols);
+	ImGui::DockBuilderFinish(dockspace_id);
+}
 ViewContext::ViewContext() : currFont(3), setupDocking(true)
 {
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -75,6 +114,67 @@ ViewContext::ViewContext() : currFont(3), setupDocking(true)
 	codeView[0].open = true;
 	watchView[0].open = true;
 	console.open = true;
+}
+
+void ViewContext::SaveState(UserData& conf)
+{
+	// ToolBar toolBar;
+	conf.BeginStruct("ToolBar"); toolBar.WriteConfig(conf); conf.EndStruct();
+	// RegisterView regView;
+	conf.BeginStruct("Registers"); regView.WriteConfig(conf); conf.EndStruct();
+	// MemView memView[MaxMemViews];
+	conf.BeginArray("Memory");
+	for (int i = 0; i < MaxMemViews; ++i) {
+		conf.BeginStruct(); memView[i].WriteConfig(conf); conf.EndStruct();
+	}
+	conf.EndArray();
+	// CodeView codeView[MaxCodeViews];
+	conf.BeginArray("Code");
+	for (int i = 0; i < MaxCodeViews; ++i) {
+		conf.BeginStruct(); codeView[i].WriteConfig(conf); conf.EndStruct();
+	}
+	conf.EndArray();
+	// WatchView watchView[MaxWatchViews];
+	conf.BeginArray("Watch");
+	for (int i = 0; i < MaxWatchViews; ++i) {
+		conf.BeginStruct(); watchView[i].WriteConfig(conf); conf.EndStruct();
+	}
+	conf.EndArray();
+	// GfxView gfxView[kMaxGfxViews];
+	conf.BeginArray("Graphics");
+	for (int i = 0; i < kMaxGfxViews; ++i) {
+		conf.BeginStruct(); gfxView[i].WriteConfig(conf); conf.EndStruct();
+	}
+	conf.EndArray();
+	// BreakpointView breakView;
+	conf.BeginStruct("Breakpoits"); breakView.WriteConfig(conf); conf.EndStruct();
+	// SymbolView symbolView;
+	conf.BeginStruct("Symbols"); symbolView.WriteConfig(conf); conf.EndStruct();
+	// SectionView sectionView;
+	conf.BeginStruct("Sections"); sectionView.WriteConfig(conf); conf.EndStruct();
+	// ImFont* aFonts[sNumFontSizes];
+	// IceConsole console;
+	conf.BeginStruct("Console"); console.WriteConfig(conf); conf.EndStruct();
+	// ScreenView screenView;
+	conf.BeginStruct("Screen"); screenView.WriteConfig(conf); conf.EndStruct();
+}
+
+void ViewContext::LoadState(strref config)
+{
+	ConfigParse conf(config);
+	while (!conf.Empty()) {
+		strref name, value;
+		ConfigParseType type = conf.Next(&name, &value);
+		if (type == CPT_Struct) {
+			if (name.same_str("ToolBar")) { toolBar.ReadConfig(value); }
+			else if (name.same_str("Registers")) { regView.ReadConfig(value); }
+			else if (name.same_str("Breakpoints")) { breakView.ReadConfig(value); }
+			else if (name.same_str("Symbols")) { symbolView.ReadConfig(value); }
+			else if (name.same_str("Sections")) { sectionView.ReadConfig(value); }
+			else if (name.same_str("Console")) { console.ReadConfig(value); }
+			else if (name.same_str("Screen")) { screenView.ReadConfig(value); }
+		}
+	}
 }
 
 void ViewContext::Draw()
@@ -149,40 +249,7 @@ void ViewContext::Draw()
 
 	if (setupDocking) {
 		setupDocking = false;
-		ImGuiID dockspace_id = ImGui::GetID("IceBroLiteDockSpace");
-
-		ImGui::DockBuilderRemoveNode(dockspace_id); // Clear out existing layout
-		ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace); // Add empty node
-		ImGui::DockBuilderSetNodeSize(dockspace_id, ImVec2(ImGui::GetWindowWidth(), ImGui::GetWindowHeight()));
-
-		ImGuiID dock_main_id = dockspace_id; // This variable will track the document node, however we are not using it here as we aren't docking anything into it.
-		ImGuiID dock_id_toolbar = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.10f, NULL, &dock_main_id);
-		ImGuiID dock_id_code = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.33f, NULL, &dock_main_id);
-		ImGuiID dock_id_code2 = ImGui::DockBuilderSplitNode(dock_id_code, ImGuiDir_Down, 0.25f, NULL, &dock_id_code);
-		ImGuiID dock_id_code3 = ImGui::DockBuilderSplitNode(dock_id_code, ImGuiDir_Down, 0.33f, NULL, &dock_id_code);
-		ImGuiID dock_id_code4 = ImGui::DockBuilderSplitNode(dock_id_code, ImGuiDir_Down, 0.5f, NULL, &dock_id_code);
-		ImGuiID dock_id_regs = ImGui::DockBuilderSplitNode(dock_id_code, ImGuiDir_Up, 0.1f, NULL, &dock_id_code);
-		ImGuiID dock_id_mem = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.5f, NULL, &dock_main_id);
-		ImGuiID dock_id_watch = ImGui::DockBuilderSplitNode(dock_id_mem, ImGuiDir_Up, 0.33f, NULL, &dock_id_mem);
-		ImGuiID dock_id_screen = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.2f, NULL, &dock_main_id);
-		ImGuiID dock_id_breaks = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.2f, NULL, &dock_main_id);
-		ImGuiID dock_id_symbols = ImGui::DockBuilderSplitNode(dock_id_code, ImGuiDir_Down, 0.25f, NULL, &dock_id_code);
-
-		ImGui::DockBuilderDockWindow("Toolbar", dock_id_toolbar);
-		ImGui::DockBuilderDockWindow("Vice Monitor", dock_main_id);
-		ImGui::DockBuilderDockWindow("###Code1", dock_id_code);
-		ImGui::DockBuilderDockWindow("###Code2", dock_id_code2);
-		ImGui::DockBuilderDockWindow("###Code3", dock_id_code3);
-		ImGui::DockBuilderDockWindow("###Code4", dock_id_code4);
-		ImGui::DockBuilderDockWindow("Mem1", dock_id_mem);
-		ImGui::DockBuilderDockWindow("Graphics1", dock_id_mem);
-		ImGui::DockBuilderDockWindow("Watch1", dock_id_watch);
-		ImGui::DockBuilderDockWindow("Registers", dock_id_regs);
-		ImGui::DockBuilderDockWindow("Screen", dock_id_screen);
-		ImGui::DockBuilderDockWindow("Breakpoints", dock_id_breaks);
-		ImGui::DockBuilderDockWindow("Symbols", dock_id_symbols);
-		ImGui::DockBuilderDockWindow("Sections", dock_id_symbols);
-		ImGui::DockBuilderFinish(dockspace_id);
+		ResetWindowLayout();
 	}
 
 	toolBar.Draw();
@@ -313,4 +380,17 @@ FVFileView* GetFileView()
 		return &viewContext->fileView;
 	}
 	return nullptr;
+}
+
+void StateLoadViews(strref conf)
+{
+	if (viewContext) {
+		viewContext->LoadState(conf);
+	}
+}
+void StateSaveViews(UserData& conf)
+{
+	if (viewContext) {
+		viewContext->SaveState(conf);
+	}
 }

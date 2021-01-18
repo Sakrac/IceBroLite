@@ -15,6 +15,8 @@ struct ScreenView {
 	bool open;
 	bool refresh;
 
+	void WriteConfig(UserData& config);
+	void ReadConfig(strref config);
 	void Draw();
 	~ScreenView();
 	void Refresh(uint8_t* img, uint16_t w, uint16_t h);

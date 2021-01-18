@@ -78,6 +78,7 @@
     <ClCompile Include="ImGui_Helper.cpp" />
     <ClCompile Include="Mnemonics.cpp" />
     <ClCompile Include="Platform.cpp" />
+    <ClCompile Include="SaveState.cpp" />
     <ClCompile Include="SourceDebug.cpp" />
     <ClCompile Include="struse.cpp" />
     <ClCompile Include="struse\xml.cpp" />

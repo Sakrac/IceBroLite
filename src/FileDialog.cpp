@@ -263,3 +263,43 @@ void LoadViceCmdDialog()
 #endif
 }
 
+void StateLoadFilenames(strref filenames)
+{
+	ConfigParse config(filenames);
+	while (!config.Empty()) {
+		strref name, value;
+		ConfigParseType type = config.Next(&name, &value);
+		if (type == CPT_Value) {
+			if (name.same_str("Binary")) {
+				strovl(sLoadPrgFileName, sizeof(sLoadPrgFileName)).append(value).c_str();
+			} else if (name.same_str("Listing")) {
+				strovl(sLoadLstFileName, sizeof(sLoadLstFileName)).append(value).c_str();
+			} else if (name.same_str("DebugData")) {
+				strovl(sLoadDbgFileName, sizeof(sLoadDbgFileName)).append(value).c_str();
+			} else if (name.same_str("Symbols")) {
+				strovl(sLoadSymFileName, sizeof(sLoadSymFileName)).append(value).c_str();
+			} else if (name.same_str("ViceMonCommands")) {
+				strovl(sLoadViceFileName, sizeof(sLoadViceFileName)).append(value).c_str();
+			}
+		}
+	}
+}
+
+void StateSaveFilenames(UserData& conf)
+{
+	if (sLoadPrgFileName[0]) {
+		conf.AddValue("Binary", strref(sLoadPrgFileName));
+	}
+	if (sLoadLstFileName[0]) {
+		conf.AddValue("Listing", strref(sLoadLstFileName));
+	}
+	if (sLoadDbgFileName[0]) {
+		conf.AddValue("DebugData", strref(sLoadDbgFileName));
+	}
+	if (sLoadSymFileName[0]) {
+		conf.AddValue("Symbols", strref(sLoadSymFileName));
+	}
+	if (sLoadViceFileName[0]) {
+		conf.AddValue("ViceMonCommands", strref(sLoadViceFileName));
+	}
+}

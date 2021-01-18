@@ -42,6 +42,9 @@
 #include "WindowIcon.inc"
 
 void StyleC64();
+void LoadState();
+void SaveState();
+
 
 // [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to maximize ease of testing and compatibility with old VS compilers.
 // To link with VS2010-era libraries, VS2015+ requires linking with legacy_stdio_definitions.lib, which we do using this pragma.
@@ -147,6 +150,7 @@ int main(int argc, char* argv[])
 
 	// first frame stuff
 	bool firstFrame = true;
+	ImGui::LoadIniSettingsFromDisk("imgui.ini");
 
 	// Main loop
 	while (!glfwWindowShouldClose(window)) {
@@ -219,6 +223,8 @@ int main(int argc, char* argv[])
 		glfwSwapBuffers(window);
 		firstFrame = false;
 	}
+
+	SaveState();
 
 	ShutdownBreakpoints();
 	ShutdownSymbols();

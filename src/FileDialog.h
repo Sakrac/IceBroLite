@@ -16,3 +16,4 @@ void LoadSymbolsDialog();
 void LoadViceCmdDialog();
 
 const char* ReloadProgramFile();
+

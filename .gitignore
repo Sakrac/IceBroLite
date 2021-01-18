@@ -11,7 +11,7 @@ imgui.ini
 IceBro.cfg
 src/imgui.ini
 src/IceBro.cfg
-
+*.ini
 
 # User-specific files
 *.rsuser

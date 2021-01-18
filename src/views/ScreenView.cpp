@@ -1,9 +1,27 @@
-#include "ScreenView.h"
 #include <malloc.h>
-#include "../imgui/imgui.h"
 #include "GLFW/glfw3.h"
+#include "../imgui/imgui.h"
 #include "../Image.h"
+#include "../Config.h"
+#include "ScreenView.h"
 
+
+void ScreenView::WriteConfig(UserData& config)
+{
+	config.AddValue(strref("open"), config.OnOff(open));
+}
+
+void ScreenView::ReadConfig(strref config)
+{
+	ConfigParse conf(config);
+	while (!conf.Empty()) {
+		strref name, value;
+		ConfigParseType type = conf.Next(&name, &value);
+		if (name.same_str("open") && type == CPT_Value) {
+			open = !value.same_str("Off");
+		}
+	}
+}
 
 void ScreenView::Draw()
 {
