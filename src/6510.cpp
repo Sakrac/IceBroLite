@@ -31,6 +31,7 @@ void CPU6510::SetByte(uint16_t addr, uint8_t byte)
 {
 	// TODO: Send byte to VICE
 	ram[addr] = byte;
+	ViceSetMemory(addr, 1, ram + addr, space);
 }
 
 void CPU6510::SetPC(uint16_t pc)

@@ -158,7 +158,7 @@ struct VICEBinMemGetSet : public VICEBinHeader {
 
 	void Setup(uint32_t req, bool sideFX, bool get, uint16_t start, uint16_t end, uint16_t bank, VICEMemSpaces space)
 	{
-		VICEBinHeader::Setup(8, req, get ? VICE_MemGet : VICE_MemSet);
+		VICEBinHeader::Setup(8 + (get ? 0 : (end-start+1)), req, get ? VICE_MemGet : VICE_MemSet);
 		sideEffects = (uint8_t)sideFX;
 		startAddress[0] = (uint8_t)start; startAddress[1] = (uint8_t)(start >> 8);
 		endAddress[0] = (uint8_t)end; endAddress[1] = (uint8_t)(end >> 8);

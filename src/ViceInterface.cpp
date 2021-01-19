@@ -378,6 +378,24 @@ bool ViceGetMemory(uint16_t start, uint16_t end, VICEMemSpaces mem)
 	return false;
 }
 
+bool ViceSetMemory(uint16_t start, uint16_t len, uint8_t* bytes, VICEMemSpaces mem)
+{
+	if (viceCon && viceCon->isConnected() && viceCon->isStopped()) {
+		VICEBinMemGetSet* setMem = (VICEBinMemGetSet*)calloc(1, sizeof(VICEBinMemGetSet) + len);
+		setMem->Setup(++lastRequestID, false, false, start, start + len - 1, 0, mem);
+		memcpy(setMem + 1, bytes, len);
+#ifdef VICELOG
+		strown<128> msg("Setting VICE Memory $");
+		msg.append_num(start, 4, 16).append("-$").append_num(start + len - 1, 4, 16).append("\n");
+		ViceLog(msg.get_strref());
+		OutputDebugStringA(msg.c_str());
+#endif
+		viceCon->AddMessage((uint8_t*)setMem, sizeof(VICEBinMemGetSet) + len, true);
+		return true;
+	}
+	return false;
+}
+
 void ViceAddLogger(ViceLogger logger, void* user)
 {
 	logConsole = logger;
