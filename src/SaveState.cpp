@@ -9,6 +9,7 @@ void StateLoadFilenames(strref filenames);
 void StateSaveFilenames(UserData& conf);
 void StateLoadViews(strref conf);
 void StateSaveViews(UserData& conf);
+void ImGuiStateLoaded();
 
 static const char* sSaveStateFile = "icebrolt.ini";
 
@@ -25,6 +26,9 @@ void LoadState()
 				StateLoadFilenames(value);
 			} else if (name.same_str("Views") && type == CPT_Struct) {
 				StateLoadViews(value);
+			} else if (name.same_str("ImGui") && type == CPT_Struct) {
+				ImGui::LoadIniSettingsFromMemory(value.get(), value.get_len());
+				ImGuiStateLoaded();
 			}
 		}
 		free(data);

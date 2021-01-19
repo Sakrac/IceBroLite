@@ -51,6 +51,7 @@ struct ViewContext {
 };
 
 void UseDefaultFont();
+void StyleC64();
 
 static ViewContext* viewContext = nullptr;
 static float sFontSizes[ViewContext::sNumFontSizes] = { 8.0f, 10.0f, 12.0, 14.0f, 16.0f, 20.0f, 24.0f };
@@ -230,6 +231,14 @@ void ViewContext::Draw()
 				if (ImGui::MenuItem("Symbols", NULL, symbolView.open)) { symbolView.open = !symbolView.open; }
 				if (ImGui::MenuItem("Sections", NULL, sectionView.open)) { sectionView.open = !sectionView.open; }
 				if (ImGui::MenuItem("Toolbar", NULL, toolBar.open)) { toolBar.open = !toolBar.open; }
+				if (ImGui::MenuItem("Reset Views")) { setupDocking = true; }
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("Style")) {
+				if (ImGui::MenuItem("MonstersGoBoom C64")) { StyleC64(); }
+				if (ImGui::MenuItem("Dark")) { ImGui::StyleColorsDark(); }
+				if (ImGui::MenuItem("Classic")) { ImGui::StyleColorsClassic(); }
 				ImGui::EndMenu();
 			}
 
@@ -250,6 +259,21 @@ void ViewContext::Draw()
 	if (setupDocking) {
 		setupDocking = false;
 		ResetWindowLayout();
+		toolBar.open = true;
+		regView.open = true;
+		memView[0].open = true;
+		for (size_t i = 1; i < MaxMemViews; ++i) { memView[i].open = false; }
+		codeView[0].open = true;
+		for (size_t i = 1; i < MaxCodeViews; ++i) { codeView[i].open = false; }
+		watchView[0].open = true;
+		for (size_t i = 1; i < MaxWatchViews; ++i) { watchView[i].open = false; }
+		gfxView[0].open = true;
+		for (size_t i = 0; i < kMaxGfxViews; ++i) { gfxView[i].open = false; }
+		breakView.open = true;
+		symbolView.open = true;
+		sectionView.open = true;
+		console.open = true;
+		screenView.open = true;
 	}
 
 	toolBar.Draw();
@@ -392,5 +416,12 @@ void StateSaveViews(UserData& conf)
 {
 	if (viewContext) {
 		viewContext->SaveState(conf);
+	}
+}
+
+void ImGuiStateLoaded()
+{
+	if (viewContext) {
+		viewContext->setupDocking = false;
 	}
 }

@@ -2,6 +2,7 @@
 #include "../imgui/imgui.h"
 #include "../Sym.h"
 #include "../struse/struse.h"
+#include "../Config.h"
 #include "Views.h"
 #include "SectionView.h"
 
@@ -11,10 +12,19 @@ SectionView::SectionView() : open(false)
 
 void SectionView::WriteConfig(UserData& config)
 {
+    config.AddValue(strref("open"), config.OnOff(open));
 }
 
 void SectionView::ReadConfig(strref config)
 {
+	ConfigParse conf(config);
+	while (!conf.Empty()) {
+		strref name, value;
+		ConfigParseType type = conf.Next(&name, &value);
+		if (name.same_str("open") && type == CPT_Value) {
+			open = !value.same_str("Off");
+		}
+	}
 }
 
 #define kMaxHiddenSections 128

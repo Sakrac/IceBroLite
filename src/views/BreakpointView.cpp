@@ -16,12 +16,19 @@ BreakpointView::BreakpointView() : open(true), selected_row(-1)
 
 void BreakpointView::WriteConfig(UserData& config)
 {
-
+    config.AddValue(strref("open"), config.OnOff(open));
 }
 
 void BreakpointView::ReadConfig(strref config)
 {
-
+    ConfigParse conf(config);
+    while (!conf.Empty()) {
+        strref name, value;
+        ConfigParseType type = conf.Next(&name, &value);
+        if (name.same_str("open") && type == CPT_Value) {
+            open = !value.same_str("Off");
+        }
+    }
 }
 
 void BreakpointView::Draw()

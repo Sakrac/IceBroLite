@@ -18,12 +18,19 @@ SymbolView::SymbolView() : open(false), case_sensitive(true), start(0), end(0xff
 
 void SymbolView::WriteConfig(UserData& config)
 {
-
+    config.AddValue(strref("open"), config.OnOff(open));
 }
 
 void SymbolView::ReadConfig(strref config)
 {
-
+    ConfigParse conf(config);
+    while (!conf.Empty()) {
+        strref name, value;
+        ConfigParseType type = conf.Next(&name, &value);
+        if (name.same_str("open") && type == CPT_Value) {
+            open = !value.same_str("Off");
+        }
+    }
 }
 
 enum MyItemColumnID {
