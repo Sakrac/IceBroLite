@@ -1,15 +1,13 @@
-#include "RegView.h"
+#include <malloc.h>
+#include "GLFW/glfw3.h"
 #include "../imgui/imgui.h"
 #include "../struse/struse.h"
-#include <malloc.h>
-#include "Views.h"
-//#include "Expressions.h"
 #include "../ImGui_Helper.h"
 #include "../Config.h"
-#include "GLFW/glfw3.h"
-//#include "../ViceInterface.h"
 #include "../Image.h"
 #include "../6510.h"
+#include "Views.h"
+#include "RegView.h"
 
 constexpr auto CursorFlashPeriod = 64.0f/50.0f;
 
@@ -93,43 +91,43 @@ void RegisterView::Draw()
 			if (o < 4) {	// PC
 				int bt = 4 * (3 - o);
 				r.PC = (r.PC & (~(0xf << bt))) | (b << bt);
+				ViceSetRegisters(*cpu, CPU6510::RM_PC);
 				++cursor; if (cursor == 4) { ++cursor; }
-				// TODO: Send PC to VICE
 			} else if (o >= 5 && o < 7) { // A
 				int bt = 4 * (6 - o);
 				r.A = (r.A & (~(0xf << bt))) | (b << bt);
+				ViceSetRegisters(*cpu, CPU6510::RM_A);
 				++cursor; if (cursor == 7) { ++cursor; }
-				// TODO: Send A to VICE
 			} else if (o >= 8 && o < 10) { // X
 				int bt = 4 * (9 - o);
 				r.X = (r.X & (~(0xf << bt))) | (b << bt);
+				ViceSetRegisters(*cpu, CPU6510::RM_X);
 				++cursor; if (cursor == 10) { ++cursor; }
-				// TODO: Send X to VICE
 			} else if (o >= 11 && o < 13) { // Y
 				int bt = 4 * (12 - o);
 				r.Y = (r.Y & (~(0xf << bt))) | (b << bt);
+				ViceSetRegisters(*cpu, CPU6510::RM_Y);
 				++cursor; if (cursor == 13) { ++cursor; }
-				// TODO: Send Y to VICE
 			} else if (o >= 14 && o < 16) { // S
 				int bt = 4 * (15 - o);
 				r.SP = (r.SP & (~(0xf << bt))) | (b << bt);
+				ViceSetRegisters(*cpu, CPU6510::RM_SP);
 				++cursor; if (cursor == 16) { ++cursor; }
-				// TODO: Send SP to VICE
 			} else if (o >= 17 && o < 19) { // 0
 				int bt = 4 * (18 - o);
 				r.ZP00 = (r.ZP00 & (~(0xf << bt))) | (b << bt);
 				++cursor; if (cursor == 19) { ++cursor; }
-				// TODO: Send ZP00 to VICE
+				ViceSetRegisters(*cpu, CPU6510::RM_ZP00);
 			} else if (o >= 20 && o < 22) { // 1
 				int bt = 4 * (21 - o);
 				r.ZP01 = (r.ZP01 & (~(0xf << bt))) | (b << bt);
 				++cursor; if (cursor == 22) { ++cursor; }
-				// TODO: Send ZP00 to VICE
+				ViceSetRegisters(*cpu, CPU6510::RM_ZP01);
 			} else if (b < 2 && o >= 23 && o < 31) {
 				int bt = 30 - o;
 				r.FL = (r.FL & (~(1 << bt))) | (b << bt);
 				if (cursor < 30) { ++cursor; }
-				// TODO: Send FL to VICE
+				ViceSetRegisters(*cpu, CPU6510::RM_FL);
 			}
 		}
 

@@ -15,6 +15,17 @@ struct CPU6510 {
 		Regs() : A(0), X(0), Y(0), SP(0xff), FL(0), ZP00(0), ZP01(0x37), PC(0x0400), LIN(0), CYC(0) {}
 	};
 
+	enum RegMask {
+		RM_A = 0x0001,
+		RM_X = 0x0002,
+		RM_Y = 0x0004,
+		RM_SP = 0x0008,
+		RM_FL = 0x0010,
+		RM_ZP00 = 0x0020,
+		RM_ZP01 = 0x0040,
+		RM_PC = 0x0080
+	};
+
 	Regs	regs;
 	uint8_t *ram;
 	VICEMemSpaces space;

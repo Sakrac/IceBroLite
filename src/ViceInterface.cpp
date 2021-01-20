@@ -358,6 +358,95 @@ const char* ViceBinCmdName(uint8_t cmd)
 	return "?";
 }
 
+#define MAX_REGS_BUF 64
+
+bool ViceSetRegisters(const CPU6510& cpu, uint32_t regMask)
+{
+	if (viceCon) {
+		const CPU6510::Regs& regs = cpu.regs;
+		VICEMemSpaces mem = cpu.space;
+
+		uint8_t msgRaw[MAX_REGS_BUF + sizeof(VICEBinRegisterSet)];
+		VICEBinRegisterSet* rm = (VICEBinRegisterSet*)msgRaw;
+		VICEBinRegisterSetSingle* ri = rm->regs;
+		uint32_t size = 3;	// memSpace + count[2]
+		uint16_t count = 0;
+		if (regMask & CPU6510::RM_A) {
+			ri->itemSize = 3;
+			ri->regID = VICE_Acc;
+			ri->value[0] = regs.A;
+			size += 4;
+			++ri;
+			++count;
+		}
+		if (regMask & CPU6510::RM_X) {
+			ri->itemSize = 3;
+			ri->regID = VICE_X;
+			ri->value[0] = regs.X;
+			size += 4;
+			++ri;
+			++count;
+		}
+		if (regMask & CPU6510::RM_Y) {
+			ri->itemSize = 3;
+			ri->regID = VICE_Y;
+			ri->value[0] = regs.Y;
+			size += 4;
+			++ri;
+			++count;
+		}
+		if (regMask & CPU6510::RM_SP) {
+			ri->itemSize = 3;
+			ri->regID = VICE_SP;
+			ri->value[0] = regs.SP;
+			size += 4;
+			++ri;
+			++count;
+		}
+		if (regMask & CPU6510::RM_FL) {
+			ri->itemSize = 3;
+			ri->regID = VICE_FL;
+			ri->value[0] = regs.FL;
+			size += 4;
+			++ri;
+			++count;
+		}
+		if (regMask & CPU6510::RM_ZP00) {
+			ri->itemSize = 3;
+			ri->regID = VICE_00;
+			ri->value[0] = regs.ZP00;
+			size += 4;
+			++ri;
+			++count;
+		}
+		if (regMask & CPU6510::RM_ZP01) {
+			ri->itemSize = 3;
+			ri->regID = VICE_01;
+			ri->value[0] = regs.ZP01;
+			size += 4;
+			++ri;
+			++count;
+		}
+		if (regMask & CPU6510::RM_PC) {
+			ri->itemSize = 3;
+			ri->regID = VICE_PC;
+			ri->value[0] = (uint8_t)regs.PC;
+			ri->value[1] = (uint8_t)(regs.PC >> 8);
+			size += 4;
+			++ri;// = (VICEBinRegisterSetSingle*)((uint8_t*)ri + 4);
+			++count;
+		}
+		rm->Setup(size, ++lastRequestID, VICE_RegistersSet);
+		rm->memSpace = mem;
+		rm->count[0] = (uint8_t)count;
+		rm->count[1] = (uint8_t)(count >> 8);
+		viceCon->AddMessage((uint8_t*)rm, size + sizeof(VICEBinHeader), true);
+		return true;
+	}
+	return false;
+}
+
+
 bool ViceGetMemory(uint16_t start, uint16_t end, VICEMemSpaces mem)
 {
 	if (viceCon && viceCon->isConnected() && viceCon->isStopped()) {

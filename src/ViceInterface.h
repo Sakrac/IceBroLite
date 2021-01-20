@@ -1,5 +1,7 @@
 #pragma once
 
+struct CPU6510;
+
 enum VICEMemSpaces {
 	VICE_MainMemory,
 	VICE_Drive8,
@@ -22,6 +24,7 @@ void ViceStepOut();
 void ViceRunTo(uint16_t addr);
 bool ViceGetMemory(uint16_t start, uint16_t end, VICEMemSpaces mem);
 bool ViceSetMemory(uint16_t start, uint16_t len, uint8_t* bytes, VICEMemSpaces mem);
+bool ViceSetRegisters(const CPU6510& cpu, uint32_t regMask);
 void ViceStartProgram(const char* loadPrg);
 void ViceReset(uint8_t resetType);
 void ViceRemoveBreakpoint(uint32_t number);

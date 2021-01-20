@@ -306,6 +306,17 @@ struct VICEBinRegisterAvailableResponse : public VICEBinResponse {
 };
 
 
+struct VICEBinRegisterSetSingle {
+	uint8_t itemSize; // excluding self
+	uint8_t regID;
+	uint8_t value[2]; // 1 or 2 bytes
+};
+
+struct VICEBinRegisterSet : public VICEBinHeader {
+	uint8_t memSpace;
+	uint8_t count[2];
+	VICEBinRegisterSetSingle regs[1];
+};
 
 
 // for JAM, Stopped, Resumed

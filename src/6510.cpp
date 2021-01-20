@@ -38,6 +38,7 @@ void CPU6510::SetPC(uint16_t pc)
 {
 	// TODO: Set PC in Vice
 	regs.PC = pc;
+	ViceSetRegisters(*this, RM_PC);
 }
 
 void CreateMainCPU()
