@@ -11,6 +11,7 @@ struct RegisterView
 	int cursor;
 	float cursorTime;
 	bool open;
+	bool wasActive;
 	void Draw();
 };
 

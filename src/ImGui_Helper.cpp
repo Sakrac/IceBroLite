@@ -1,5 +1,6 @@
 #include "imgui.h"
 #include "imgui_internal.h"
+#include "GLFW/glfw3.h"
 
 void ForceKeyboardCanvas(const char* label)
 {
@@ -28,7 +29,7 @@ bool KeyboardCanvas( const char* label )
 
 	const ImGuiID id = window->GetID( label );
 
-	const bool hovered = ImGui::IsWindowHovered();
+	const bool hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
 	const bool focus_requested = ImGui::FocusableItemRegister( window, id );    // Using completion callback disable keyboard tabbing
 
 	const bool user_clicked = hovered && io.MouseClicked[ 0 ];
@@ -42,33 +43,12 @@ bool KeyboardCanvas( const char* label )
 			ImGui::SetFocusID( id, window );
 			ImGui::FocusWindow( window );
 		}
+	} else if (g.ActiveId == id) {
+		if ((!hovered && io.MouseClicked[0]) || ImGui::IsKeyPressed(GLFW_KEY_ESCAPE))
+			ImGui::ClearActiveID();
 	}
-	else if( g.ActiveId == id && io.MouseClicked[ 0 ] )
-		ImGui::ClearActiveID();
 
 	return g.ActiveId == id;
-#if 0
-
-	ImGuiWindow* window = ImGui::GetCurrentWindow();
-	if( window->SkipItems )
-		return false;
-
-	ImGuiContext& g = *GImGui;
-	const ImGuiID id = window->GetID( label );
-	if( ( ImGui::IsWindowHovered() && g.IO.MouseClicked[ 0 ] ) && ( g.NavActivateId == id ) )
-	{
-		if( g.ActiveId != id )
-		{
-			ImGui::SetActiveID( id, window );
-			ImGui::SetFocusID( id, window );
-			ImGui::FocusWindow( window );
-		}
-	}
-	else if( g.ActiveId == id && g.IO.MouseClicked[ 0 ] )
-		ImGui::ClearActiveID();
-
-	return g.ActiveId == id;
-#endif
 }
 
 

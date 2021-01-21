@@ -52,6 +52,7 @@ struct ViewContext {
 
 void UseDefaultFont();
 void StyleC64();
+void StyleC64_Darker();
 
 static ViewContext* viewContext = nullptr;
 static float sFontSizes[ViewContext::sNumFontSizes] = { 8.0f, 10.0f, 12.0, 14.0f, 16.0f, 20.0f, 24.0f };
@@ -238,7 +239,9 @@ void ViewContext::Draw()
 			if (ImGui::BeginMenu("Style")) {
 				if (ImGui::MenuItem("MonstersGoBoom C64")) { StyleC64(); }
 				if (ImGui::MenuItem("Dark")) { ImGui::StyleColorsDark(); }
+				if (ImGui::MenuItem("Light")) { ImGui::StyleColorsLight(); }
 				if (ImGui::MenuItem("Classic")) { ImGui::StyleColorsClassic(); }
+				if (ImGui::MenuItem("High Noon C64")) { StyleC64_Darker(); }
 				ImGui::EndMenu();
 			}
 

@@ -11,7 +11,7 @@
 
 constexpr auto CursorFlashPeriod = 64.0f/50.0f;
 
-RegisterView::RegisterView() : cursorTime(0.0f), open(true)
+RegisterView::RegisterView() : cursorTime(0.0f), open(true), wasActive(false)
 {
 	cursor = -1;
 }
@@ -49,6 +49,9 @@ void RegisterView::Draw()
 
 	bool active = KeyboardCanvas("RegisterView");// IsItemActive();
 
+	if (active && !wasActive) {
+		cursorTime = 0.5f * CursorFlashPeriod;
+	}
 
 //	ImVec2 topPos = ImGui::GetCursorPos();
 
@@ -151,5 +154,6 @@ void RegisterView::Draw()
 	}
 
 	ImGui::EndChild();
+	wasActive = active;
 	ImGui::End();
 }

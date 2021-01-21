@@ -12,7 +12,7 @@ enum ViceMonIcons {
 	VMI_Play,
 	VMI_Disconnected,
 	VMI_Step,
-	VMI_StebBack,
+	VMI_DisabledBreakPoint,
 	VMI_Pause,
 	VMI_PauseOff,
 	VMI_Sandbox,

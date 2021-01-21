@@ -211,25 +211,8 @@ void CodeView::Draw(int index)
 		}
 
 
-		// breakpoints
-		Breakpoint bp;
-		if (BreakpointAt(read, bp)) {
-			//ImGui::SetCursorPos(ImVec2(pt.x, pt.y+ch * l));
-			DrawTexturedIcon(VMI_BreakPoint, false, fontCharWidth);
-			ImGui::SetCursorPos(linePos);
-			if (addrCursor == read && ImGui::IsKeyPressed(GLFW_KEY_F9, false)) {
-				// remove breakpoint
-				ViceRemoveBreakpoint(bp.number);
-			}
-		} else if (addrCursor == read && ImGui::IsKeyPressed(GLFW_KEY_F9, false)) {
-			// add exec breakpoint
-			ViceAddBreakpoint(read);
-		}
-
-
 		line.clear();
 		line.append(regs.PC==read ? '>' : ' ');
-//		if (lineNum<MaxDisAsmLines) { addrs[lineNum] = read; }
 		if (showAddress) { line.append_num(read, 4, 16); line.append(' '); }
 		int branchTrg = -1;
 		int bytes = Disassemble(cpu, read, line.end(), line.left(), chars, branchTrg, showBytes, true, showLabels);
@@ -254,7 +237,6 @@ void CodeView::Draw(int index)
 					ForceKeyboardCanvas("DisAsmView");
 				} else {
 					// TODO: Assemble has probably already sent these bytes..
-//					ViceSendBytes(editAsmAddr, size);
 					editAsmStr[0] = 0;
 					editAsmFocusRequested = true;
 					editAsmAddr += size;
@@ -265,7 +247,7 @@ void CodeView::Draw(int index)
 			line.add_len(chars);
 			if (showRefs) {
 				char buf[24];
-				if (InstrRef(cpu, read, buf, sizeof(buf))) { line.pad_to(' ', (showAddress ? 6 : 0) + (showBytes ? 9 : 0) + (showLabels ? 6 : 0 ) + 10).append(buf); }
+				if (InstrRef(cpu, read, buf, sizeof(buf))) { line.pad_to(' ', (showAddress ? 6 : 0) + (showBytes ? 9 : 0) + (showLabels ? 6 : 0 ) + 11).append(buf); }
 			}
 			if (goToPC && read==pc) { goToPC = false; } // don't recenter PC if already in view
 			if (setPCAtCursor && read==addrCursor) {
@@ -300,14 +282,33 @@ void CodeView::Draw(int index)
 						addrCursor = read+bytes;
 					}
 				}
-				ImDrawList* dl = ImGui::GetWindowDrawList();
-				dl->AddRectFilled(ps, ImVec2(ps.x+ImGui::CalcTextSize(line.c_str()).x,
-					ps.y+lineHeight), ImColor(C64_PURPLE));
+				if (active) {
+					ImDrawList* dl = ImGui::GetWindowDrawList();
+					dl->AddRectFilled(ps, ImVec2(ps.x + ImGui::CalcTextSize(line.c_str()).x,
+												 ps.y + lineHeight), ImColor(C64_PURPLE));
+				}
 				ImGui::Text(line.c_str());
 				dY = 0;
 			} else {
 				ImGui::Text(line.c_str());
 			}
+		// breakpoints
+			Breakpoint bp;
+			if (BreakpointAt(read, bp)) {
+				ImVec2 savePos = ImGui::GetCursorPos();
+				ImGui::SetCursorPos(linePos);
+				DrawTexturedIcon((bp.flags & Breakpoint::Enabled) ? VMI_BreakPoint : VMI_DisabledBreakPoint, false, fontCharWidth);
+				ImGui::SetCursorPos(savePos);
+				if (active && addrCursor == read && ImGui::IsKeyPressed(GLFW_KEY_F9, false)) {
+					// remove breakpoint
+					ViceRemoveBreakpoint(bp.number);
+				}
+			} else if (active && addrCursor == read && ImGui::IsKeyPressed(GLFW_KEY_F9, false)) {
+				// add exec breakpoint
+				ViceAddBreakpoint(read);
+			}
+
+				
 			// TODO: Source Level Debugging
 			if (showSrc) {
 				int spaces = 0;
@@ -315,7 +316,7 @@ void CodeView::Draw(int index)
 				//if (!srcLine) { srcLine = GetListing(read, nullptr, nullptr); }
 				if (srcLine) {
 					ImGui::SameLine();
-					strl_t col = (showAddress ? 6 : 0) + (showBytes ? 9 : 0) + (showRefs ? 9 : 0) + (showLabels ? 6 : 0) + 9 + (spaces + 3) / 4;
+					strl_t col = (showAddress ? 6 : 0) + (showBytes ? 9 : 0) + (showRefs ? 11 : 0) + (showLabels ? 6 : 0) + 9 + (spaces + 3) / 4;
 					ImVec2 srcPos(linePos.x + col * fontCharWidth, linePos.y);
 					ImGui::SetCursorPos(srcPos);
 					ImGui::PushStyleColor(ImGuiCol_Text, C64_YELLOW);

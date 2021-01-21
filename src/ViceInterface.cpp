@@ -696,13 +696,6 @@ void ViceConnection::handleCheckpointList(VICEBinCheckpointList* cpList)
 	strown<32> msg;
 	msg.sprintf("%d checkpoints found", cpList->GetCount());
 	ViceLog(msg);
-/*
-	for (uint32_t cp = 0, n = cpList->GetCount(); cp < n; ++cp) {
-		VICEBinCheckpoint cpMsg;
-		cpMsg.Setup(4, ++lastRequestID, VICE_CheckpointGet);
-		cpMsg.SetNumber(cp);
-		AddMessage((uint8_t*)&cpMsg, sizeof(VICEBinCheckpoint));
-	}*/
 }
 
 void ViceConnection::handleCheckpointGet(VICEBinCheckpointResponse* cp)

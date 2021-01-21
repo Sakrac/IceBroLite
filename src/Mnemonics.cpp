@@ -715,9 +715,9 @@ int Disassemble(CPU6510* cpu, uint16_t addr, char* dest, int left, int& chars, i
 				if (label) {
 					//size_t newlen = 0;
 					//wcstombs_s(&newlen, label8, label, sizeof(label8)-1);
-					str.sprintf(aAddrModeLblFmt[mode], mnemonic, label, arg);
+					str.sprintf_append(aAddrModeLblFmt[mode], mnemonic, label, arg);
 				} else
-					str.sprintf(aAddrModeFmt[mode], mnemonic, arg);
+					str.sprintf_append(aAddrModeFmt[mode], mnemonic, arg);
 				break;
 
 			case AM_BRANCH:		// beq $1234
@@ -727,13 +727,13 @@ int Disassemble(CPU6510* cpu, uint16_t addr, char* dest, int left, int& chars, i
 				if (label) {
 					//size_t newlen = 0;
 					//wcstombs_s(&newlen, label8, label, sizeof(label8)-1);
-					str.sprintf(aAddrModeLblFmt[mode], mnemonic, label, arg);
+					str.sprintf_append(aAddrModeLblFmt[mode], mnemonic, label, arg);
 				} else
-					str.sprintf(aAddrModeFmt[mode], mnemonic, arg);
+					str.sprintf_append(aAddrModeFmt[mode], mnemonic, arg);
 				break;
 
 			default:
-				str.sprintf(aAddrModeFmt[mode], mnemonic,
+				str.sprintf_append(aAddrModeFmt[mode], mnemonic,
 							 cpu->GetByte(addr), cpu->GetByte(addr + 1));
 				break;
 		}

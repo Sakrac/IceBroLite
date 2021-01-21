@@ -47,7 +47,7 @@ void ToolBar::Draw()
 		return;
 	}
 
-	ImGui::Columns(11, 0, false);
+	ImGui::Columns(7, 0, false);
 
 	bool pause = DrawTexturedIconCenter(VMI_Pause, false, -1.0f, ViceRunning() ? C64_PINK : C64_LGRAY);
 	pause = CenterTextInColumn("Pause") || pause;
@@ -59,20 +59,10 @@ void ToolBar::Draw()
 
 	ImGui::NextColumn();
 
-// 	bool reverse = DrawTexturedIconCenter(VMI_Play, true);
-//	reverse = CenterTextInColumn("Rvs") || reverse;
-//
-//	ImGui::NextColumn();
-
 	bool step = DrawTexturedIconCenter(VMI_Step);
 	step = CenterTextInColumn("Step") || step;
 
 	ImGui::NextColumn();
-
-//	bool stepBack = DrawTexturedIconCenter(VMI_Step, true);
-//	stepBack = CenterTextInColumn("Back") || stepBack;
-//
-//	ImGui::NextColumn();
 
 	bool load = DrawTexturedIconCenter(VMI_Load);
 	load = CenterTextInColumn("Load") || load;
