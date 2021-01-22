@@ -122,9 +122,6 @@ void MemView::Draw(int index)
 		ImGui::SameLine();
 		ImGui::Checkbox("text", &showText);
 	}
-
-
-	//	else { ImGui::Text( "Not Clicked" ); }
 	ImGui::BeginChild(ImGui::GetID("hexEdit"));
 
 	if (showHex||showText) {
@@ -137,9 +134,6 @@ void MemView::Draw(int index)
 		float fontHgt = ImGui::GetFont()->FontSize;
 		uint32_t charWid = (uint32_t)(ImGui::GetWindowWidth()/fontWidth);
 
-		//ImGuiIO &io = ImGui::GetIO();
-		//io.FontDefault
-
 		uint32_t byteChars = (showHex ? 3 : 0)+(showText ? 1 : 0);
 		if (showAddress) { charWid -= 5; }
 		if (showHex && showText) { charWid--; }
@@ -151,17 +145,20 @@ void MemView::Draw(int index)
 			ImVec2 winSize = ImGui::GetWindowSize();
 			if (mousePos.x>=winPos.x && mousePos.y>=winPos.y &&
 				mousePos.x<(winPos.x+winSize.x)&&mousePos.y<(winPos.y+winSize.y)) {
-				cursor[0] = int((mousePos.x-winPos.x)/ fontWidth);
-				cursor[1] = int((mousePos.y-winPos.y)/ImGui::GetTextLineHeightWithSpacing());
-				if (showAddress && cursor[0]<5) { cursor[0] = 5; }
+				float mx = mousePos.x - winPos.x;
+				if (showAddress) { mx -= fontWidth * 5; }
+				int byte = (int)((mx + 0.5f * fontWidth) / (3.0f * fontWidth));
+				if (byte >= 0 && (uint32_t)byte < spanWin) {
+					int nib = (int)((mx - (byte * 3.0f * fontWidth)) / fontWidth);
+					cursor[0] = byte * 2 + nib;
+					cursor[1] = int((mousePos.y - winPos.y) / ImGui::GetTextLineHeightWithSpacing());
+				}
 			}
 		}
 
 		int lines = int(ImGui::GetWindowHeight()/ImGui::GetTextLineHeightWithSpacing());
 
 		if (active) {
-			int curXMin = showAddress ? 5 : 0;
-			int curXMax = curXMin+(showHex ? (3*spanWin-1) : 0)+(showText ? spanWin : 0)+((showHex && showText) ? 1 : 0)-1;
 			int curX = cursor[0], curY = cursor[1];
 			int dX = 0, dY = 0;
 
@@ -172,15 +169,17 @@ void MemView::Draw(int index)
 			if (ImGui::IsKeyPressed(GLFW_KEY_PAGE_UP)) { addrValue -= spanWin * (lines/2); }
 			if (ImGui::IsKeyPressed(GLFW_KEY_PAGE_DOWN)) { addrValue += spanWin * (lines/2); }
 
-			curX += dX; curY += dY;
-
-			if (curX > curXMax) { curY += 1; } else if (curX < curXMin) { curY -= 1; cursor[0] = curXMax; } else { cursor[0] = curX; }
-			if (curY<0) { addrValue -= spanWin; } else if (curY>=lines) { addrValue += spanWin; } else { cursor[1] = curY; }
+			if (showHex) {
+				curX += dX; curY += dY;
+				if (curX >= int(spanWin * 2)) { curY += 1; curX = 0; } else if (curX < 0) { curY -= 1; cursor[0] = spanWin * 2 - 1; } else { cursor[0] = curX; }
+				if (curY < 0) { addrValue -= spanWin; } else if (curY >= lines) { addrValue += spanWin; } else { cursor[1] = curY; }
+			} else if( dY ) {
+				addrValue += dY * spanWin;
+			}
 		}
 
 		strown<1024> line;
 		uint16_t read = addrValue;
-//		float leftPos = ImGui::GetCursorPosX();
 		for(int lineNum = 0; lineNum < lines; ++lineNum) {
 			line.clear();
 			if (showAddress) { line.append_num(read, 4, 16).append(' ');  }
@@ -201,19 +200,18 @@ void MemView::Draw(int index)
 		}
 
 		// keyboard
-		if (active) {
-			int col0 = showAddress ? 5 : 0;
-			int colT = col0+(showHex ? (3*spanWin) : 0);
-			// type?
+		if (active && showHex) {
+			int col0 = 0;
+			int colT = spanWin * 2;
 			if (showHex && cursor[0]<colT) {
-				uint16_t a = addrValue+(cursor[0]-col0)/3+cursor[1]*spanWin;
-				int nib = (cursor[0]-col0)%3;
+				uint16_t a = addrValue + cursor[0]/2 + cursor[1]*spanWin;
+				int nib = cursor[0] & 1;
 				uint8_t b = InputHex();
-				if (b!=0xff&&nib!=2) {
+				if (b!=0xff) {
 					uint8_t byte = cpu->GetByte(a);
 					if (nib) {
 						byte = (byte&0xf0)|b;
-						cursor[0] += 2;
+						++cursor[0];
 						if (cursor[0]>=colT) {
 							cursor[0] = col0;
 							++cursor[1];
@@ -224,22 +222,22 @@ void MemView::Draw(int index)
 					}
 					cpu->SetByte(a, byte);
 				}
-			} /*else if( showText ) {
-				uint16_t a = addrValue + (cursor[ 0 ] - colT) + cursor[ 1 ] * spanWin;
-			}*/
-
+			}
 			// cursor
 			if (cursorTime>(0.5f*CursorFlashPeriod)) {
 				const ImGuiStyle style = ImGui::GetStyle();
-				ImGui::SetCursorPos(ImVec2(fontWidth * cursor[0], ImGui::GetTextLineHeightWithSpacing() * cursor[1]));
+
+				int cx = (cursor[0] & 1) + (cursor[0] / 2) * 3 + (showAddress ? 5 : 0);
+
+				ImGui::SetCursorPos(ImVec2(fontWidth * cx, ImGui::GetTextLineHeightWithSpacing() * cursor[1]));
 				const ImVec2 p = ImGui::GetCursorScreenPos();
 				ImGui::GetWindowDrawList()->AddRectFilled(p, ImVec2(p.x+fontWidth, p.y+fontHgt),
 					ImColor(255, 255, 255));
 				strown<16> curChr;
 				if (showHex && cursor[0]<colT) {
-					uint8_t b = cpu->GetByte(addrValue+(cursor[0]-col0)/3+cursor[1]*spanWin);
-					int nib = (cursor[0]-col0)%3;
-					if (nib<2) { curChr.append(strref::num_to_char((b>>(nib ? 0 : 4))&0xf)); }
+					uint8_t b = cpu->GetByte(addrValue+cursor[0]/2+cursor[1]*spanWin);
+					int nib = (cursor[0]-col0)&1;
+					curChr.append(strref::num_to_char((b>>(nib ? 0 : 4))&0xf));
 				} else if (showText) {
 					uint8_t b = cpu->GetByte(addrValue+(cursor[0]-colT)+cursor[1]*spanWin);
 					curChr.push_utf8(0xee00+b);//curChr[ 0 ] = ScreenToAscii( b );

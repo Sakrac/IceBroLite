@@ -53,6 +53,8 @@ struct ViewContext {
 void UseDefaultFont();
 void StyleC64();
 void StyleC64_Darker();
+void StyleC64_Mid();
+
 
 static ViewContext* viewContext = nullptr;
 static float sFontSizes[ViewContext::sNumFontSizes] = { 8.0f, 10.0f, 12.0, 14.0f, 16.0f, 20.0f, 24.0f };
@@ -242,6 +244,7 @@ void ViewContext::Draw()
 				if (ImGui::MenuItem("Light")) { ImGui::StyleColorsLight(); }
 				if (ImGui::MenuItem("Classic")) { ImGui::StyleColorsClassic(); }
 				if (ImGui::MenuItem("High Noon C64")) { StyleC64_Darker(); }
+				if (ImGui::MenuItem("Regular C64")) { StyleC64_Mid(); }
 				ImGui::EndMenu();
 			}
 
@@ -371,7 +374,7 @@ void SetMemoryViewAddr(uint16_t addr, int index)
 
 uint8_t InputHex()
 {
-	for (int num = 0; num < 9; ++num) { if (ImGui::IsKeyPressed(num + '0')) return num; }
+	for (int num = 0; num < 10; ++num) { if (ImGui::IsKeyPressed(num + '0')) return num; }
 	for (int num = 10; num < 16; ++num) { if (ImGui::IsKeyPressed(num + 'A' - 10)) return num; }
 	return 0xff;
 }
