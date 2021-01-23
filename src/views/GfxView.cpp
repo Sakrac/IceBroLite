@@ -16,13 +16,6 @@
 #define sprintf_s sprintf
 #endif
 
-static GfxView::Mode sGenericModes[] = { GfxView::Planar, GfxView::Columns };
-static GfxView::Mode sC64Modes[] = { GfxView::C64_Bitmap, GfxView::C64_ColBitmap,
-									 GfxView::C64_Sprites, GfxView::C64_Text,
-									 GfxView::C64_ExtText, GfxView::C64_Text_MC,
-									 GfxView::C64_MCBM, GfxView::C64_ColumnScreen_MC,
-									 GfxView::C64_Current };
-
 #define ColRGBA( r, g, b, a ) uint32_t((a<<24)|(b<<16)|(g<<8)|(r))
 uint32_t c64pal[16] = {
 	ColRGBA(0,0,0,255),
@@ -80,9 +73,16 @@ unsigned char _aStartupFont[] = {
 
 void GfxView::WriteConfig(UserData& config)
 {
+	if (address_screen[0] == 0) { strovl(address_screen, sizeof(address_screen)).append('$').append_num(addrScreenValue, 4, 16); }
+	if (address_gfx[0] == 0) { strovl(address_gfx, sizeof(address_gfx)).append('$').append_num(addrGfxValue, 4, 16); }
+	if (address_col[0] == 0) { strovl(address_col, sizeof(address_col)).append('$').append_num(addrColValue, 4, 16); }
+	if (columns_str[0] == 0) { strovl(columns_str, sizeof(columns_str)).append('$').append_num(columns, 0, 16); }
+	if (rows_str[0] == 0) { strovl(rows_str, sizeof(rows_str)).append('$').append_num(rows, 4, 16); }
+
 	config.AddValue(strref("open"), config.OnOff(open));
 	config.AddValue(strref("addressScreen"), strref(address_screen));
 	config.AddValue(strref("addressChars"), strref(address_gfx));
+	config.AddValue(strref("addressColor"), strref(address_col));
 	config.AddValue(strref("columns_str"), strref(columns_str));
 	config.AddValue(strref("rows_str"), strref(rows_str));
 	config.AddValue(strref("mode"), displayMode);
@@ -109,6 +109,11 @@ void GfxView::ReadConfig(strref config)
 			reeval = true;
 		} else if (name.same_str("addressChars") && type == CPT_Value) {
 			strovl addr_gfx_str(address_gfx, sizeof(address_gfx));
+			addr_gfx_str.copy(value);
+			addrGfxValue = ValueFromExpression(addr_gfx_str.c_str());
+			reeval = true;
+		} else if (name.same_str("addressColor") && type == CPT_Value) {
+			strovl addr_gfx_str(address_col, sizeof(address_col));
 			addr_gfx_str.copy(value);
 			addrGfxValue = ValueFromExpression(addr_gfx_str.c_str());
 			reeval = true;
@@ -171,10 +176,10 @@ void GfxView::Draw(int index)
 	{
 		strown<32> name("gfxSetupColumns");
 		name.append_num(index + 1, 1, 10);
-		ImGui::Columns(4, name.c_str(), true);  // 4-ways, no border
+		ImGui::Columns(5, name.c_str(), true);  // 5-ways, no border
 		name.copy("system##");
 		name.append_num(index + 1, 1, 10);
-		ImGui::Combo(name.c_str(), &displaySystem, "Generic\0C64\0Apple2\0\0");
+		ImGui::Combo(name.c_str(), &displaySystem, "Generic\0C64\0\0");
 		ImGui::NextColumn();
 
 		int prevMode = displayMode;
@@ -205,21 +210,25 @@ void GfxView::Draw(int index)
 			ImGui::NextColumn();
 			ImGui::NextColumn();
 		}
+		if (ImGui::Checkbox("romFont", &useRomFont)) {
+			redraw = true;
+		}
+		ImGui::NextColumn();
 
 		name.copy("gfxSetupNext");
 		name.append_num(index + 1, 1, 10);
-		ImGui::Columns(4, name.c_str(), true);  // 4-ways, no border
+		ImGui::Columns(5, name.c_str(), true);  // 5-ways, no border
 		name.copy("mode##");
 		name.append_num(index + 1, 1, 10);
 		switch (displaySystem) {
-		case Generic:
-			ImGui::Combo(name.c_str(), &genericMode, "Planar\0Columns\0\0");
-			displayMode = sGenericModes[genericMode];
-			break;
-		case C64:
-			ImGui::Combo(name.c_str(), &c64Mode, "Bitmap\0Col Bitmap\0Sprites\0Text\0ExtText\0Text MC\0MCBM\0Colmn Text MC\0Current\0\0");
-			displayMode = sC64Modes[c64Mode];
-			break;
+			case Generic:
+				ImGui::Combo(name.c_str(), &genericMode, "Planar\0Columns\0\0");
+				displayMode = genericMode + Generic_Modes;
+				break;
+			case C64:
+				ImGui::Combo(name.c_str(), &c64Mode, "Bitmap\0Col Bitmap\0Sprites\0Text\0ExtText\0Text MC\0MCBM\0Colmn Text MC\0Current\0\0");
+				displayMode = c64Mode + C64_Modes;
+				break;
 		}
 		if (prevMode != displayMode) { redraw = true; }
 		ImGui::NextColumn();
@@ -227,11 +236,8 @@ void GfxView::Draw(int index)
 		name.append_num(index + 1, 1, 10);
 		ImGui::Combo(name.c_str(), &zoom, "Pixel\0Double\0Quad\0Fit X\0Fit Y\0Fit Window\0\0");
 
-//		bool modeOpt = displayMode == C64_Bitmap || displayMode == C64_Text || displayMode == C64_Sprites;
-
 		if (displayMode != C64_Current) {
 			ImGui::NextColumn();
-			//			ImGui::Columns(modeOpt ? 3 : 2);
 
 			if (displayMode == C64_Bitmap || displayMode == C64_Text) {
 				int colMode = color ? 1 : (multicolor ? 2 : 0), prevMode = colMode;
@@ -415,7 +421,7 @@ void GfxView::CreateC64CurrentBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* 
 	uint16_t chars = ( d018 & 0xe) * 0x400 + vic;
 	uint16_t screen = (d018 >> 4) * 0x400 + vic;
 
-	if (chars == 0x1000 || chars == 0xb000) { chars = 0; }
+//	if (chars == 0x1000 || chars == 0xb000) { chars = 0; }
 
 	bool mc = (d016 & 0x10) ? true : false;
 
@@ -526,7 +532,7 @@ void GfxView::CreateC64ColorBitmapBitmap(CPU6510* cpu, uint32_t* d, const uint32
 
 void GfxView::CreateC64ExtBkgTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t cm, uint32_t cl, uint32_t rw)
 {
-	bool romFont = g == 0;
+	bool romFont = useRomFont && (g == 0x1000 || g == 0x9000);
 	for (uint32_t y = 0; y < rw; y++) {
 		for (uint32_t x = 0; x < cl; x++) {
 			uint8_t chr = cpu->GetByte(a++);
@@ -535,7 +541,7 @@ void GfxView::CreateC64ExtBkgTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_
 			chr &= 0x3f;
 			uint16_t cs = g + 8 * chr;
 			for (int h = 0; h < 8; h++) {
-				uint8_t b = romFont ? _aStartupFont[cs++] : cpu->GetByte(cs++);
+				uint8_t b = romFont ? _aStartupFont[(cs++) & 0x7ff] : cpu->GetByte(cs++);
 				uint8_t m = 0x80;
 				for (int bit = 0; bit < 8; bit++) {
 					d[(y * 8 + h)*cl*8 + (x * 8 + bit)] = (b&m) ? fg : bg;
@@ -549,13 +555,13 @@ void GfxView::CreateC64ExtBkgTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_
 void GfxView::CreateC64TextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint32_t cl, uint32_t rw)
 {
 	uint16_t a = addrScreenValue;
-	bool romFont = addrGfxValue == 0;
+	bool romFont = useRomFont && (addrGfxValue == 0x1000 || addrGfxValue == 0x9000);
 	for (uint32_t y = 0; y < rw; y++) {
 		for (uint32_t x = 0; x < cl; x++) {
 			uint8_t chr = cpu->GetByte(a++);
 			uint16_t cs = addrGfxValue + 8 * chr;
 			for (int h = 0; h < 8; h++) {
-				uint8_t b = romFont ? _aStartupFont[cs++] : cpu->GetByte(cs++);
+				uint8_t b = romFont ? _aStartupFont[(cs++) & 0x7ff] : cpu->GetByte(cs++);
 				uint8_t m = 0x80;
 				for (int bit = 0; bit < 8; bit++) {
 					d[(y * 8 + h)*cl*8 + (x * 8 + bit)] = pal[(b&m) ? 14 : 6];
@@ -570,14 +576,14 @@ void GfxView::CreateC64ColorTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t
 {
 	uint8_t k = cpu->GetByte(0xd021) & 0xf;
 	uint32_t *o = d;
-	bool romFont = a == 0;
+	bool romFont = useRomFont && (g == 0x1000 || g == 0x9000);
 	for (int y = 0, ye = rw; y < ye; y++) {
 		for (uint32_t x = 0; x < cl; x++) {
 			uint8_t c = cpu->GetByte(f++) & 0xf;
 			uint8_t chr = cpu->GetByte(a++);
 			uint16_t cs = g + 8 * chr;
 			for (int h = 0; h < 8; h++) {
-				uint8_t b = romFont ? _aStartupFont[cs++] : cpu->GetByte(cs++);
+				uint8_t b = romFont ? _aStartupFont[(cs++) & 0x7ff] : cpu->GetByte(cs++);
 				for (int m = 0x80; m; m>>=1) {
 					*o++ = pal[(m&b) ? c : k];
 				}
@@ -706,18 +712,18 @@ void GfxView::CreateC64ColorTextColumns(CPU6510* cpu, uint32_t* d, const uint32_
 
 
 
-GfxView::GfxView() : open(false), reeval(false)
+GfxView::GfxView() : open(false), reeval(false), color(false), multicolor(false), useRomFont(true)
 {
 	addrScreenValue = 0x0400;
-	addrGfxValue = 0x0000;
+	addrGfxValue = 0x1000;
 	addrColValue = 0xd800;
 	columns = 40;
 	rows = 25;
 	zoom = Zoom_FitWindow;
 	displaySystem = 1;
-	displayMode = C64_Text;
-	genericMode = GfxView::Planar;
-	c64Mode = GfxView::C64_Current;
+	displayMode = C64_Current;
+	genericMode = Planar - Generic_Modes;
+	c64Mode = C64_Current - C64_Modes;
 	bitmap = nullptr;
 	bitmapSize = 0;
 	texture = 0;

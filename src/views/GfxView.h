@@ -8,12 +8,15 @@ struct GfxView {
 	enum System {
 		Generic,
 		C64,
+		Count
 	};
 
 	enum Mode {
-		Planar,
+		Generic_Modes = 0,
+		Planar = Generic_Modes,
 		Columns,
-		C64_Bitmap,
+		C64_Modes,
+		C64_Bitmap = C64_Modes,
 		C64_ColBitmap,
 		C64_Sprites,
 		C64_Text,
@@ -61,6 +64,8 @@ struct GfxView {
 
 	bool color;
 	bool multicolor;
+
+	bool useRomFont;
 
 	GfxView();
 

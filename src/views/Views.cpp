@@ -42,6 +42,7 @@ struct ViewContext {
 	int currFont;
 	float currFontSize;
 	bool setupDocking;
+	bool memoryWasChanged;
 
 	ViewContext();
 	void SaveState(UserData& conf);
@@ -177,12 +178,36 @@ void ViewContext::LoadState(strref config)
 			else if (name.same_str("Sections")) { sectionView.ReadConfig(value); }
 			else if (name.same_str("Console")) { console.ReadConfig(value); }
 			else if (name.same_str("Screen")) { screenView.ReadConfig(value); }
+		} else if (type == CPT_Array) {
+			size_t i = 0;
+			if (name.same_str("Code")) {
+				ConfigParse code(value);
+				while(!code.Empty() && i < MaxCodeViews) {
+					codeView[i++].ReadConfig(code.ArrayElement());
+				}
+			} else if (name.same_str("Memory")) {
+				ConfigParse mem(value);
+				while (!mem.Empty() && i < MaxMemViews) {
+					memView[i++].ReadConfig(mem.ArrayElement());
+				}
+			} else if (name.same_str("Watch")) {
+				ConfigParse watch(value);
+				while (!watch.Empty() && i < MaxWatchViews) {
+					watchView[i++].ReadConfig(watch.ArrayElement());
+				}
+			} else if (name.same_str("Graphics")) {
+				ConfigParse gfx(value);
+				while (!gfx.Empty() && i < kMaxGfxViews) {
+					gfxView[i++].ReadConfig(gfx.ArrayElement());
+				}
+			}
 		}
 	}
 }
 
 void ViewContext::Draw()
 {
+	memoryWasChanged = GetCurrCPU()->MemoryChange();
 	{
 		if (ImGui::BeginMainMenuBar()) {
 			if (ImGui::BeginMenu("File")) {
@@ -301,6 +326,11 @@ void ViewContext::Draw()
 	if (const char* kickDbgFile = LoadKickDbgReady()) {
 		ReadC64DbgSrc(kickDbgFile);
 	}
+
+	if (GetCurrCPU()->MemoryChange() && memoryWasChanged) {
+		GetCurrCPU()->WemoryChangeRefreshed();
+	}
+
 }
 
 void ViewContext::GlobalKeyCheck()
