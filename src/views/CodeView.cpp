@@ -20,6 +20,7 @@
 CodeView::CodeView() : open(false), evalAddress(false)
 {
 	showAddress = true;
+	showDisAsm = true;
 	showBytes = true;
 	fixedAddress = false;
 	showPCAddress = false;
@@ -47,6 +48,7 @@ void CodeView::WriteConfig(UserData& config)
 	config.AddValue(strref("address"), strref(address));
 	config.AddValue(strref("showAddress"), config.OnOff(showAddress));
 	config.AddValue(strref("showBytes"), config.OnOff(showBytes));
+	config.AddValue(strref("showDisAsm"), config.OnOff(showDisAsm));
 	config.AddValue(strref("fixedAddress"), config.OnOff(fixedAddress));
 	config.AddValue(strref("showLabels"), config.OnOff(showLabels));
 	config.AddValue(strref("showSrc"), config.OnOff(showSrc));
@@ -128,6 +130,8 @@ void CodeView::Draw(int index)
 	ImGui::Checkbox("addr", &showAddress);
 	ImGui::SameLine();
 	ImGui::Checkbox("bytes", &showBytes);
+	ImGui::SameLine();
+	ImGui::Checkbox("disAsm", &showDisAsm);
 	ImGui::SameLine();
 	ImGui::Checkbox("refs", &showRefs);
 	ImGui::SameLine();
@@ -215,7 +219,7 @@ void CodeView::Draw(int index)
 		line.append(regs.PC==read ? '>' : ' ');
 		if (showAddress) { line.append_num(read, 4, 16); line.append(' '); }
 		int branchTrg = -1;
-		int bytes = Disassemble(cpu, read, line.end(), line.left(), chars, branchTrg, showBytes, true, showLabels);
+		int bytes = Disassemble(cpu, read, line.end(), line.left(), chars, branchTrg, showBytes, true, showLabels, showDisAsm);
 		if (editAsmAddr==read&&!editAsmDone) {
 			line.pad_to(' ', 14);
 			ImGui::TextUnformatted(line.get(), line.end());
@@ -236,7 +240,6 @@ void CodeView::Draw(int index)
 					editAsmAddr = -1;
 					ForceKeyboardCanvas("DisAsmView");
 				} else {
-					// TODO: Assemble has probably already sent these bytes..
 					editAsmStr[0] = 0;
 					editAsmFocusRequested = true;
 					editAsmAddr += size;
@@ -309,14 +312,12 @@ void CodeView::Draw(int index)
 			}
 
 				
-			// TODO: Source Level Debugging
 			if (showSrc) {
 				int spaces = 0;
 				strref srcLine = GetSourceAt(read, spaces);
-				//if (!srcLine) { srcLine = GetListing(read, nullptr, nullptr); }
 				if (srcLine) {
 					ImGui::SameLine();
-					strl_t col = (showAddress ? 6 : 0) + (showBytes ? 9 : 0) + (showRefs ? 11 : 0) + (showLabels ? 6 : 0) + 9 + (spaces + 3) / 4;
+					strl_t col = (showAddress ? 6 : 0) + (showBytes ? 9 : 0) + (showRefs ? 11 : 0) + (showLabels ? 6 : 0) + ( showDisAsm ? 12 : 0 ) + (spaces + 3) / 4;
 					ImVec2 srcPos(linePos.x + col * fontCharWidth, linePos.y);
 					ImGui::SetCursorPos(srcPos);
 					ImGui::PushStyleColor(ImGuiCol_Text, C64_YELLOW);
@@ -338,9 +339,6 @@ void CodeView::Draw(int index)
 	} else {
 		showPCAddress = !fixedAddress && regs.PC>=addrValue && regs.PC<read && dY==0;
 	}
-
-	//float ch = ImGui::GetTextLineHeightWithSpacing();
-
 
 	// if pressing tab and PC is not on screen find an address 3 lines above
 	if (!fixedAddress&&(goToPC||focusPC)) {

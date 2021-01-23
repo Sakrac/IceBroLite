@@ -11,6 +11,7 @@
 #include "Files.h"
 #include "SourceDebug.h"
 #include "Sym.h"
+#include "Breakpoints.h"
 #include "platform.h"
 
 struct SymEntry {
@@ -468,8 +469,7 @@ void ReadViceCommandFile(const char *symFile)
 						if (command.same_str("break") || command.same_str("bk")) {
 							if (pass) {
 								if (line.get_first() == '$') { ++line; }
-								// TODO: Set breakpoint in VICE
-								//SetPCBreakpoint((uint16_t)(line + 1).ahextoui());
+								ViceAddBreakpoint((uint16_t)(line + 1).ahextoui());
 							}
 						} else if (command.same_str("al") || command.same_str("add_label")) {
 							if (line.has_prefix("c:")) { line += 2; }
@@ -492,7 +492,7 @@ void ReadViceCommandFile(const char *symFile)
 
 bool ReadSymbols(const char *filename)
 {
-//	ResetSymbols();
+	ResetSymbols();
 	FILE *f;
 	if (fopen_s(&f, filename, "rb") == 0 && f != nullptr) {
 		fseek(f, 0, SEEK_END);
@@ -514,8 +514,10 @@ bool ReadSymbols(const char *filename)
 							if (line.grab_char('$')) {
 								size_t addr = line.ahextoui();
 								if (label.same_str("debugbreak")) {
-								// TODO: Set breakpoint in VICE
-									//SetViceBP((uint16_t)addr, (uint16_t)addr, -1, true, VBP_Break, false);
+									Breakpoint bp;
+									if (!BreakpointAt((uint16_t)addr, bp)) {
+										ViceAddBreakpoint((uint16_t)addr);
+									}
 								} else {
 									AddSymbol((uint16_t)addr, label.get(), label.get_len(), nullptr, 0);
 								}

@@ -449,14 +449,6 @@ void IceConsole::ExecCommand(const char* command_line)
 		}
 	} else if (cmd.same_str("pause")) {
 		ViceBreak();
-	} else if (cmd.same_str("sync")) {
-		if (ViceConnected()) {
-			// TODO: Equivalent of Vice Sync
-//			if (ViceSync()) { AddLog("Syncing machine state with VICE"); }
-//			else { AddLog("Failed to start Sync with VICE"); }
-		} else {
-			AddLog("Vice is not connected");
-		}
 	} else if (cmd.same_str("eval")) {
 		uint8_t rpn[512];
 		bool mem = param.get_first() == '*';
@@ -485,28 +477,10 @@ void IceConsole::ExecCommand(const char* command_line)
 		AddLog(" connect/cnct <ip>:<port> - connect to a remote host, default to 127.0.0.1:6510");
 		AddLog(" pause - pause VICE");
 		AddLog(" font <size> - set font size 0-4");
-		AddLog(" sync - redo copy machine state from VICE");
 		AddLog(" eval <exp> - evaluate an expression");
 		AddLog(" history/hist - show previous commands");
 		AddLog(" clear - clear the console");
 	}
-
-	// Process command
-#if 0
-	if (Stricmp(command_line, "CLEAR") == 0) {
-		ClearLog();
-	} else if (Stricmp(command_line, "HELP") == 0) {
-		AddLog("Commands:");
-		for (int i = 0; i < Commands.Size; i++)
-			AddLog("- %s", Commands[i]);
-	} else if (Stricmp(command_line, "HISTORY") == 0) {
-		int first = History.Size - 10;
-		for (int i = first > 0 ? first : 0; i < History.Size; i++)
-			AddLog("%3d: %s\n", i, History[i]);
-	} else {
-		AddLog("Unknown command: '%s'\n", command_line);
-}
-#endif
 }
 
 int IceConsole::TextEditCallbackStub(ImGuiInputTextCallbackData* data) // In C++11 you are better off using lambdas for this sort of forwarding callbacks

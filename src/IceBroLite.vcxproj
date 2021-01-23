@@ -91,6 +91,7 @@
     <ClCompile Include="views\ConsoleView.cpp" />
     <ClCompile Include="views\FilesView.cpp" />
     <ClCompile Include="views\GfxView.cpp" />
+    <ClCompile Include="views\PreView.cpp" />
     <ClCompile Include="views\SectionView.cpp" />
     <ClCompile Include="views\SymbolView.cpp" />
     <ClCompile Include="views\MemView.cpp" />

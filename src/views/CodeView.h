@@ -26,6 +26,7 @@ struct CodeView
 	float cursorTime;
 	bool showAddress;
 	bool showBytes;
+	bool showDisAsm;
 	bool showRefs;
 	bool showSrc;
 	bool showLabels;

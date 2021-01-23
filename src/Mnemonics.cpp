@@ -677,7 +677,7 @@ int InstrRef(CPU6510* cpu, uint16_t pc, char* buf, size_t bufSize)
 }
 
 // disassemble one instruction at addr into the dest string and return number of bytes for instruction
-int Disassemble(CPU6510* cpu, uint16_t addr, char* dest, int left, int& chars, int& branchTrg, bool showBytes, bool illegals, bool showLabels)
+int Disassemble(CPU6510* cpu, uint16_t addr, char* dest, int left, int& chars, int& branchTrg, bool showBytes, bool illegals, bool showLabels, bool showDis)
 {
 	strovl str(dest, left);
 	const dismnm* opcodes = a6502_ops;
@@ -696,46 +696,48 @@ int Disassemble(CPU6510* cpu, uint16_t addr, char* dest, int left, int& chars, i
 		str.pad_to(' ', 9);
 	}
 
-	if (not_valid) {
-		str.sprintf_append("dc.b %02x ", cpu->GetByte(addr));
-	} else {
-		addr++;
-		const char* mnemonic = zsMNM[opcodes[op].mnemonic];
-		uint16_t arg;
-		const char* label;
-		//char label8[256];
-		switch (mode) {
-			case AM_ABS:		// 3 $1234
-			case AM_ABS_Y:		// 6 $1234,y
-			case AM_ABS_X:		// 7 $1234,x
-			case AM_REL:		// 8 ($1234)
-				arg = (uint16_t)cpu->GetByte(addr) | ((uint16_t)cpu->GetByte(addr + 1)) << 8;
-				if (op == 0x20 || op == 0x4c) { branchTrg = arg; }
-				label = showLabels ? GetSymbol(arg) : nullptr;
-				if (label) {
-					//size_t newlen = 0;
-					//wcstombs_s(&newlen, label8, label, sizeof(label8)-1);
-					str.sprintf_append(aAddrModeLblFmt[mode], mnemonic, label, arg);
-				} else
-					str.sprintf_append(aAddrModeFmt[mode], mnemonic, arg);
-				break;
+	if (showDis) {
+		if (not_valid) {
+			str.sprintf_append("dc.b %02x ", cpu->GetByte(addr));
+		} else {
+			addr++;
+			const char* mnemonic = zsMNM[opcodes[op].mnemonic];
+			uint16_t arg;
+			const char* label;
+			//char label8[256];
+			switch (mode) {
+				case AM_ABS:		// 3 $1234
+				case AM_ABS_Y:		// 6 $1234,y
+				case AM_ABS_X:		// 7 $1234,x
+				case AM_REL:		// 8 ($1234)
+					arg = (uint16_t)cpu->GetByte(addr) | ((uint16_t)cpu->GetByte(addr + 1)) << 8;
+					if (op == 0x20 || op == 0x4c) { branchTrg = arg; }
+					label = showLabels ? GetSymbol(arg) : nullptr;
+					if (label) {
+						//size_t newlen = 0;
+						//wcstombs_s(&newlen, label8, label, sizeof(label8)-1);
+						str.sprintf_append(aAddrModeLblFmt[mode], mnemonic, label, arg);
+					} else
+						str.sprintf_append(aAddrModeFmt[mode], mnemonic, arg);
+					break;
 
-			case AM_BRANCH:		// beq $1234
-				arg = addr + 1 + (char)cpu->GetByte(addr);
-				branchTrg = arg;
-				label = showLabels ? GetSymbol(arg) : nullptr;
-				if (label) {
-					//size_t newlen = 0;
-					//wcstombs_s(&newlen, label8, label, sizeof(label8)-1);
-					str.sprintf_append(aAddrModeLblFmt[mode], mnemonic, label, arg);
-				} else
-					str.sprintf_append(aAddrModeFmt[mode], mnemonic, arg);
-				break;
+				case AM_BRANCH:		// beq $1234
+					arg = addr + 1 + (char)cpu->GetByte(addr);
+					branchTrg = arg;
+					label = showLabels ? GetSymbol(arg) : nullptr;
+					if (label) {
+						//size_t newlen = 0;
+						//wcstombs_s(&newlen, label8, label, sizeof(label8)-1);
+						str.sprintf_append(aAddrModeLblFmt[mode], mnemonic, label, arg);
+					} else
+						str.sprintf_append(aAddrModeFmt[mode], mnemonic, arg);
+					break;
 
-			default:
-				str.sprintf_append(aAddrModeFmt[mode], mnemonic,
-							 cpu->GetByte(addr), cpu->GetByte(addr + 1));
-				break;
+				default:
+					str.sprintf_append(aAddrModeFmt[mode], mnemonic,
+									   cpu->GetByte(addr), cpu->GetByte(addr + 1));
+					break;
+			}
 		}
 	}
 	chars = str.get_len();

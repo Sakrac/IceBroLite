@@ -56,3 +56,18 @@ void SaveState()
 
 	SaveFile(sSaveStateFile, conf.start, conf.curr - conf.start);
 }
+
+static bool saveLayoutNow = false;
+
+void UserSaveLayout()
+{
+	saveLayoutNow = true;
+}
+
+void UserSaveLayoutUpdate()
+{
+	if (saveLayoutNow) {
+		saveLayoutNow = false;
+		SaveState();
+	}
+}

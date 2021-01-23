@@ -29,7 +29,6 @@ uint8_t CPU6510::GetByte(uint16_t addr)
 
 void CPU6510::SetByte(uint16_t addr, uint8_t byte)
 {
-	// TODO: Send byte to VICE
 	ram[addr] = byte;
 	memoryChanged = true;
 	ViceSetMemory(addr, 1, ram + addr, space);
@@ -37,7 +36,6 @@ void CPU6510::SetByte(uint16_t addr, uint8_t byte)
 
 void CPU6510::SetPC(uint16_t pc)
 {
-	// TODO: Set PC in Vice
 	regs.PC = pc;
 	ViceSetRegisters(*this, RM_PC);
 }

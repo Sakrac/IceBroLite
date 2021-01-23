@@ -43,6 +43,7 @@ struct ViewContext {
 	float currFontSize;
 	bool setupDocking;
 	bool memoryWasChanged;
+	bool saveSettingsOnExit;
 
 	ViewContext();
 	void SaveState(UserData& conf);
@@ -51,6 +52,7 @@ struct ViewContext {
 	void GlobalKeyCheck();
 };
 
+void UserSaveLayout();
 void UseDefaultFont();
 void StyleC64();
 void StyleC64_Darker();
@@ -106,7 +108,7 @@ void ResetWindowLayout()
 	ImGui::DockBuilderDockWindow("Sections", dock_id_symbols);
 	ImGui::DockBuilderFinish(dockspace_id);
 }
-ViewContext::ViewContext() : currFont(3), setupDocking(true)
+ViewContext::ViewContext() : currFont(3), setupDocking(true), saveSettingsOnExit(true)
 {
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	for (int fa = 0; fa < ViewContext::sNumFontSizes; ++fa) {
@@ -259,7 +261,6 @@ void ViewContext::Draw()
 				if (ImGui::MenuItem("Symbols", NULL, symbolView.open)) { symbolView.open = !symbolView.open; }
 				if (ImGui::MenuItem("Sections", NULL, sectionView.open)) { sectionView.open = !sectionView.open; }
 				if (ImGui::MenuItem("Toolbar", NULL, toolBar.open)) { toolBar.open = !toolBar.open; }
-				if (ImGui::MenuItem("Reset Views")) { setupDocking = true; }
 				ImGui::EndMenu();
 			}
 
@@ -282,6 +283,14 @@ void ViewContext::Draw()
 				if (ImGui::MenuItem("ImGui default")) { UseDefaultFont(); }
 				ImGui::EndMenu();
 			}
+
+			if (ImGui::BeginMenu("Layout")) {
+				if (ImGui::MenuItem("Reset Layout")) { setupDocking = true; }
+				if (ImGui::MenuItem("Save Layout")) { UserSaveLayout(); }
+				if (ImGui::MenuItem("Save Layout on Exit", nullptr, &saveSettingsOnExit)) { saveSettingsOnExit = !saveSettingsOnExit; }
+				ImGui::EndMenu();
+			}
+
 			ImGui::EndMainMenuBar();
 
 		}
@@ -460,4 +469,12 @@ void ImGuiStateLoaded()
 	if (viewContext) {
 		viewContext->setupDocking = false;
 	}
+}
+
+bool SaveLayoutOnExit()
+{
+	if (viewContext) {
+		return viewContext->saveSettingsOnExit;
+	}
+	return false;
 }

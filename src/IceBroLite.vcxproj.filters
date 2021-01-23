@@ -187,6 +187,9 @@
       <Filter>views</Filter>
     </ClCompile>
     <ClCompile Include="SaveState.cpp" />
+    <ClCompile Include="views\PreView.cpp">
+      <Filter>views</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="imgui\misc\natvis\imgui.natvis">

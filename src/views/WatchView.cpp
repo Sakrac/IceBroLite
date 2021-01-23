@@ -86,7 +86,7 @@ void WatchView::EvaluateItem(int index)
 			int disChars = 0, branchTrg = 0;
 			buf.append('$').append_num(addr, 4, 16).append(' ');
 			values[index] = addr;
-			Disassemble(cpu, addr, buf.charend(), buf.left(), disChars, branchTrg, true, true, true);
+			Disassemble(cpu, addr, buf.charend(), buf.left(), disChars, branchTrg, true, true, true, true);
 			buf.add_len(disChars);
 		}
 	}
@@ -195,9 +195,9 @@ void WatchView::Draw(int index)
 			SymbolDragDrop drag;
 			drag.address = values[i];
 			strovl lblStr(drag.symbol, sizeof(drag.symbol));
-			lblStr.copy(expressions[i]); lblStr.c_str();
+			lblStr.copy(expressions[i] + (expressions[i][0] == '*' ? 1 : 0)); lblStr.c_str();
 			ImGui::SetDragDropPayload("AddressDragDrop", &drag, sizeof(drag));
-			ImGui::Text("%s: $%04x", expressions[i], values[i]);
+			ImGui::Text("%s: $%04x", expressions[i].charstr() + (expressions[i][0]=='*' ? 1 : 0), values[i]);
 			ImGui::EndDragDropSource();
 		}
 

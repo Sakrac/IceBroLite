@@ -115,12 +115,7 @@ void GfxView::ReadConfig(strref config)
 		} else if (name.same_str("addressColor") && type == CPT_Value) {
 			strovl addr_gfx_str(address_col, sizeof(address_col));
 			addr_gfx_str.copy(value);
-			addrGfxValue = ValueFromExpression(addr_gfx_str.c_str());
-			reeval = true;
-		} else if (name.same_str("addressColor") && type == CPT_Value) {
-			strovl addr_col_str(address_col, sizeof(address_col));
-			addr_col_str.copy(value);
-			addrColValue = ValueFromExpression(addr_col_str.c_str());
+			addrColValue = ValueFromExpression(addr_gfx_str.c_str());
 			reeval = true;
 		} else if (name.same_str("columns_str") && type == CPT_Value) {
 			strovl col_str(columns_str, sizeof(columns_str));
@@ -532,7 +527,6 @@ void GfxView::CreateC64ColorBitmapBitmap(CPU6510* cpu, uint32_t* d, const uint32
 
 void GfxView::CreateC64ExtBkgTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t cm, uint32_t cl, uint32_t rw)
 {
-	bool romFont = useRomFont && (g == 0x1000 || g == 0x9000);
 	for (uint32_t y = 0; y < rw; y++) {
 		for (uint32_t x = 0; x < cl; x++) {
 			uint8_t chr = cpu->GetByte(a++);
@@ -541,7 +535,12 @@ void GfxView::CreateC64ExtBkgTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_
 			chr &= 0x3f;
 			uint16_t cs = g + 8 * chr;
 			for (int h = 0; h < 8; h++) {
-				uint8_t b = romFont ? _aStartupFont[(cs++) & 0x7ff] : cpu->GetByte(cs++);
+				uint8_t b;
+				if (useRomFont && ((cs >= 0x1000 && cs < 0x2000) || (cs >= 0x9000 && cs <= 0xa000))) {
+					b = _aStartupFont[(cs++) & 0x7ff];
+				} else {
+					b = cpu->GetByte(cs++);
+				}
 				uint8_t m = 0x80;
 				for (int bit = 0; bit < 8; bit++) {
 					d[(y * 8 + h)*cl*8 + (x * 8 + bit)] = (b&m) ? fg : bg;
@@ -555,13 +554,17 @@ void GfxView::CreateC64ExtBkgTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_
 void GfxView::CreateC64TextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint32_t cl, uint32_t rw)
 {
 	uint16_t a = addrScreenValue;
-	bool romFont = useRomFont && (addrGfxValue == 0x1000 || addrGfxValue == 0x9000);
 	for (uint32_t y = 0; y < rw; y++) {
 		for (uint32_t x = 0; x < cl; x++) {
 			uint8_t chr = cpu->GetByte(a++);
 			uint16_t cs = addrGfxValue + 8 * chr;
 			for (int h = 0; h < 8; h++) {
-				uint8_t b = romFont ? _aStartupFont[(cs++) & 0x7ff] : cpu->GetByte(cs++);
+				uint8_t b;
+				if (useRomFont && ((cs >= 0x1000 && cs < 0x2000) || (cs >= 0x9000 && cs <= 0xa000))) {
+					b = _aStartupFont[(cs++) & 0x7ff];
+				} else {
+					b = cpu->GetByte(cs++);
+				}
 				uint8_t m = 0x80;
 				for (int bit = 0; bit < 8; bit++) {
 					d[(y * 8 + h)*cl*8 + (x * 8 + bit)] = pal[(b&m) ? 14 : 6];
@@ -576,14 +579,18 @@ void GfxView::CreateC64ColorTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t
 {
 	uint8_t k = cpu->GetByte(0xd021) & 0xf;
 	uint32_t *o = d;
-	bool romFont = useRomFont && (g == 0x1000 || g == 0x9000);
 	for (int y = 0, ye = rw; y < ye; y++) {
 		for (uint32_t x = 0; x < cl; x++) {
 			uint8_t c = cpu->GetByte(f++) & 0xf;
 			uint8_t chr = cpu->GetByte(a++);
 			uint16_t cs = g + 8 * chr;
 			for (int h = 0; h < 8; h++) {
-				uint8_t b = romFont ? _aStartupFont[(cs++) & 0x7ff] : cpu->GetByte(cs++);
+				uint8_t b;
+				if (useRomFont && ((cs >= 0x1000 && cs < 0x2000) || (cs >= 0x9000 && cs <= 0xa000))) {
+					b = _aStartupFont[(cs++) & 0x7ff];
+				} else {
+					b = cpu->GetByte(cs++);
+				}
 				for (int m = 0x80; m; m>>=1) {
 					*o++ = pal[(m&b) ? c : k];
 				}
