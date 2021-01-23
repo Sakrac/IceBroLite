@@ -49,6 +49,7 @@
     <ClInclude Include="views\ConsoleView.h" />
     <ClInclude Include="views\FilesView.h" />
     <ClInclude Include="views\GfxView.h" />
+    <ClInclude Include="views\PreView.h" />
     <ClInclude Include="views\SectionView.h" />
     <ClInclude Include="views\SymbolView.h" />
     <ClInclude Include="views\MemView.h" />

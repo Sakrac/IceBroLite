@@ -103,6 +103,9 @@
     <ClInclude Include="views\SectionView.h">
       <Filter>views</Filter>
     </ClInclude>
+    <ClInclude Include="views\PreView.h">
+      <Filter>views</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\imgui.cpp">
