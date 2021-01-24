@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "../imgui/imgui.h"
 #include "../Files.h"
 #include "../struse/struse.h"
