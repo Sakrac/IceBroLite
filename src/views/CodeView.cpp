@@ -290,10 +290,7 @@ void CodeView::Draw(int index)
 					dl->AddRectFilled(ps, ImVec2(ps.x + ImGui::CalcTextSize(line.c_str()).x,
 												 ps.y + lineHeight), ImColor(C64_PURPLE));
 				}
-				ImGui::Text(line.c_str());
 				dY = 0;
-			} else {
-				ImGui::Text(line.c_str());
 			}
 		// breakpoints
 			Breakpoint bp;
@@ -310,6 +307,8 @@ void CodeView::Draw(int index)
 				// add exec breakpoint
 				ViceAddBreakpoint(read);
 			}
+			// very cunningly draw code line AFTER breakpoint
+			ImGui::Text(line.c_str());
 
 				
 			if (showSrc) {
