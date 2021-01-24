@@ -14,6 +14,7 @@
 #include "SymbolView.h"
 #include "SectionView.h"
 #include "GfxView.h"
+#include "PreView.h"
 #include "../6510.h"
 #include "../Config.h"
 #include "../data/C64_Pro_Mono-STYLE.ttf.h"
@@ -34,11 +35,13 @@ struct ViewContext {
 	BreakpointView breakView;
 	SymbolView symbolView;
 	SectionView sectionView;
-	ImFont* aFonts[sNumFontSizes];
 	IceConsole console;
 	ScreenView screenView;
-
 	FVFileView fileView;
+	PreView preView;
+
+	ImFont* aFonts[sNumFontSizes];
+
 	int currFont;
 	float currFontSize;
 	bool setupDocking;
@@ -327,14 +330,11 @@ void ViewContext::Draw()
 	breakView.Draw();
 	symbolView.Draw();
 	sectionView.Draw();
+	preView.Draw();
 
 	fileView.Draw("Select File");
 	GlobalKeyCheck();
 	ViceTickMessage();
-
-	if (const char* kickDbgFile = LoadKickDbgReady()) {
-		ReadC64DbgSrc(kickDbgFile);
-	}
 
 	if (GetCurrCPU()->MemoryChange() && memoryWasChanged) {
 		GetCurrCPU()->WemoryChangeRefreshed();
@@ -477,4 +477,11 @@ bool SaveLayoutOnExit()
 		return viewContext->saveSettingsOnExit;
 	}
 	return false;
+}
+
+void ReviewListing()
+{
+	if (viewContext && GetListingFile()) {
+		viewContext->preView.ShowListing(GetListingFile());
+	}
 }

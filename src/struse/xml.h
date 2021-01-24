@@ -35,7 +35,7 @@ See xml_example.cpp for reference.
 
 */
 
-enum XML_TYPE {
+enum class XML_TYPE {
 	XML_TYPE_TAG_OPEN,				// <Tag>
 	XML_TYPE_TAG_CLOSE,				// </Tag>
 	XML_TYPE_TAG_SELF_CLOSE,		// <Tag/>

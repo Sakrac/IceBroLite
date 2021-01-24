@@ -37,6 +37,7 @@
 #include "C64Colors.h"
 #include "Image.h"
 #include "6510.h"
+#include "SourceDebug.h"
 #include "views/Views.h"
 
 #include "WindowIcon.inc"
@@ -202,6 +203,22 @@ int main(int argc, char* argv[])
 		}
 
 		glfwSwapBuffers(window);
+
+		if (const char* kickDbgFile = LoadKickDbgReady()) {
+			ReadC64DbgSrc(kickDbgFile);
+		}
+		if (const char* viceMonCmdFile = LoadViceCMDReady()) {
+			ReadViceCommandFile(viceMonCmdFile);
+		}
+		if (const char* symFile = LoadSymbolsReady()) {
+			ReadViceCommandFile(symFile);
+		}
+		if (const char* listFile = LoadListingReady()) {
+			if (ReadListingFile(listFile)) {
+				ReviewListing();
+			}
+		}
+
 
 		UserSaveLayoutUpdate();
 		firstFrame = false;

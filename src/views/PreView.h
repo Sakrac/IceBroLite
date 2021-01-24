@@ -8,7 +8,7 @@ public:
 		SourceContext
 	};
 
-	void Draw(const char* title);
+	void Draw();
 	bool IsOpen() const { return open; }
 	void ShowListing(strref listing);
 	PreView() : open(false), mode(Mode::Hidden)

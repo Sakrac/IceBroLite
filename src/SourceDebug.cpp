@@ -6,6 +6,7 @@
 #include <vector>
 #include "ViceInterface.h"
 #include "Breakpoints.h"
+#include "SourceDebug.h"
 
 // Format:
 //	parse as XML
@@ -35,6 +36,9 @@ struct SourceDebug {
 
 SourceDebug* sSourceDebug = nullptr;
 
+char* sListing = nullptr;
+size_t sListingSize = 0;
+
 strref GetSourceAt(uint16_t addr, int &spaces)
 {
 	if (sSourceDebug) {
@@ -52,6 +56,27 @@ strref GetSourceAt(uint16_t addr, int &spaces)
 	return strref();
 }
 
+// clean just the source debug references not the original files
+void ClearSourceDebugMap()
+{
+	if (SourceDebug* dbg = sSourceDebug) {
+		while (dbg->segments.size()) {
+			SourceDebugSegment& seg = dbg->segments[dbg->segments.size() - 1];
+			free(seg.lines);
+			free(seg.blockNames);
+			dbg->segments.pop_back();
+		}
+		while (dbg->files.size()) {
+			void* file = dbg->files[dbg->files.size() - 1];
+			if (file != sListing) {
+				free(dbg->files[dbg->files.size() - 1]);
+			}
+			dbg->files.pop_back();
+		}
+		free(dbg);
+	}
+}
+
 void ShutdownSourceDebug()
 {
 	if (SourceDebug* dbg = sSourceDebug) {
@@ -63,10 +88,18 @@ void ShutdownSourceDebug()
 			dbg->segments.pop_back();
 		}
 		while (dbg->files.size()) {
-			free(dbg->files[dbg->files.size() - 1]);
+			void* file = dbg->files[dbg->files.size() - 1];
+			if (file != sListing) {
+				free(dbg->files[dbg->files.size() - 1]);
+			}
 			dbg->files.pop_back();
 		}
 		free(dbg);
+	}
+	if (sListing) {
+		free(sListing);
+		sListing = nullptr;
+		sListingSize = 0;
 	}
 }
 
@@ -105,7 +138,7 @@ bool C64DbgXMLCB(void* user, strref tag_or_data, const strref* tag_stack, int si
 {
 	ParseDebugText* parse = (ParseDebugText*)user;
 
-	if (type == XML_TYPE_TEXT && size_stack) {
+	if (type == XML_TYPE::XML_TYPE_TEXT && size_stack) {
 		if (tag_stack->get_word().same_str("Sources")) {
 			// TODO consider reading in the order attribute.. hopefully it is just for info.
 			while (strref line = tag_or_data.line()) {
@@ -211,7 +244,7 @@ bool C64DbgXMLCB(void* user, strref tag_or_data, const strref* tag_stack, int si
 			}
 
 		}
-	} else if (type == XML_TYPE_TAG_OPEN) {
+	} else if (type == XML_TYPE::XML_TYPE_TAG_OPEN) {
 		if (tag_or_data.get_word().same_str("Segment")) {
 			parse->segment = XMLFindAttr(tag_or_data, strref("name"));
 		}
@@ -309,3 +342,104 @@ bool ReadC64DbgSrc(const char* filename)
 	return success;
 }
 
+bool ReadListingFile(const char* filename)
+{
+	size_t listSize;
+	if (uint8_t* listingFile = LoadBinary(filename, listSize)) {
+		if (sListing) {
+			ShutdownSourceDebug();
+			free(sListing);
+		}
+		sListing = (char*)listingFile;
+		sListingSize = listSize;
+		return true;
+	}
+	return false;
+}
+
+strref GetListingFile()
+{
+	return strref(sListing, (strl_t)sListingSize);
+}
+
+static bool CheckAddrLine(strref& line, uint16_t &addr_ret)
+{
+	strref chk = line;
+	if (chk[0] == '$') {++chk;}
+	uint16_t addr = 0;
+	strref hexStr = chk.split(4);
+	for (int i = 0; i < 4; ++i) {
+		if (!strref::is_hex(hexStr[i])) {
+			return false;
+		}
+	}
+	line = chk;
+	addr_ret = (uint16_t)hexStr.ahextoui();
+	return true;
+}
+
+void ListingToSrcDebug(int column)
+{
+	ClearSourceDebugMap();
+
+	if (!sSourceDebug) {
+		sSourceDebug = new SourceDebug;
+	}
+	if (sSourceDebug->files.size() == 0)  {
+		sSourceDebug->files.push_back(sListing);
+	}
+
+	strref list = GetListingFile();
+	SourceDebugSegment seg;
+
+	std::vector<ParseDebugLine> parseLines;
+
+	while (strref line = list.line()) {
+		uint16_t addr;
+		strref left = line.split(column);
+		if (CheckAddrLine(left, addr)) {
+			if (strref("org").is_prefix_word(line)) { continue; }	// not useful info
+			ParseDebugLine pdl = { line, addr, addr };
+			parseLines.push_back(pdl);
+		}
+	}
+
+	uint16_t addrFirst = 0xffff, addrLast = 0x0000;
+	for (size_t l = 0; l < parseLines.size(); ++l) {
+		ParseDebugLine* lin = &parseLines[l];
+		if (addrFirst > lin->first) { addrFirst = lin->first; }
+		if (addrLast < lin->last) { addrLast = lin->last; }
+	}
+
+	// segment not empty -> add it!
+	if (addrFirst <= addrLast) {
+		sSourceDebug->segments.push_back(SourceDebugSegment());
+		SourceDebugSegment* segSrc = &sSourceDebug->segments[sSourceDebug->segments.size() - 1];
+		segSrc->addrFirst = addrFirst;
+		segSrc->addrLast = addrLast;
+		segSrc->lines = (SourceDebugLine*)calloc(addrLast + 1 - addrFirst, sizeof(SourceDebugLine));
+		segSrc->blockNames = (strref*)calloc(1, sizeof(strref));
+		segSrc->name = "Listing";
+		segSrc->blockNames[0] = "Listing";
+			// fill in addresses with line info
+		for (size_t l = 0; l < parseLines.size(); ++l) {
+			ParseDebugLine* lin = &parseLines[l];
+			uint16_t ft = lin->first, lt = lin->last;
+			if (ft <= lt) {
+				for (uint16_t a = ft; a <= lt; ++a) {
+					SourceDebugLine* ln = segSrc->lines + (a - addrFirst);
+					ln->block = 0;
+					strref lineStr = lin->line;
+					uint8_t spaces = 0;
+					while (lineStr.get_first() <= 0x20 && spaces < 255) {
+						if (lineStr.get_first() == '\t') { spaces += 4; } else { ++spaces; }
+						++lineStr;
+					}
+					ln->spaces = spaces;
+					ln->line = lineStr.get();
+					ln->len = lineStr.get_len() < 256 ? lineStr.get_len() : 255;
+				}
+			}
+		}
+	}
+}

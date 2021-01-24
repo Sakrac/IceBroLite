@@ -182,6 +182,13 @@ void *FileSaveDialogThreadRun(void *param)
 #endif
 
 
+strref StartFolder(strref prevFile)
+{
+	if (prevFile) {
+		return prevFile.before_last('/', '\\');
+	}
+	return sFileDialogFolder;
+}
 
 void LoadProgramDialog()
 {
@@ -194,7 +201,7 @@ void LoadProgramDialog()
 #else
 	FVFileView* filesView = GetFileView();
 	if( filesView && !filesView->IsOpen()) {
-		filesView->Show(sFileDialogFolder, &sLoadProgramReady, sLoadPrgFileName, sizeof(sLoadPrgFileName), sLoadProgramParams);
+		filesView->Show(strown<PATH_MAX_LEN>(StartFolder(sLoadPrgFileName)).c_str(), &sLoadProgramReady, sLoadPrgFileName, sizeof(sLoadPrgFileName), sLoadProgramParams);
 	}
 #endif
 }
@@ -210,7 +217,7 @@ void LoadListingDialog()
 #else
 	FVFileView* filesView = GetFileView();
 	if (filesView && !filesView->IsOpen()) {
-		filesView->Show(sFileDialogFolder, &sLoadListingReady, sLoadLstFileName, sizeof(sLoadLstFileName), sLoadListingParams);
+		filesView->Show(strown<PATH_MAX_LEN>(StartFolder(sLoadLstFileName)).c_str(), &sLoadListingReady, sLoadLstFileName, sizeof(sLoadLstFileName), sLoadListingParams);
 	}
 #endif
 }
@@ -226,7 +233,7 @@ void LoadKickDbgDialog()
 #else
 	FVFileView* filesView = GetFileView();
 	if (filesView && !filesView->IsOpen()) {
-		filesView->Show(sFileDialogFolder, &sLoadKickDbgReady, sLoadDbgFileName, sizeof(sLoadDbgFileName), sLoadKickDbgParams);
+		filesView->Show(strown<PATH_MAX_LEN>(StartFolder(sLoadDbgFileName)).c_str(), &sLoadKickDbgReady, sLoadDbgFileName, sizeof(sLoadDbgFileName), sLoadKickDbgParams);
 	}
 #endif
 }
@@ -242,7 +249,7 @@ void LoadSymbolsDialog()
 #else
 	FVFileView* filesView = GetFileView();
 	if (filesView && !filesView->IsOpen()) {
-		filesView->Show(sFileDialogFolder, &sLoadSymbolsReady, sLoadSymFileName, sizeof(sLoadSymFileName), sLoadSymbolsParams);
+		filesView->Show(strown<PATH_MAX_LEN>(StartFolder(sLoadSymFileName)).c_str(), &sLoadSymbolsReady, sLoadSymFileName, sizeof(sLoadSymFileName), sLoadSymbolsParams);
 	}
 #endif
 }
@@ -258,7 +265,7 @@ void LoadViceCmdDialog()
 #else
 	FVFileView* filesView = GetFileView();
 	if (filesView && !filesView->IsOpen()) {
-		filesView->Show(sFileDialogFolder, &sLoadViceCmdReady, sLoadViceFileName, sizeof(sLoadViceFileName), sLoadViceCmdParams);
+		filesView->Show(strown<PATH_MAX_LEN>(StartFolder(sLoadViceFileName)).c_str(), &sLoadViceCmdReady, sLoadViceFileName, sizeof(sLoadViceFileName), sLoadViceCmdParams);
 	}
 #endif
 }

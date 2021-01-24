@@ -9,6 +9,7 @@ void EndViews();
 void SetCodeViewAddr(uint16_t addr, int view = -1);
 void SetMemoryViewAddr(uint16_t addr, int view = -1);
 bool SaveLayoutOnExit();
+void ReviewListing();
 
 float CurrFontSize();
 uint8_t InputHex();

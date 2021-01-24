@@ -250,7 +250,7 @@ void CodeView::Draw(int index)
 			line.add_len(chars);
 			if (showRefs) {
 				char buf[24];
-				if (InstrRef(cpu, read, buf, sizeof(buf))) { line.pad_to(' ', (showAddress ? 6 : 0) + (showBytes ? 9 : 0) + (showLabels ? 6 : 0 ) + 11).append(buf); }
+				if (InstrRef(cpu, read, buf, sizeof(buf))) { line.pad_to(' ', (showAddress ? 6 : 0) + (showBytes ? 9 : 0) + (showLabels ? 6 : 0) + (showDisAsm ? 11 : 0)).append(buf); }
 			}
 			if (goToPC && read==pc) { goToPC = false; } // don't recenter PC if already in view
 			if (setPCAtCursor && read==addrCursor) {

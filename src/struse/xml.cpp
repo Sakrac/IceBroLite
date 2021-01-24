@@ -19,7 +19,7 @@ bool ParseXML(strref xml, XMLDataCB callback, void *user)
 			// this is a closing tag
 			++tag;	// skip '/'
 			tag.skip_whitespace();
-			if (sp>=XML_DEPTH_MAX || !callback(user, tag, stack+sp, XML_DEPTH_MAX-sp, XML_TYPE_TAG_CLOSE))
+			if (sp>=XML_DEPTH_MAX || !callback(user, tag, stack+sp, XML_DEPTH_MAX-sp, XML_TYPE::XML_TYPE_TAG_CLOSE))
 				return false;
 			strref id = tag.get_clipped(tag.len_grayspace());
 			char next_char = stack[sp].get()[id.get_len()];
@@ -32,11 +32,11 @@ bool ParseXML(strref xml, XMLDataCB callback, void *user)
 			// this is a self-closing tag
 			strref tag_name = tag.get_substr(0, tag.get_len()-1);
 			tag_name.clip_trailing_whitespace();
-			if (!callback(user, tag_name, stack + sp, XML_DEPTH_MAX - sp, XML_TYPE_TAG_SELF_CLOSE))
+			if (!callback(user, tag_name, stack + sp, XML_DEPTH_MAX - sp, XML_TYPE::XML_TYPE_TAG_SELF_CLOSE))
 				return false;
 		} else {
 			// this is an opening tag
-			if (!callback(user, tag, stack+sp, XML_DEPTH_MAX-sp, XML_TYPE_TAG_OPEN))
+			if (!callback(user, tag, stack+sp, XML_DEPTH_MAX-sp, XML_TYPE::XML_TYPE_TAG_OPEN))
 				return false;
 			if (sp) {
 				--sp;
@@ -48,7 +48,7 @@ bool ParseXML(strref xml, XMLDataCB callback, void *user)
 		parse.skip_chunk(tag);
 		parse.skip_whitespace();
 		int lt = parse.find('<');
-		if (lt>0 && !callback(user, strref(parse.get(), lt), stack+sp, XML_DEPTH_MAX-sp, XML_TYPE_TEXT))
+		if (lt>0 && !callback(user, strref(parse.get(), lt), stack+sp, XML_DEPTH_MAX-sp, XML_TYPE::XML_TYPE_TEXT))
 			return false;
 	}
 	return true;
