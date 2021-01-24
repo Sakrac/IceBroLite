@@ -9,6 +9,7 @@
 #include "../Config.h"
 #include "../ViceInterface.h"
 #include "../6510.h"
+#include "../Sym.h"
 #include "Views.h"
 #include "GfxView.h"
 
@@ -152,6 +153,25 @@ void GfxView::ReadConfig(strref config)
 	}
 }
 
+static bool AcceptDragDropAddress(uint32_t* addrValue, char* addrName, size_t addrNameSize)
+{
+	if (ImGui::BeginDragDropTarget()) {
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("AddressDragDrop")) {
+			IM_ASSERT(payload->DataSize == sizeof(SymbolDragDrop));
+			SymbolDragDrop* drop = (SymbolDragDrop*)payload->Data;
+			if (drop->address < 0x10000) {
+				*addrValue = (uint16_t)drop->address;
+				strovl addrStr(addrName, addrNameSize);
+				addrStr.copy(drop->symbol); addrStr.c_str();
+				return true;
+			}
+		}
+		ImGui::EndDragDropTarget();
+	}
+	return false;
+}
+
+
 void GfxView::Draw(int index)
 {
 	if (!open) { return; }
@@ -185,6 +205,10 @@ void GfxView::Draw(int index)
 				addrScreenValue = ValueFromExpression(address_screen);
 				redraw = true;
 			}
+			if (AcceptDragDropAddress(&addrScreenValue, address_screen, sizeof(address_screen))) {
+				redraw = true;
+			}
+
 			ImGui::NextColumn();
 			name.copy("chars##");
 			name.append_num(index + 1, 1, 10);
@@ -192,6 +216,10 @@ void GfxView::Draw(int index)
 				addrGfxValue = ValueFromExpression(address_gfx);
 				redraw = true;
 			}
+			if (AcceptDragDropAddress(&addrGfxValue, address_gfx, sizeof(address_gfx))) {
+				redraw = true;
+			}
+
 			ImGui::NextColumn();
 			name.copy("color##");
 			name.append_num(index + 1, 1, 10);
@@ -199,6 +227,10 @@ void GfxView::Draw(int index)
 				addrColValue = ValueFromExpression(address_col);
 				redraw = true;
 			}
+			if (AcceptDragDropAddress(&addrColValue, address_col, sizeof(address_col))) {
+				redraw = true;
+			}
+
 			ImGui::NextColumn();
 		} else {
 			ImGui::NextColumn();

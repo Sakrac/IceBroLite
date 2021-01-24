@@ -3,7 +3,7 @@ struct UserData;
 
 struct BreakpointView {
 	bool open;
-	int selected_row;
+	size_t selected_row;
 
 	BreakpointView();
 	void WriteConfig(UserData& config);

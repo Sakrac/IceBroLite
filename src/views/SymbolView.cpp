@@ -110,7 +110,7 @@ void SymbolView::Draw()
     bool haveSymbols = SymbolsLoaded();
     int numColumns = haveSymbols ? 4 : 3;
     if (ImGui::BeginTable("##symbolstable", 3, flags)) {
-        ImGui::TableSetupColumn("Addr", ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_WidthFixed, -1.0f, SymbolColumnID_Address);
+        ImGui::TableSetupColumn("Addr", ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_WidthStretch, -1.0f, SymbolColumnID_Address);
         ImGui::TableSetupColumn("Symbol", ImGuiTableColumnFlags_WidthStretch, -1.0f, SymbolColumnID_Symbol);
         ImGui::TableSetupColumn("Section ", ImGuiTableColumnFlags_NoSort | ImGuiTableColumnFlags_WidthStretch, -1.0f, SymbolColumnID_Section);
         ImGui::TableSetupScrollFreeze(0, 1); // Make row always visible
@@ -134,7 +134,7 @@ void SymbolView::Draw()
             const char* symbol = GetSymbolSearchMatch(s, &address, &section);
             if (address < start || address > end) { continue; }
             if (symbol) {
-                ImGui::TableNextRow();
+                ImGui::TableNextRow(s==1 ? ImGuiTableBgTarget_RowBg1 : 0);
                 ImGui::TableSetColumnIndex(0);
 
                 strown<16> str;

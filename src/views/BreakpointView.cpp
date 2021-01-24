@@ -1,4 +1,5 @@
 #include "../imgui/imgui.h"
+#include "../imgui/imgui_internal.h"
 
 #include "../struse/struse.h"
 #include "../Config.h"
@@ -6,8 +7,11 @@
 #include "../Breakpoints.h"
 #include "../Sym.h"
 #include "../ViceInterface.h"
+#include "../C64Colors.h"
+#include "../ImGui_Helper.h"
 #include "Views.h"
 #include "BreakpointView.h"
+#include "GLFW/glfw3.h"
 
 BreakpointView::BreakpointView() : open(true), selected_row(-1)
 {
@@ -53,6 +57,8 @@ void BreakpointView::Draw()
 		return;
 	}
 
+	ImGuiContext* g = ImGui::GetCurrentContext();
+
 	const ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg |
 		ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Resizable | ImGuiTableFlags_Sortable |
 		ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV |
@@ -61,18 +67,9 @@ void BreakpointView::Draw()
 	ImVec2 cursorScreen = ImGui::GetCursorScreenPos();
 	ImVec2 outer_size(-FLT_MIN, 0.0f);
 
-	bool goToBP = false;
-	float bpHitY = 0.0f;
-	if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-		ImVec2 mousePos = ImGui::GetMousePos();
-		ImVec2 winPos = ImGui::GetWindowPos();
-		ImVec2 winSize = ImGui::GetWindowSize();
-		if (mousePos.x > cursorScreen.x && mousePos.y > cursorScreen.y &&
-			mousePos.x < (winPos.x + winSize.x) && mousePos.y < (winPos.y + winSize.y)) {
-			bpHitY = mousePos.y - cursorScreen.y + ImGui::GetScrollY();
-			goToBP = true;
-		}
-	}
+	ImVec2 mousePos = ImGui::GetMousePos();
+	ImVec2 winPos = ImGui::GetWindowPos();
+	ImVec2 winSize = ImGui::GetWindowSize();
 
 	float fontHgt = ImGui::GetFont()->FontSize;
 	bool haveSymbols = SymbolsLoaded();
@@ -87,13 +84,39 @@ void BreakpointView::Draw()
 		ImGui::TableSetupScrollFreeze(0, 1); // Make row always visible
 		ImGui::TableHeadersRow();
 
+		size_t prior_valid = 0xffffffff;
+		size_t next_valid = 0xffffffff;
+		bool prev_selected = false;
+		bool was_selected = false;
+
 		for(size_t bpIdx = 0; bpIdx < numBreakpoints; bpIdx++) {
 			Breakpoint bp = GetBreakpoint(bpIdx);
 			int col = 0;
-
 			if (bp.number != 0xffffffff) {
-				ImGui::TableNextRow();
+				if (bpIdx == selected_row) {
+					prev_selected = true; was_selected = true;
+				} else if (!was_selected) {
+					prior_valid = bpIdx;
+				} else if (prev_selected) {
+					next_valid = bpIdx;
+					prev_selected = false;
+				}
+
+				ImGui::TableNextRow(bpIdx == 1 ? ImGuiTableBgTarget_RowBg1 : 0);
+
+				if (g->CurrentWindow == g->NavWindow && bpIdx == selected_row) {
+					ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg1, ImColor(C64_PURPLE));
+				}
+
 				ImGui::TableSetColumnIndex(col++);
+
+				if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+					ImVec2 scrCur = ImGui::GetCursorScreenPos();
+					if (mousePos.y > scrCur.y && mousePos.y < (scrCur.y + fontHgt) && mousePos.x > winPos.x && mousePos.x < (winPos.x + winSize.x)) {
+						selected_row = bpIdx;
+						was_selected = true;
+					}
+				}
 		 
 				DrawTexturedIcon((bp.flags & Breakpoint::Enabled) ? VMI_BreakPoint : VMI_DisabledBreakPoint, false, ImGui::GetFont()->FontSize);
 				ImGui::TableSetColumnIndex(col++);
@@ -133,10 +156,21 @@ void BreakpointView::Draw()
 						strovl lblStr(drag.symbol, sizeof(drag.symbol));
 						lblStr.copy(num); lblStr.c_str();
 						ImGui::SetDragDropPayload("AddressDragDrop", &drag, sizeof(drag));
-						ImGui::Text("%s: $%04x", num, bp.start);
+						ImGui::Text("%s: $%04x", num.c_str(), bp.start);
 						ImGui::EndDragDropSource();
 					}
 				}
+			}
+		}
+		if (!was_selected) {
+			selected_row = prior_valid;
+		}
+		if (selected_row != 0xffffffff && g->CurrentWindow == g->NavWindow) {
+			if (prior_valid != 0xffffffff && ImGui::IsKeyPressed(GLFW_KEY_UP)) { selected_row = prior_valid; }
+			else if (next_valid != 0xffffffff && ImGui::IsKeyPressed(GLFW_KEY_DOWN)) { selected_row = next_valid; }
+			if (ImGui::IsKeyPressed(GLFW_KEY_DELETE)) {
+				Breakpoint bp = GetBreakpoint(selected_row);
+				ViceRemoveBreakpoint(bp.number);
 			}
 		}
 		ImGui::EndTable();
