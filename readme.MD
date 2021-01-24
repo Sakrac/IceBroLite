@@ -1,6 +1,8 @@
 # IceBro Lite
 
-This is a debugger in development for the new external binary monitor protocol in Vice 3.5. It is not ready for use quite yet.
+I've started writing a [manual](manual.MD)!
+
+Most information below might be outdated, I haven't updated this as I've updated the code.
 
 ![IceBroLite](img/window.png)
 Debugger is showing FrostBite code and art from Tony Savona, Saul Cross and STE'86. This is used because Kick Assembler has better debug information and I'm not using it for my personal projects.
