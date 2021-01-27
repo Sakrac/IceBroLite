@@ -36,12 +36,15 @@ static bool sLoadListingReady = false;
 static bool sLoadKickDbgReady = false;
 static bool sLoadSymbolsReady = false;
 static bool sLoadViceCmdReady = false;
+static bool sSetViceEXEPathReady = false;
 
 static char sLoadPrgFileName[PATH_MAX_LEN] = {};
 static char sLoadLstFileName[PATH_MAX_LEN] = {};
 static char sLoadDbgFileName[PATH_MAX_LEN] = {};
 static char sLoadSymFileName[PATH_MAX_LEN] = {};
 static char sLoadViceFileName[PATH_MAX_LEN] = {};
+static char sViceEXEPath[PATH_MAX_LEN] = {};
+
 
 static char sFileDialogFolder[PATH_MAX_LEN];
 
@@ -60,6 +63,8 @@ static const char sLoadListingParams[] = "Listing:*.lst";
 static const char sLoadKickDbgParams[] = "Kick Asm Debug:*.dbg";
 static const char sLoadSymbolsParams[] = "Symbols:*.sym";
 static const char sLoadViceCmdParams[] = "Vice Commands:*.vs";
+static const char sViceEXEParams[] = "Vice EXE path:[xX]64*.[eE][xX]e[E]";
+
 #endif
 
 void InitStartFolder()
@@ -133,6 +138,21 @@ const char* LoadViceCMDReady()
 	}
 	return nullptr;
 }
+
+bool LoadViceEXEPathReady()
+{
+	if (sSetViceEXEPathReady) {
+		sSetViceEXEPathReady = false;
+		return true;
+	}
+	return false;
+}
+
+char* GetViceEXEPath()
+{
+	return sViceEXEPath[0] ? sViceEXEPath : nullptr;
+}
+
 
 #if defined(_WIN32) && !defined(CUSTOM_FILEVIEWER)
 void *FileLoadDialogThreadRun( void *param )
@@ -269,6 +289,23 @@ void LoadViceCmdDialog()
 	}
 #endif
 }
+
+void SetViceEXEPathDialog()
+{
+	sSetViceEXEPathReady = false;
+	sFileDialogOpen = true;
+
+#if defined(_WIN32) && !defined(CUSTOM_FILEVIEWER)
+	hThreadFileDialog = CreateThread(NULL, FILE_LOAD_THREAD_STACK, (LPTHREAD_START_ROUTINE)FileSaveDialogThreadRun, &aSaveAsInfo,
+									 0, NULL);
+#else
+	FVFileView* filesView = GetFileView();
+	if (filesView && !filesView->IsOpen()) {
+		filesView->Show(strown<PATH_MAX_LEN>(StartFolder(sViceEXEPath)).c_str(), &sSetViceEXEPathReady, sViceEXEPath, sizeof(sViceEXEPath), sViceEXEParams);
+	}
+#endif
+}
+
 
 void StateLoadFilenames(strref filenames)
 {

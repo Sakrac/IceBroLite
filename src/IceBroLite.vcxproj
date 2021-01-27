@@ -81,6 +81,7 @@
     <ClCompile Include="Platform.cpp" />
     <ClCompile Include="SaveState.cpp" />
     <ClCompile Include="SourceDebug.cpp" />
+    <ClCompile Include="StartVice.cpp" />
     <ClCompile Include="struse.cpp" />
     <ClCompile Include="struse\xml.cpp" />
     <ClCompile Include="IceBroLite.cpp" />

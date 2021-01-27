@@ -193,6 +193,7 @@
     <ClCompile Include="views\PreView.cpp">
       <Filter>views</Filter>
     </ClCompile>
+    <ClCompile Include="StartVice.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="imgui\misc\natvis\imgui.natvis">
