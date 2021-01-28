@@ -81,6 +81,8 @@ public:
 
 	void updateRegisterNames(VICEBinRegisterAvailableResponse* resp);
 
+	void close();
+
 	bool open();
 	void Tick();
 	void AddMessage(uint8_t *message, int size, bool wantResponse = false);
@@ -113,6 +115,7 @@ static std::vector<MessageRequestTimeout> sMessageTimeouts;
 static IBMutex userRequestMutex;
 static ViceLogger logConsole = nullptr;
 static void* logUser = nullptr;
+static bool sCloseConnectRequest = false;
 
 static bool sResumeMeansStopped = false;
 
@@ -187,7 +190,9 @@ bool ViceRunning()
 
 void ViceDisconnect()
 {
-
+	if (viceCon && viceCon->isConnected()) {
+		sCloseConnectRequest = true;
+	}
 }
 
 void VicePing()
@@ -517,11 +522,12 @@ void ViceConnection::connectionThread()
 
 	while (activeConnection) {
 	// close after all commands have been sent?
-//		if (closeRequest && !commands.size()) {
-//			threadHandle = INVALID_HANDLE_VALUE;
-//			close();
-//			break;
-//		}
+		if (sCloseConnectRequest) {
+			sCloseConnectRequest = false;
+			threadHandle = INVALID_HANDLE_VALUE;
+			close();
+			break;
+		}
 
 		// messages to receive
 		int bytesReceived = recv(s, recvBuf + bufferRead, RECEIVE_SIZE, 0);
@@ -655,6 +661,7 @@ void ViceConnection::connectionThread()
 	IBMutexLock(&msgSendMutex);
 	sMessageTimeouts.clear();
 	sMemRequests.clear();
+	connected = false;
 	IBMutexRelease(&msgSendMutex);
 }
 
@@ -700,20 +707,6 @@ void ViceConnection::handleCheckpointList(VICEBinCheckpointList* cpList)
 
 void ViceConnection::handleCheckpointGet(VICEBinCheckpointResponse* cp)
 {
-#ifdef _DEBUG
-	strown<256> m;
-	if (cp->wasHit) { m.append('*'); }
-	if (!cp->stopWhenHit) { m.append("trace "); }
-	if (cp->operation == VICE_LoadMem) { m.append("load "); }
-	else if (cp->operation == VICE_StoreMem) { m.append("store "); }
-	else { m.append("break "); }
-	m.append('#').append_num(cp->GetNumber(), 0, 10).append(" $").append_num(cp->GetStart(), 4, 16);
-	if (cp->GetEnd() > cp->GetStart()) { m.append("-$").append_num(cp->GetEnd(), 2, 16); }
-	if (!cp->enabled) { m.append(" (disabled)"); }
-	if (cp->GetCount()) { m.append(" hits: ").append_num(cp->GetCount(), 0, 10); }
-	if (cp->GetIgnored()) { m.append(" ignored: ").append_num(cp->GetIgnored(), 0, 10); }
-	ViceLog(m.get_strref());
-#endif
 	uint32_t flags = 0;
 	if (cp->enabled) flags |= Breakpoint::Enabled;
 	if (cp->stopWhenHit) flags |= Breakpoint::Stop;
@@ -728,9 +721,6 @@ void ViceConnection::handleCheckpointGet(VICEBinCheckpointResponse* cp)
 void ViceConnection::updateRegisters(VICEBinRegisterResponse* resp)
 {
 	CPU6510* cpu = GetMainCPU();
-//#ifdef VICELOG
-//	strown<256> regInfo;
-//#endif
 	for (uint16_t r = 0, n = resp->GetCount(); r < n; ++r) {
 		VICEBinRegisterResponse::regInfo& info = resp->aRegs[r];
 		switch (info.registerID) {
@@ -745,34 +735,7 @@ void ViceConnection::updateRegisters(VICEBinRegisterResponse* resp)
 			case VICE_00: cpu->regs.ZP00 = info.GetValue8(); break;
 			case VICE_01: cpu->regs.ZP01 = info.GetValue8(); break;
 		}
-//#ifdef VICELOG
-//		switch (info.registerID) {
-//			case VICE_Acc: regInfo.append("A=$").append_num(info.GetValue8(),2,16); break;
-//			case VICE_X: regInfo.append("X=$").append_num(info.GetValue8(), 2, 16); break;
-//			case VICE_Y: regInfo.append("Y=$").append_num(info.GetValue8(), 2, 16); break;
-//			case VICE_PC: regInfo.append("PC=$").append_num(info.GetValue16(), 4, 16); break;
-//			case VICE_SP: regInfo.append("SP=$").append_num(info.GetValue8(), 2, 16); break;
-//			case VICE_FL: regInfo.append("FL=$").append_num(info.GetValue8(), 2, 16); break;
-//			case VICE_LIN: regInfo.append("LIN=$").append_num(info.GetValue16(), 4, 16); break;
-//			case VICE_CYC: regInfo.append("CYC=$").append_num(info.GetValue16(), 4, 16); break;
-//			case VICE_00: regInfo.append("00=$").append_num(info.GetValue8(), 2, 16); break;
-//			case VICE_01: regInfo.append("01=$").append_num(info.GetValue8(), 2, 16); break;
-//		}
-//		regInfo.append(' ');
-//#endif
-//#ifdef _DEBUG
-//		strown<256> d;
-//		d.append("Reg: $").append_num(info.registerID, 2, 16);
-//		d.append(" Size: ").append_num(info.registerSize, 2, 10);
-//		d.append(" Value: $").append_num((uint16_t)info.registerValue[0] +
-//										(((uint16_t)info.registerValue[1])<<8), 4, 16);
-//		d.append("\n");
-//		OutputDebugStringA(d.c_str());
-//#endif
 	}
-//#ifdef VICELOG
-//	ViceLog(regInfo.get_strref());
-//#endif
 
 }
 
@@ -846,6 +809,15 @@ void ViceConnection::updateRegisterNames(VICEBinRegisterAvailableResponse* resp)
 
 }
 
+void ViceConnection::close()
+{
+	IBDestroyThread(&threadHandle);
+	closesocket(s);
+#ifdef _WIN32
+	WSACleanup();
+#endif
+	sCloseConnectRequest = false;
+}
 
 bool ViceConnection::open()
 {
@@ -878,6 +850,7 @@ bool ViceConnection::open()
 	}
 
 	iResult = ::connect(s, (struct sockaddr*)&saGNI, sizeof(saGNI));
+	sCloseConnectRequest = false;
 	return iResult == 0;
 }
 

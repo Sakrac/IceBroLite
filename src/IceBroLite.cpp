@@ -32,6 +32,7 @@
 #include "FileDialog.h"
 #include "Breakpoints.h"
 #include "Sym.h"
+#include "StartVice.h"
 #include "views/FilesView.h"
 
 #include "C64Colors.h"
@@ -218,6 +219,7 @@ int main(int argc, char* argv[])
 				ReviewListing();
 			}
 		}
+		WaitForViceEXEPath();
 
 
 		UserSaveLayoutUpdate();

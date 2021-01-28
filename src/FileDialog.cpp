@@ -63,7 +63,7 @@ static const char sLoadListingParams[] = "Listing:*.lst";
 static const char sLoadKickDbgParams[] = "Kick Asm Debug:*.dbg";
 static const char sLoadSymbolsParams[] = "Symbols:*.sym";
 static const char sLoadViceCmdParams[] = "Vice Commands:*.vs";
-static const char sViceEXEParams[] = "Vice EXE path:[xX]64*.[eE][xX]e[E]";
+static const char sViceEXEParams[] = "Vice EXE path:x64*.exE";
 
 #endif
 
@@ -324,6 +324,8 @@ void StateLoadFilenames(strref filenames)
 				strovl(sLoadSymFileName, sizeof(sLoadSymFileName)).append(value).c_str();
 			} else if (name.same_str("ViceMonCommands")) {
 				strovl(sLoadViceFileName, sizeof(sLoadViceFileName)).append(value).c_str();
+			} else if (name.same_str("ViceExePath")) {
+				strovl(sViceEXEPath, sizeof(sViceEXEPath)).append(value).c_str();
 			}
 		}
 	}
@@ -346,4 +348,8 @@ void StateSaveFilenames(UserData& conf)
 	if (sLoadViceFileName[0]) {
 		conf.AddValue("ViceMonCommands", strref(sLoadViceFileName));
 	}
+	if (sViceEXEPath[0]) {
+		conf.AddValue("ViceExePath", strref(sViceEXEPath));
+	}
+
 }

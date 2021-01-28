@@ -79,16 +79,6 @@ void ToolBar::Draw()
 
 	ImGui::NextColumn();
 
-//	bool NMI = DrawTexturedIconCenter(VMI_NMI);
-//	NMI = CenterTextInColumn("NMI") || NMI;
-//
-//	ImGui::NextColumn();
-
-//	bool Interrupt = DrawTexturedIconCenter(VMI_Interrupt);
-//	Interrupt = CenterTextInColumn("Intrpt") || Interrupt;
-//
-//	ImGui::NextColumn();
-
 	bool connect = DrawTexturedIconCenter(ViceConnected() ? VMI_Connected : VMI_Disconnected);
 	connect = CenterTextInColumn("Vice") || connect;
 

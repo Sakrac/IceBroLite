@@ -38,6 +38,7 @@
     <ClInclude Include="Mnemonics.h" />
     <ClInclude Include="platform.h" />
     <ClInclude Include="SourceDebug.h" />
+    <ClInclude Include="StartVice.h" />
     <ClInclude Include="stb\stb_image.h" />
     <ClInclude Include="struse\struse.h" />
     <ClInclude Include="struse\xml.h" />

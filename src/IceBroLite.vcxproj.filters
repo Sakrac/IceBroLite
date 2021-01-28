@@ -106,6 +106,7 @@
     <ClInclude Include="views\PreView.h">
       <Filter>views</Filter>
     </ClInclude>
+    <ClInclude Include="StartVice.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\imgui.cpp">

@@ -20,6 +20,7 @@
 #include "../data/C64_Pro_Mono-STYLE.ttf.h"
 #include "../FileDialog.h"
 #include "../SourceDebug.h"
+#include "../StartVice.h"
 #include "Views.h"
 #include "GLFW/glfw3.h"
 
@@ -220,6 +221,11 @@ void ViewContext::Draw()
 				if (ImGui::MenuItem("Load Listing")) { LoadListingDialog(); }
 				if (ImGui::MenuItem("Load Sym File")) { LoadSymbolsDialog(); }
 				if (ImGui::MenuItem("Load Vice Command Symbols")) { LoadViceCmdDialog(); }
+				if (ImGui::MenuItem("Load VICE")) { SetViceEXEPathDialog(); }
+				if (GetViceEXEPath()) {
+					if (ImGui::MenuItem("Reload VICE")) { LoadViceEXE(); }
+				}
+
 
 				if (ImGui::MenuItem("Quit", "Alt+F4")) {}
 				ImGui::EndMenu();

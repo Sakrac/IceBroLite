@@ -3,10 +3,12 @@
 #include "struse/struse.h"
 #include "Files.h"
 #include "FileDialog.h"
+#include "Config.h"
+#include "ViceInterface.h"
 #include "views/FilesView.h"
 #include "views/Views.h"
+#include "StartVice.h"
 
-bool LoadViceEXE();
 void WaitForViceEXEPath()
 {
 	if (LoadViceEXEPathReady()) {
@@ -15,6 +17,7 @@ void WaitForViceEXEPath()
 }
 
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 // If CreateProcess succeeds, it returns a PROCESS_INFORMATION 
@@ -27,13 +30,24 @@ void WaitForViceEXEPath()
 // CreateProcessWithLogonW function.This allows you to specify the
 // security context of the user account in which the process will execute.
 
-
+#define START_VICE_THREAD_STACK 1024
 bool LoadViceEXE()
 {
+	if (ViceConnected()) { return false; }
+
 	char* viceEXEPath = GetViceEXEPath();
 	if (viceEXEPath == nullptr) {
 		return false;
 	}
+#if 0
+	CreateThread(NULL, START_VICE_THREAD_STACK, (LPTHREAD_START_ROUTINE)LoadViceEXEThread, &viceEXEPath, 0, NULL);
+	return true;
+}
+
+void* LoadViceEXEThread(void* param)
+{
+	char* viceEXEPath = (char*)param;
+#endif
 	STARTUPINFO si = {};
 	PROCESS_INFORMATION pi = {};
 
@@ -41,31 +55,36 @@ bool LoadViceEXE()
 
 	// Start the child process. 
 	if (!CreateProcess(NULL,   // No module name (use command line)
-					   viceEXEPath,        // Command line
-					   NULL,           // Process handle not inheritable
-					   NULL,           // Thread handle not inheritable
-					   FALSE,          // Set handle inheritance to FALSE
-					   0,              // No creation flags
-					   NULL,           // Use parent's environment block
-					   NULL,           // Use parent's starting directory 
-					   &si,            // Pointer to STARTUPINFO structure
-					   &pi)           // Pointer to PROCESS_INFORMATION structure
+					   viceEXEPath,		// Command line
+					   NULL, // Process handle not inheritable
+					   NULL, // Thread handle not inheritable
+					   FALSE,// Set handle inheritance to FALSE
+					   0,// No creation flags
+					   NULL, // Use parent's environment block
+					   NULL, // Use parent's starting directory 
+					   &si,// Pointer to STARTUPINFO structure
+					   &pi) // Pointer to PROCESS_INFORMATION structure
 		) {
-		//printf("CreateProcess failed (%d).\n", GetLastError());
-		return false;
+		printf("CreateProcess failed (%d).\n", GetLastError());
+		return false;// nullptr;
 	}
 
 	// Wait until child process exits.
-	WaitForSingleObject(pi.hProcess, INFINITE);
+	//WaitForSingleObject(pi.hProcess, INFINITE);
+
+	//Sleep(2 * 1000);
 
 	// Close process and thread handles. 
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
-	return true;
+
+	// TODO: User set IP/Port
+	ViceConnect("127.0.0.1", 6502);
+
+	return true;// nullptr;
 }
 
 #elif defined(__linux__)
-
 
 // The standard UNIX way is to use fork(2) followed by an exec(3)
 // call(there's a whole family of them—choose whichever suits
@@ -75,6 +94,8 @@ bool LoadViceEXE()
 
 bool LoadVIceEXE()
 {
+	if (ViceConnected()) { return false; }
+
 	char* viceEXEPath = GetViceEXEPath();
 	if (viceEXEPath == nullptr) {
 		return false;
