@@ -178,6 +178,15 @@ void ViceLog(strref str)
 	}
 }
 
+void VicePing()
+{
+	if (viceCon && viceCon->isConnected()) {
+		VICEBinHeader pingMsg;
+		pingMsg.Setup(0, ++lastRequestID, VICE_Ping);
+		viceCon->AddMessage((uint8_t*)&pingMsg, sizeof(VICEBinHeader));
+	}
+}
+
 bool ViceConnected()
 {
 	return viceCon && viceCon->isConnected();
@@ -192,15 +201,7 @@ void ViceDisconnect()
 {
 	if (viceCon && viceCon->isConnected()) {
 		sCloseConnectRequest = true;
-	}
-}
-
-void VicePing()
-{
-	if (viceCon && viceCon->isConnected()) {
-		VICEBinHeader pingMsg;
-		pingMsg.Setup(0, ++lastRequestID, VICE_Ping);
-		viceCon->AddMessage((uint8_t*)&pingMsg, sizeof(VICEBinHeader));
+		VicePing();
 	}
 }
 
