@@ -108,15 +108,57 @@ Breakpoint pane Keys (after clicking on a breakpoint)
 
 ## Code View
 
-...
+Disassembly and Source Debugging lives here, but that is not all. There are a number of optional "columns" to customize this view
+
+* Address
+* Bytes - the bytes that makes up each instruction
+* Disassembly - you can hide the disassembly to save some screen space for Source Debugging
+* References - looks at the address the instruction is referencing and shows what it currently contains
+* Labels - *not* a column, but expands addresses in instructions into labels if found
+* Source - show or hide source debugging
+
+Code Views have an active state. If you see a purple cursor below an instruction that view is active. This means you can press enter to edit code or toggle breakpoints with F9. Cursor keys move the cursor and Page Up/Page Down moves the address of the view by half a page.
+
+The address field can be anything that can be evaluated, either a hex value preceeded by $ or a decimal value. It can also be an expression, see the Watch View for expression details.
+
+If the address field expression is preceeded by = this means lock the view to the expression which can be handy to for example see the current jsr address:
+
+	={$101+s}-2
 
 ## Watch View
 
-..
+A watch is a live expression, type in any expression here to monitor the result at any time.
+
+Each watch expression will be saved to the .ini file at shutdown.
+
+Expression operators are:
+* '==': 1 if left is same as right side otherwise 0. Can also use '='
+* '<', '<=', '>', '>=": less than, less or equal, greater, greater or equal. 1 if true otherwise 0
+* '(', ')': parenthesis can be used to scope parts of expressions
+* '{', '}': 16 bit value at address within { and }, for example {$fffe} would be the current interrupt address
+* '[', ']': 8 bit value at address within [ and ], for example [1] would be current ROM bank value
+* '+': sum of left side and right side
+* '-': left side subtracted by right side
+* '*': product of left and right sides
+* '/': left side divided by right side
+* '&': bitwise and
+* '&&': conditional and, if left side and right side are both non-zero this is 1 otherwise 0
+* '|': bitwise or
+* '||': conditional or
+* '^': bitwise exclusive or
+* '!': "not", if right side is 0 then this is 1, otherwise 0
+* '$': prefix for hex values
+* '%': prefix for octal values
+* 'A', 'X', 'Y': value of register
+* 'S': stack pointer
+* 'C', 'Z', 'I', 'D', 'V', 'N': value of flag register, each is 0 or 1
+* 'P': all above flags in one byte
 
 ## Console View
 
-..
+This is a combination of the VICE text monitor, if enabled in VICE, and some extra commands for IceBro Lite.
+
+Type help or ? for a list of VICE commands when connected to VICE, or type CMD for a list of IceBro Lite commands. VICE text monitor output will be shown in this view.
 
 ## Breakpoint View
 
