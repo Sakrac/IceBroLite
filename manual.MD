@@ -22,6 +22,8 @@ There are various other options for debuggers to explore, aside from this softwa
 
 To enable external debugging VICE must first be configured to do so. It may be required to revert these settings to enable the built-in monitor again.
 
+(Note: you can load VICE from the FILE drop down menu instead of following this section and the setup will be handled by passing command line arguments to VICE.)
+
 First find the settings menu 
 
 ![VICESettingsMenu](img/VICESettingsMenu.png)

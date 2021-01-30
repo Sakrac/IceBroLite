@@ -31,6 +31,9 @@ void WaitForViceEXEPath()
 // security context of the user account in which the process will execute.
 
 #define START_VICE_THREAD_STACK 1024
+
+static const char VICECommandLine[] = " -remotemonitor -binarymonitor";
+
 bool LoadViceEXE()
 {
 	if (ViceConnected()) { return false; }
@@ -53,9 +56,13 @@ void* LoadViceEXEThread(void* param)
 
 	si.cb = sizeof(si);
 
+	strown<PATH_MAX_LEN + sizeof(VICECommandLine)> cmdLine;
+	cmdLine.copy(viceEXEPath);
+	cmdLine.append(VICECommandLine).c_str();
+
 	// Start the child process. 
 	if (!CreateProcess(NULL,   // No module name (use command line)
-					   viceEXEPath,		// Command line
+					   cmdLine.charstr(),		// Command line
 					   NULL, // Process handle not inheritable
 					   NULL, // Thread handle not inheritable
 					   FALSE,// Set handle inheritance to FALSE
