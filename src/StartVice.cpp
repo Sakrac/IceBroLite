@@ -87,12 +87,12 @@ void* LoadViceEXEThread(void* param)
 #elif defined(__linux__)
 
 // The standard UNIX way is to use fork(2) followed by an exec(3)
-// call(there's a whole family of them—choose whichever suits
+// call(there's a whole family of themï¿½choose whichever suits
 // your needs the best).
 
 #include <unistd.h>
 
-bool LoadVIceEXE()
+bool LoadViceEXE()
 {
 	if (ViceConnected()) { return false; }
 
@@ -102,7 +102,6 @@ bool LoadVIceEXE()
 	}
 	pid_t     pid;
 
-	printf("before fork\n");
 	if ((pid = fork()) < 0) {
 
 		//It may fail -- super rare
@@ -111,20 +110,14 @@ bool LoadVIceEXE()
 	} else if (pid > 0) {
 		//If it returns a positive number, you're in the parent process and pid holds the pid of the child
 
-		printf("Mah kid's pid is %d\n", pid);
-		printf("Mine's %d\n", getpid());
+//		printf("Mah kid's pid is %d\n", pid);
+//		printf("Mine's %d\n", getpid());
 
 	} else {
-		//If it returns zero, you're in the child process
-
-		//you can do some preparatory work here (e.g., close filedescriptors)
-
-		printf("I'm the child and my pid is %d\n", getpid());
-
+//		printf("I'm the child and my pid is %d\n", getpid());
+//		printf("executing: \"%s\"\n", viceEXEPath);
 		//exec will replace the process image with that of echo (wherever in the PATH environment variable it is be found (using the execlP version here)
-		execlp(viceEXEPath, "echo", "hello world from echo; I'm now the child because I've replaced the original child because it called an exec function", (char*)NULL);
-
-		printf("This won't run because now we're running the process image of the echo binary. Not this.");
+		execlp(viceEXEPath, "-remotemonitor", "-binarymonitor", (char*)NULL);
 	}
 
 	return EXIT_SUCCESS;

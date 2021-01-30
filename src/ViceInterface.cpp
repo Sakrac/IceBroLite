@@ -525,7 +525,9 @@ void ViceConnection::connectionThread()
 	// close after all commands have been sent?
 		if (sCloseConnectRequest) {
 			sCloseConnectRequest = false;
+		#ifdef _WIN32
 			threadHandle = INVALID_HANDLE_VALUE;
+		#endif
 			close();
 			break;
 		}
@@ -813,9 +815,11 @@ void ViceConnection::updateRegisterNames(VICEBinRegisterAvailableResponse* resp)
 void ViceConnection::close()
 {
 	IBDestroyThread(&threadHandle);
-	closesocket(s);
 #ifdef _WIN32
+	closesocket(s);
 	WSACleanup();
+#else
+	shutdown(s, SHUT_RDWR);
 #endif
 	sCloseConnectRequest = false;
 }
