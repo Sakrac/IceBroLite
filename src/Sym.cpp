@@ -260,6 +260,15 @@ void HideSection(uint64_t section, bool hide)
 size_t NumSections() { return sectionNames.size(); }
 const char* GetSectionName(size_t index) { return sectionNames[index]; }
 
+bool IsSectionVisible(uint64_t section)
+{
+	for (std::vector<uint64_t>::iterator h = hiddenSections.begin(); h != hiddenSections.end(); ++h) {
+		if (*h == section) {
+			return false;
+		}
+	}
+	return true;
+}
 
 void BeginAddingSymbols()
 {

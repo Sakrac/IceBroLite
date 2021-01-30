@@ -703,9 +703,11 @@ void ViceConnection::updateGetMemory(VICEBinMemGetResponse* resp)
 
 void ViceConnection::handleCheckpointList(VICEBinCheckpointList* cpList)
 {
+#ifdef _DEBUG
 	strown<32> msg;
 	msg.sprintf("%d checkpoints found", cpList->GetCount());
 	ViceLog(msg);
+#endif
 }
 
 void ViceConnection::handleCheckpointGet(VICEBinCheckpointResponse* cp)

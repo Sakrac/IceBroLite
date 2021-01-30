@@ -161,7 +161,7 @@ static bool AcceptDragDropAddress(uint32_t* addrValue, char* addrName, size_t ad
 			SymbolDragDrop* drop = (SymbolDragDrop*)payload->Data;
 			if (drop->address < 0x10000) {
 				*addrValue = (uint16_t)drop->address;
-				strovl addrStr(addrName, addrNameSize);
+				strovl addrStr(addrName, (strl_t)addrNameSize);
 				addrStr.copy(drop->symbol); addrStr.c_str();
 				return true;
 			}

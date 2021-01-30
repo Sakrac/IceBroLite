@@ -45,10 +45,12 @@ strref GetSourceAt(uint16_t addr, int &spaces)
 		for (size_t s = 0, n = sSourceDebug->segments.size(); s < n; ++s) {
 			const SourceDebugSegment& seg = sSourceDebug->segments[s];
 			if (seg.addrFirst <= addr && seg.addrLast >= addr) {
-				const SourceDebugLine& line = seg.lines[addr - seg.addrFirst];
-				if (line.line) {
-					spaces = line.spaces;
-					return strref(line.line, (strl_t)line.len);
+				if (IsSectionVisible(seg.name.fnv1a_64())) {
+					const SourceDebugLine& line = seg.lines[addr - seg.addrFirst];
+					if (line.line) {
+						spaces = line.spaces;
+						return strref(line.line, (strl_t)line.len);
+					}
 				}
 			}
 		}

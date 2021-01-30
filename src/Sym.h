@@ -25,6 +25,7 @@ uint64_t GetHiddenSection(size_t index);
 void HideSection(uint64_t section, bool hide);
 size_t NumSections();
 const char* GetSectionName(size_t index);
+bool IsSectionVisible(uint64_t section);
 
 void InitSymbols();
 void ShutdownSymbols();
