@@ -212,7 +212,7 @@ int main(int argc, char* argv[])
 			ReadViceCommandFile(viceMonCmdFile);
 		}
 		if (const char* symFile = LoadSymbolsReady()) {
-			ReadViceCommandFile(symFile);
+			ReadSymbols(symFile);
 		}
 		if (const char* listFile = LoadListingReady()) {
 			if (ReadListingFile(listFile)) {

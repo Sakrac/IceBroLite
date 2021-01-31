@@ -271,10 +271,10 @@ void MemView::ReadConfig(strref config)
 			open = !value.same_str("Off");
 		} else if (name.same_str("address")&&type==CPT_Value) {
 			strovl addr(address, sizeof(address));
-			addr.copy(value); evalAddress = true;
+			addr.copy(value); addr.c_str(); evalAddress = true;
 		} else if (name.same_str("span")&&type==CPT_Value) {
 			strovl spn(span, sizeof(span));
-			spn.copy(value); evalAddress = true;
+			spn.copy(value); spn.c_str(); evalAddress = true;
 		} else if (name.same_str("showAddress")&&type==CPT_Value) {
 			showAddress = !value.same_str("Off");
 		} else if (name.same_str("showHex")&&type==CPT_Value) {

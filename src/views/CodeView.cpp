@@ -138,8 +138,11 @@ void CodeView::Draw(int index)
 	ImGui::Checkbox("labels", &showLabels);
 	ImGui::SameLine();
 	ImGui::Checkbox("source", &showSrc);
-
-	ImGui::BeginChild(ImGui::GetID("codeEdit"));
+	{	// don't overlap rightmost area
+		ImVec2 content_avail = ImGui::GetContentRegionAvail();
+		content_avail.x -= 8;
+		ImGui::BeginChild(ImGui::GetID("codeEdit"), content_avail);
+	}
 
 	bool active = KeyboardCanvas("DisAsmView");// IsItemActive();
 
@@ -359,8 +362,10 @@ void CodeView::Draw(int index)
 	}
 	if (focusPC) {
 		addrCursor = pc;
-	} else if (lastShownPC!=pc && addrCursor==lastShownPC) {
+	} else if (lastShownPC != pc && addrCursor == lastShownPC) {
 		addrCursor = pc;
+	} else if (read < addrValue && (addrCursor >= addrValue || addrCursor < read)) {
+		// this is a valid location for the cursor so don't reset it
 	} else if (addrCursor<addrValue) {
 		addrCursor = addrValue;
 	} else if (addrCursor>=read) {

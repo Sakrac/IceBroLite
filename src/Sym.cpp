@@ -459,85 +459,71 @@ bool GetAddress( const char *name, size_t chars, uint16_t &addr )
 void ReadViceCommandFile(const char *symFile)
 {
 	ResetSymbols();
-	FILE* f;
-	if (fopen_s(&f, symFile, "rb") == 0 && f) {
-		fseek(f, 0, SEEK_END);
-		uint32_t size = ftell(f);
-		fseek(f, 0, SEEK_SET);
-		if (void *voidbuf = malloc(size)) {
-			fread(voidbuf, size, 1, f);
-
-			for (int pass = 0; pass<2; pass++) {
-				strref file((const char*)voidbuf, size);
-
-				while (strref line = file.line()) {
-					if (strref command = line.get_word()) {
-						uint32_t addr;
-						line += command.get_len();
-						line.trim_whitespace();
-						if (command.same_str("break") || command.same_str("bk")) {
-							if (pass) {
-								if (line.get_first() == '$') { ++line; }
-								ViceAddBreakpoint((uint16_t)(line + 1).ahextoui());
-							}
-						} else if (command.same_str("al") || command.same_str("add_label")) {
-							if (line.has_prefix("c:")) { line += 2; }
-							line.skip_whitespace();
+	size_t size = 0;
+	if (uint8_t* buf = LoadBinary(symFile, size)) {
+		BeginAddingSymbols();
+		for (int pass = 0; pass<2; pass++) {
+			strref file((const char*)buf, (strl_t)size);
+			while (strref line = file.line()) {
+				if (strref command = line.get_word()) {
+					uint32_t addr;
+					line += command.get_len();
+					line.trim_whitespace();
+					if (command.same_str("break") || command.same_str("bk")) {
+						if (pass) {
 							if (line.get_first() == '$') { ++line; }
-							addr = (uint16_t)line.ahextoui_skip();
-							line.skip_whitespace();
-							if (addr < 0x10000) {
-								AddSymbol(addr, line.get(), line.get_len(), nullptr, 0);
-							}
+							ViceAddBreakpoint((uint16_t)(line + 1).ahextoui());
+						}
+					} else if (command.same_str("al") || command.same_str("add_label")) {
+						if (line.has_prefix("c:")) { line += 2; }
+						line.skip_whitespace();
+						if (line.get_first() == '$') { ++line; }
+						addr = (uint16_t)line.ahextoui_skip();
+						line.skip_whitespace();
+						if (addr < 0x10000) {
+							AddSymbol(addr, line.get(), line.get_len(), nullptr, 0);
 						}
 					}
 				}
 			}
-			free(voidbuf);
 		}
-		fclose(f);
+		FilterSectionSymbols();
+		free(buf);
 	}
 }
 
 bool ReadSymbols(const char *filename)
 {
 	ResetSymbols();
-	FILE *f;
-	if (fopen_s(&f, filename, "rb") == 0 && f != nullptr) {
-		fseek(f, 0, SEEK_END);
-		uint32_t size = ftell(f);
-		fseek(f, 0, SEEK_SET);
-		if (void *voidbuf = malloc(size)) {
-			BeginAddingSymbols();
-			fread(voidbuf, size, 1, f);
-			strref file((const char*)voidbuf, size);
-			while (file) {
-				if (strref line = file.line()) {
+	size_t size = 0;
+	if (uint8_t* buf = LoadBinary(filename, size)) {
+		BeginAddingSymbols();
+		strref file((const char*)buf, (strl_t)size);
+		while (file) {
+			if (strref line = file.line()) {
+				line.skip_whitespace();
+				if (line.grab_prefix(".label")) {
 					line.skip_whitespace();
-					if (line.grab_prefix(".label")) {
+					strref label = line.split_label();
+					line.skip_whitespace();
+					if (line.grab_char('=')) {
 						line.skip_whitespace();
-						strref label = line.split_label();
-						line.skip_whitespace();
-						if (line.grab_char('=')) {
-							line.skip_whitespace();
-							if (line.grab_char('$')) {
-								size_t addr = line.ahextoui();
-								if (label.same_str("debugbreak")) {
-									Breakpoint bp;
-									if (!BreakpointAt((uint16_t)addr, bp)) {
-										ViceAddBreakpoint((uint16_t)addr);
-									}
-								} else {
-									AddSymbol((uint16_t)addr, label.get(), label.get_len(), nullptr, 0);
+						if (line.grab_char('$')) {
+							size_t addr = line.ahextoui();
+							if (label.same_str("debugbreak")) {
+								Breakpoint bp;
+								if (!BreakpointAt((uint16_t)addr, bp)) {
+									ViceAddBreakpoint((uint16_t)addr);
 								}
+							} else {
+								AddSymbol((uint16_t)addr, label.get(), label.get_len(), nullptr, 0);
 							}
 						}
 					}
 				}
 			}
-			free(voidbuf);
 		}
-		fclose(f);
+		free(buf);
 		FilterSectionSymbols();
 		return true;
 	}
@@ -554,6 +540,7 @@ void ReadSymbolsForBinary(const char *binname)
 	symFile.append(".dbg");
 	if (ReadC64DbgSrc(symFile.c_str())) { return; }
 
+	symFile.copy(origname);
 	symFile.append(".sym");
 	if (ReadSymbols(symFile.c_str())) { return; }
 
