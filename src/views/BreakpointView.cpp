@@ -13,9 +13,13 @@
 #include "BreakpointView.h"
 #include "GLFW/glfw3.h"
 
+#ifndef _WIN32
+#define strncpy_s strncpy
+#endif
+
 BreakpointView::BreakpointView() : open(true), selected_row(-1)
 {
-
+	conditionEdit[0] = 0;
 }
 
 void BreakpointView::WriteConfig(UserData& config)
@@ -73,14 +77,15 @@ void BreakpointView::Draw()
 
 	float fontHgt = ImGui::GetFont()->FontSize;
 	bool haveSymbols = SymbolsLoaded();
-	int numColumns = haveSymbols ? 4 : 3;
-	if (ImGui::BeginTable("##breakpointstable", 4, flags)) {
+	int numColumns = haveSymbols ? 5 : 4;
+	if (ImGui::BeginTable("##breakpointstable", 5, flags)) {
 		size_t numBreakpoints = NumBreakpoints();
 
 		ImGui::TableSetupColumn("B", ImGuiTableColumnFlags_WidthFixed);
 		ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed);
 		ImGui::TableSetupColumn("Addr ", ImGuiTableColumnFlags_WidthStretch);
 		ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthStretch);
+		ImGui::TableSetupColumn("Condition", ImGuiTableColumnFlags_WidthStretch);
 		ImGui::TableSetupScrollFreeze(0, 1); // Make row always visible
 		ImGui::TableHeadersRow();
 
@@ -115,6 +120,7 @@ void BreakpointView::Draw()
 					if (mousePos.y > scrCur.y && mousePos.y < (scrCur.y + fontHgt) && mousePos.x > winPos.x && mousePos.x < (winPos.x + winSize.x)) {
 						selected_row = bpIdx;
 						was_selected = true;
+						SetSelected((int)selected_row);
 					}
 				}
 		 
@@ -160,14 +166,26 @@ void BreakpointView::Draw()
 						ImGui::EndDragDropSource();
 					}
 				}
+				ImGui::TableSetColumnIndex(col++);
+				if (bpIdx == selected_row) {
+					ImGui::InputText("##bpCondition", conditionEdit, sizeof(conditionEdit));
+				} else if (bp.condition) {
+					ImGui::Text(bp.condition);
+				}
 			}
 		}
 		if (!was_selected) {
 			selected_row = prior_valid;
+			SetSelected((int)selected_row);
 		}
 		if (selected_row != 0xffffffff && g->CurrentWindow == g->NavWindow) {
-			if (prior_valid != 0xffffffff && ImGui::IsKeyPressed(GLFW_KEY_UP)) { selected_row = prior_valid; }
-			else if (next_valid != 0xffffffff && ImGui::IsKeyPressed(GLFW_KEY_DOWN)) { selected_row = next_valid; }
+			if (prior_valid != 0xffffffff && ImGui::IsKeyPressed(GLFW_KEY_UP)) {
+				selected_row = prior_valid; 
+				SetSelected((int)selected_row);
+			} else if (next_valid != 0xffffffff && ImGui::IsKeyPressed(GLFW_KEY_DOWN)) {
+				selected_row = next_valid;
+				SetSelected((int)selected_row);
+			}
 			if (ImGui::IsKeyPressed(GLFW_KEY_DELETE)) {
 				Breakpoint bp = GetBreakpoint(selected_row);
 				ViceRemoveBreakpoint(bp.number);
@@ -176,4 +194,15 @@ void BreakpointView::Draw()
 		ImGui::EndTable();
 	}
 	ImGui::End();
+}
+
+void BreakpointView::SetSelected(int index)
+{
+	conditionEdit[0] = 0;
+	if (index > 0 && index < NumBreakpoints()) {
+		Breakpoint bp = GetBreakpoint((size_t)index);
+		if (bp.condition) {
+			strncpy_s(conditionEdit, bp.condition, sizeof(conditionEdit));
+		}
+	}
 }

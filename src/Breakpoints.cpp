@@ -8,6 +8,10 @@
 #include "struse/struse.h"
 #include "ViceInterface.h"
 
+#ifndef _WIN32
+#define _strdup strdup
+#endif
+
 
 static IBMutex sBreakpointMutex;
 static std::vector<Breakpoint> sBreakpoints;
@@ -32,18 +36,24 @@ void ClearBreakpoints()
 	IBMutexRelease(&sBreakpointMutex);
 }
 
-void AddBreakpoint(uint32_t number, uint32_t flags, uint16_t start, uint16_t end)
+void AddBreakpoint(uint32_t number, uint32_t flags, uint16_t start, uint16_t end, const char* condition)
 {
 	// breakpoints with multiple settings are duplicated so merge them by number
 	IBMutexLock(&sBreakpointMutex);
 	for (size_t i = 0; i < sBreakpoints.size(); ++i) {
 		if (sBreakpoints[i].number == number) {
 			sBreakpoints[i].flags |= flags;
+			if (sBreakpoints[i].condition) {
+				free((void*)sBreakpoints[i].condition);
+				sBreakpoints[i].condition = nullptr;
+			}
+			if (condition) { sBreakpoints[i].condition = _strdup(condition);	}
 			IBMutexRelease(&sBreakpointMutex);
 			return;
 		}
 	}
-	Breakpoint bp = { number, flags, start, end };
+	Breakpoint bp = { number, flags, start, end, nullptr };
+	if (condition) { bp.condition = _strdup(condition); }
 	sBreakpoints.push_back(bp);
 	if ((flags & Breakpoint::Exec) && sBreakpointLookup.Value(start) == nullptr) {
 		sBreakpointLookup.Insert(start, number);
@@ -73,6 +83,7 @@ void RemoveAllBreakpoints()
 	IBMutexLock(&sBreakpointMutex);
 	for (size_t i = 0; i < sBreakpoints.size(); ++i) {
 		ViceRemoveBreakpointNoList(sBreakpoints[i].number);
+		if (sBreakpoints[i].condition) { free((void*)sBreakpoints[i].condition); }
 	}
 	sBreakpoints.clear();
 	sBreakpointLookup.Clear();

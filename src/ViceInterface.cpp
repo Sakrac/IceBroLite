@@ -720,28 +720,32 @@ void ViceConnection::handleCheckpointGet(VICEBinCheckpointResponse* cp)
 	if (cp->operation & VICE_StoreMem) flags |= Breakpoint::Store;
 	if (cp->wasHit) flags |= Breakpoint::Current;
 	if (cp->temporary) flags |= Breakpoint::Temporary;
-	AddBreakpoint(cp->GetNumber(), flags, cp->GetStart(), cp->GetEnd());
+	AddBreakpoint(cp->GetNumber(), flags, cp->GetStart(), cp->GetEnd(),
+				  cp->hasCondition ? "yes" : nullptr);
+	if (cp->hasCondition) {
+		// no command for receiving checkpoint condition?
+	}
 }
 
 void ViceConnection::updateRegisters(VICEBinRegisterResponse* resp)
 {
-	CPU6510* cpu = GetMainCPU();
-	for (uint16_t r = 0, n = resp->GetCount(); r < n; ++r) {
-		VICEBinRegisterResponse::regInfo& info = resp->aRegs[r];
-		switch (info.registerID) {
-			case VICE_Acc: cpu->regs.A = info.GetValue8(); break;
-			case VICE_X: cpu->regs.X = info.GetValue8(); break;
-			case VICE_Y: cpu->regs.Y = info.GetValue8(); break;
-			case VICE_PC: cpu->regs.PC = info.GetValue16(); break;
-			case VICE_SP: cpu->regs.SP = info.GetValue8(); break;
-			case VICE_FL: cpu->regs.FL = info.GetValue8(); break;
-			case VICE_LIN: cpu->regs.LIN = info.GetValue16(); break;
-			case VICE_CYC: cpu->regs.CYC = info.GetValue16(); break;
-			case VICE_00: cpu->regs.ZP00 = info.GetValue8(); break;
-			case VICE_01: cpu->regs.ZP01 = info.GetValue8(); break;
+	if (CPU6510* cpu = GetMainCPU()) {
+		for (uint16_t r = 0, n = resp->GetCount(); r < n; ++r) {
+			VICEBinRegisterResponse::regInfo& info = resp->aRegs[r];
+			switch (info.registerID) {
+				case VICE_Acc: cpu->regs.A = info.GetValue8(); break;
+				case VICE_X: cpu->regs.X = info.GetValue8(); break;
+				case VICE_Y: cpu->regs.Y = info.GetValue8(); break;
+				case VICE_PC: cpu->regs.PC = info.GetValue16(); break;
+				case VICE_SP: cpu->regs.SP = info.GetValue8(); break;
+				case VICE_FL: cpu->regs.FL = info.GetValue8(); break;
+				case VICE_LIN: cpu->regs.LIN = info.GetValue16(); break;
+				case VICE_CYC: cpu->regs.CYC = info.GetValue16(); break;
+				case VICE_00: cpu->regs.ZP00 = info.GetValue8(); break;
+				case VICE_01: cpu->regs.ZP01 = info.GetValue8(); break;
+			}
 		}
 	}
-
 }
 
 void ViceConnection::handleDisplayGet(VICEBinDisplayResponse* resp)

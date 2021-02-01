@@ -18,12 +18,13 @@ struct Breakpoint {
 	uint32_t flags;
 	uint16_t start;
 	uint16_t end;
+	const char* condition;	// normally nullptr
 };
 
 void InitBreakpoints();
 void ShutdownBreakpoints();
 void ClearBreakpoints();
-void AddBreakpoint(uint32_t number, uint32_t flags, uint16_t start, uint16_t end);
+void AddBreakpoint(uint32_t number, uint32_t flags, uint16_t start, uint16_t end, const char* condition = nullptr);
 void RemoveBreakpoint(uint32_t number);
 void RemoveAllBreakpoints();
 size_t NumBreakpoints();
