@@ -27,6 +27,7 @@ MemView::MemView() : fixedAddress(false), open(false), evalAddress(false)
 	showText = true;
 
 	cursorTime = 0.0f;
+	mouseWheelDiff = 0.0f;
 }
 
 #define CursorFlashPeriod 64.0f/50.0f
@@ -124,6 +125,8 @@ void MemView::Draw(int index)
 	}
 	ImGui::BeginChild(ImGui::GetID("hexEdit"));
 
+	uint32_t prevAddrValue = addrValue;
+
 	if (showHex||showText) {
 		bool active = KeyboardCanvas("HexView");// IsItemActive();
 
@@ -138,6 +141,19 @@ void MemView::Draw(int index)
 		if (showAddress) { charWid -= 5; }
 		if (showHex && showText) { charWid--; }
 		uint32_t spanWin = spanValue ? spanValue : charWid/byteChars;
+		ImVec2 mousePos = ImGui::GetMousePos();
+		ImVec2 curPos = ImGui::GetCursorScreenPos();
+		ImVec2 winPos = ImGui::GetWindowPos();
+		ImVec2 winSize = ImGui::GetWindowSize();
+
+		// handle scroll wheel
+		if (mousePos.x >= curPos.x && mousePos.x < (winPos.x + winSize.x) && mousePos.y >= curPos.y && mousePos.y < (winPos.y + winSize.y) && address[0] != '=') {
+			mouseWheelDiff += ImGui::GetIO().MouseWheel;
+			if (mouseWheelDiff < -0.5f) { addrValue += spanWin; mouseWheelDiff += 1.0f; } 
+			else if (mouseWheelDiff > 0.5) { addrValue -= spanWin; mouseWheelDiff -= 1.0f; }
+		} else {
+			mouseWheelDiff = 0.0f;
+		}
 
 		if (ImGui::IsMouseClicked(0)) {
 			ImVec2 mousePos = ImGui::GetMousePos();
@@ -245,6 +261,10 @@ void MemView::Draw(int index)
 				ImGui::TextColored(style.Colors[ImGuiCol_ChildBg], curChr.c_str());
 			}
 		}
+	}
+	if (addrValue != prevAddrValue) {
+		strovl addrStr(address, (strl_t)sizeof(address));
+		addrStr.append('$').append_num(addrValue, 4, 16).c_str();
 	}
 	ImGui::EndChild();
 

@@ -15,6 +15,7 @@ struct MemView {
 	MemView();
 
 	float cursorTime;
+	float mouseWheelDiff;
 	bool showAddress;
 	bool showHex;
 	bool showText;

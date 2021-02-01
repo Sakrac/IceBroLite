@@ -29,6 +29,7 @@ CodeView::CodeView() : open(false), evalAddress(false)
 	showLabels = true;
 	editAsmFocusRequested = false;
 	editAsmAddr = -1;
+	mouseWheelDiff = 0.0f;
 	SetAddr(0xea31);
 }
 
@@ -146,6 +147,10 @@ void CodeView::Draw(int index)
 
 	bool active = KeyboardCanvas("DisAsmView");// IsItemActive();
 
+	ImVec2 mousePos = ImGui::GetMousePos();
+	ImVec2 curPos = ImGui::GetCursorScreenPos();
+	ImVec2 winPos = ImGui::GetWindowPos();
+	ImVec2 winSize = ImGui::GetWindowSize();
 	uint16_t pc = regs.PC;
 	bool goToPC = false;
 	bool setPCAtCursor = false;
@@ -153,6 +158,17 @@ void CodeView::Draw(int index)
 	int cursorLine = -1;
 	int dY = 0;
 	int sY = 0;
+
+	// handle scroll wheel
+	if (mousePos.x >= curPos.x && mousePos.x < (winPos.x + winSize.x) && mousePos.y >= curPos.y && mousePos.y < (winPos.y + winSize.y) && address[0]!='=') {
+		mouseWheelDiff += ImGui::GetIO().MouseWheel;
+		if (mouseWheelDiff < -0.5f) { sY = 1; mouseWheelDiff += 1.0f; }
+		else if (mouseWheelDiff > 0.5) { sY = -1; mouseWheelDiff -= 1.0f; }
+	} else {
+		mouseWheelDiff = 0.0f;
+	}
+
+	// Handle keyboard input
 	if (active) {
 		if (ImGui::IsKeyPressed(GLFW_KEY_UP)) { dY--; }
 		if (ImGui::IsKeyPressed(GLFW_KEY_DOWN)) { dY++; }

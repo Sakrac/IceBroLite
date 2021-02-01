@@ -24,6 +24,7 @@ struct CodeView
 	int editAsmAddr;
 	int cursor[ 2 ];
 	float cursorTime;
+	float mouseWheelDiff;
 	bool showAddress;
 	bool showBytes;
 	bool showDisAsm;
