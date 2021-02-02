@@ -15,6 +15,7 @@
 #include "SectionView.h"
 #include "GfxView.h"
 #include "PreView.h"
+#include "TraceView.h"
 #include "../6510.h"
 #include "../Config.h"
 #include "../data/C64_Pro_Mono-STYLE.ttf.h"
@@ -40,6 +41,7 @@ struct ViewContext {
 	ScreenView screenView;
 	FVFileView fileView;
 	PreView preView;
+	TraceView traceView;
 
 	ImFont* aFonts[sNumFontSizes];
 
@@ -107,6 +109,7 @@ void ResetWindowLayout()
 	ImGui::DockBuilderDockWindow("Watch1", dock_id_watch);
 	ImGui::DockBuilderDockWindow("Registers", dock_id_regs);
 	ImGui::DockBuilderDockWindow("Screen", dock_id_screen);
+	ImGui::DockBuilderDockWindow("Trace", dock_id_screen);
 	ImGui::DockBuilderDockWindow("Breakpoints", dock_id_breaks);
 	ImGui::DockBuilderDockWindow("Symbols", dock_id_symbols);
 	ImGui::DockBuilderDockWindow("Sections", dock_id_symbols);
@@ -168,6 +171,7 @@ void ViewContext::SaveState(UserData& conf)
 	conf.BeginStruct("Console"); console.WriteConfig(conf); conf.EndStruct();
 	// ScreenView screenView;
 	conf.BeginStruct("Screen"); screenView.WriteConfig(conf); conf.EndStruct();
+	conf.BeginStruct("Trace"); traceView.WriteConfig(conf); conf.EndStruct();
 }
 
 void ViewContext::LoadState(strref config)
@@ -184,6 +188,7 @@ void ViewContext::LoadState(strref config)
 			else if (name.same_str("Sections")) { sectionView.ReadConfig(value); }
 			else if (name.same_str("Console")) { console.ReadConfig(value); }
 			else if (name.same_str("Screen")) { screenView.ReadConfig(value); }
+			else if (name.same_str("Trace")) { traceView.ReadConfig(value); }
 		} else if (type == CPT_Array) {
 			size_t i = 0;
 			if (name.same_str("Code")) {
@@ -267,6 +272,7 @@ void ViewContext::Draw()
 				}
 				if (ImGui::MenuItem("Registers", NULL, regView.open)) { regView.open = !regView.open; }
 				if (ImGui::MenuItem("Breakpoints", NULL, breakView.open)) { breakView.open = !breakView.open; }
+				if (ImGui::MenuItem("Trace", NULL, traceView.open)) { traceView.open = !traceView.open; }
 				if (ImGui::MenuItem("Symbols", NULL, symbolView.open)) { symbolView.open = !symbolView.open; }
 				if (ImGui::MenuItem("Sections", NULL, sectionView.open)) { sectionView.open = !sectionView.open; }
 				if (ImGui::MenuItem("Toolbar", NULL, toolBar.open)) { toolBar.open = !toolBar.open; }
@@ -323,6 +329,7 @@ void ViewContext::Draw()
 		sectionView.open = true;
 		console.open = true;
 		screenView.open = true;
+		traceView.open = false;
 	}
 
 	toolBar.Draw();
@@ -337,6 +344,7 @@ void ViewContext::Draw()
 	symbolView.Draw();
 	sectionView.Draw();
 	preView.Draw();
+	traceView.Draw();
 
 	fileView.Draw("Select File");
 	GlobalKeyCheck();

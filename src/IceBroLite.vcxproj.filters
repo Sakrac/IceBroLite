@@ -108,6 +108,9 @@
     </ClInclude>
     <ClInclude Include="StartVice.h" />
     <ClInclude Include="Traces.h" />
+    <ClInclude Include="views\TraceView.h">
+      <Filter>views</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\imgui.cpp">
@@ -197,6 +200,9 @@
     </ClCompile>
     <ClCompile Include="StartVice.cpp" />
     <ClCompile Include="Traces.cpp" />
+    <ClCompile Include="views\TraceView.cpp">
+      <Filter>views</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="imgui\misc\natvis\imgui.natvis">

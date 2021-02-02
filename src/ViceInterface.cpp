@@ -713,6 +713,7 @@ void ViceConnection::handleCheckpointList(VICEBinCheckpointList* cpList)
 #endif
 }
 
+// this also gets called every tracepoint!
 void ViceConnection::handleCheckpointGet(VICEBinCheckpointResponse* cp)
 {
 	uint32_t flags = 0;

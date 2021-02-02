@@ -40,6 +40,16 @@ static TraceHit sTraceInfo = {};
 
 static std::vector<TraceArray> sTraceArrays;
 
+size_t NumTracePointIds()
+{
+	return sTraceArrays.size();
+}
+
+int GetTracePointId(size_t id)
+{
+	return sTraceArrays[id].tpId;
+}
+
 void AddTraceHit(int tracePoint, const TraceHit& hit)
 {
 	std::vector<TraceHit>* pArray = nullptr;
