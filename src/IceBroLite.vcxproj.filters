@@ -107,6 +107,7 @@
       <Filter>views</Filter>
     </ClInclude>
     <ClInclude Include="StartVice.h" />
+    <ClInclude Include="Traces.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\imgui.cpp">
@@ -195,6 +196,7 @@
       <Filter>views</Filter>
     </ClCompile>
     <ClCompile Include="StartVice.cpp" />
+    <ClCompile Include="Traces.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="imgui\misc\natvis\imgui.natvis">

@@ -528,5 +528,6 @@ void IceConsole::LogCB(void* user, const char *text, size_t len)
 	if (IceConsole* iceCon = (IceConsole*)user) {
 		iceCon->AddLogSafe(strref(text, (strl_t)len));
 	}
-
 }
+
+

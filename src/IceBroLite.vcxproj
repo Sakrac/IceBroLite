@@ -43,6 +43,7 @@
     <ClInclude Include="struse\struse.h" />
     <ClInclude Include="struse\xml.h" />
     <ClInclude Include="Sym.h" />
+    <ClInclude Include="Traces.h" />
     <ClInclude Include="ViceBinInterface.h" />
     <ClInclude Include="ViceInterface.h" />
     <ClInclude Include="views\BreakpointView.h" />
@@ -87,6 +88,7 @@
     <ClCompile Include="struse\xml.cpp" />
     <ClCompile Include="IceBroLite.cpp" />
     <ClCompile Include="sym.cpp" />
+    <ClCompile Include="Traces.cpp" />
     <ClCompile Include="ViceInterface.cpp" />
     <ClCompile Include="ViceMonitorInterface.cpp" />
     <ClCompile Include="views\BreakpointView.cpp" />

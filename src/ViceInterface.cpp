@@ -19,6 +19,7 @@
 #include "struse/struse.h"
 #include "6510.h"
 #include "Breakpoints.h"
+#include "Traces.h"
 
 #include "ViceInterface.h"
 #include "ViceBinInterface.h"
@@ -166,14 +167,16 @@ ViceConnection::~ViceConnection()
 
 void ViceLog(const char* str, size_t len)
 {
-	if (logConsole && logUser) {
-		logConsole(logUser, str, len);
+	strref decap = CaptureVICELine(strref(str, (strl_t)len));
+	if (decap && logConsole && logUser) {
+		logConsole(logUser, decap.get(), decap.get_len());
 	}
 }
 
 void ViceLog(strref str)
 {
-	if (logConsole && logUser) {
+	strref decap = CaptureVICELine(str);
+	if (decap && logConsole && logUser) {
 		logConsole(logUser, str.get(), str.get_len());
 	}
 }
