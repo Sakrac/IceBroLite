@@ -356,7 +356,7 @@ void IceConsole::Draw()
 		ImGui::LogToClipboard();
 	ImVec4 col_default_text = ImGui::GetStyleColorVec4(ImGuiCol_Text);
 	// don't show more than 4096
-	int first_show = Items.Size < 4096 ? 0 : (Items.Size - 4096);
+	int first_show = Items.Size < 1024 ? 0 : (Items.Size - 1024);
 
 	for (int i = first_show; i < Items.Size; i++) {
 		const char* item = Items[i];
@@ -383,16 +383,18 @@ void IceConsole::Draw()
 	if (ImGui::InputText("Input", InputBuf, IM_ARRAYSIZE(InputBuf), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory, &TextEditCallbackStub, (void*)this)) {
 		char* s = InputBuf;
 		Strtrim(s);
-		if (s[0])
+		if (s[0]) {
 			ExecCommand(s);
+		}
 		s[0] = 0;
 		reclaim_focus = true;
 	}
 
 	// Auto-focus on window apparition
 	ImGui::SetItemDefaultFocus();
-	if (reclaim_focus)
+	if (reclaim_focus) {
 		ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
+	}
 
 	ImGui::End();
 }

@@ -2,6 +2,7 @@
 
 struct TraceHit {
 	uint32_t sw;
+	uint32_t frame;
 	uint16_t pc;
 	uint16_t addr;
 	uint16_t line;

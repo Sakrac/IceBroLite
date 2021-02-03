@@ -93,7 +93,7 @@ void TraceView::Draw()
 		float fontHgt = ImGui::GetFont()->FontSize;
 		bool haveSymbols = SymbolsLoaded();
 		int numColumns = haveSymbols ? 5 : 4;
-//#endif
+#endif
 		ImVec2 winSize = ImGui::GetWindowSize();
 		size_t r = row;
 
@@ -110,7 +110,7 @@ void TraceView::Draw()
 			{
 				if (ImGui::GetCursorPosY() > (winSize.y - 15.0f)) { break; }
 				ImGui::TableNextRow();
-				TraceHit hit = GetTraceHit(tracePointNum, r);
+				TraceHit hit = GetTraceHit((int)tracePointNum, r++);
 				strown<64> str;
 				ImGui::TableSetColumnIndex(0);
 				str.append_num(hit.addr, 4, 16);
@@ -123,69 +123,20 @@ void TraceView::Draw()
 				str.clear();
 				str.append_num(hit.line, 0, 10).append('/').append_num(hit.cycle,0,10);
 				ImGui::Text(str.c_str());
-
-
+				ImGui::TableSetColumnIndex(3);
+				str.clear();
+				str.append_num(hit.frame, 0, 10);
+				ImGui::Text(str.c_str());
+				ImGui::TableSetColumnIndex(4);
+				str.clear();
+				str.append("A:").append_num(hit.a, 2, 16).append(" X:").append_num(hit.x, 2, 16);
+				str.append(" Y:").append_num(hit.y, 2, 16).append(" SP:").append_num(hit.sp, 2, 16);
+				str.append(' ').append_num(hit.fl, 8, 2);
+				ImGui::Text(str.c_str());
 			}
 
-			for (size_t bpIdx = 0; bpIdx < numBreakpoints; bpIdx++) {
-				Breakpoint bp = GetBreakpoint(bpIdx);
-				int col = 0;
-				if (bp.number != 0xffffffff) {
-					ImGui::TableNextRow(bpIdx == 1 ? ImGuiTableBgTarget_RowBg1 : 0);
-					ImGui::TableSetColumnIndex(col++);
-					if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-						ImVec2 scrCur = ImGui::GetCursorScreenPos();
-						if (mousePos.y > scrCur.y && mousePos.y < (scrCur.y + fontHgt) && mousePos.x > winPos.x && mousePos.x < (winPos.x + winSize.x)) {
-							selected_row = bpIdx;
-							was_selected = true;
-							SetSelected((int)selected_row);
-						}
-					}
-
-					DrawTexturedIcon((bp.flags & Breakpoint::Enabled) ? VMI_BreakPoint : VMI_DisabledBreakPoint, false, ImGui::GetFont()->FontSize);
-					ImGui::TableSetColumnIndex(col++);
-					strown<64> num;
-					if (bp.flags & Breakpoint::Current) { num.append('*'); }
-					num.append_num(bp.number, 0, 10);
-					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetColumnWidth() - ImGui::CalcTextSize(num.c_str()).x
-										 - ImGui::GetScrollX() - 2 * ImGui::GetStyle().ItemSpacing.x);
-					ImGui::Text(num.c_str());
-					ImGui::TableSetColumnIndex(col++);
-					num.clear();
-					num.append('$').append_num(bp.start, 4, 16);
-					if (bp.end != bp.start) {
-						num.append("-$").append_num(bp.end, 4, 16);
-					}
-					ImGui::Text(num.c_str());
-					ImGui::TableSetColumnIndex(col++);
-					uint16_t offs;
-					if (const char* label = NearestLabel(bp.start, offs)) {
-						num.clear();
-						num.append(label);
-						if (offs) { num.append("+$").append_num(offs, 4, 16); }
-						ImGui::Text(num.c_str());
-
-						if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-							SymbolDragDrop drag;
-							drag.address = bp.start;
-							strovl lblStr(drag.symbol, sizeof(drag.symbol));
-							lblStr.copy(num); lblStr.c_str();
-							ImGui::SetDragDropPayload("AddressDragDrop", &drag, sizeof(drag));
-							ImGui::Text("%s: $%04x", num.c_str(), bp.start);
-							ImGui::EndDragDropSource();
-						}
-					}
-					ImGui::TableSetColumnIndex(col++);
-					if (bpIdx == selected_row) {
-						ImGui::InputText("##bpCondition", conditionEdit, sizeof(conditionEdit));
-					} else if (bp.condition) {
-						ImGui::Text(bp.condition);
-					}
-				}
-			}
 			ImGui::EndTable();
 		}
-#endif
 	}
 	ImGui::End();
 }

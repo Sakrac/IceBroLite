@@ -24,8 +24,12 @@
 
 struct TraceArray {
 	int tpId;
+	uint32_t timeStart;
 	std::vector<TraceHit>* traceHits;
 };
+
+static const uint32_t cycles_per_frame_pal = 19656;
+static const uint32_t cycles_per_frame_ntsc = 17095;
 
 static bool sTraceStart = false;
 static int sTracePointIdx = 0;
@@ -80,32 +84,38 @@ TraceHit GetTraceHit(int id, size_t index)
 	IBMutexLock(&sTraceMutex);
 	if (id < sTraceArrays.size()) {
 		if (index < sTraceArrays[id].traceHits->size()) {
-			TraceHit ret = sTraceArrays[id].traceHits->at(index);
+			ret = sTraceArrays[id].traceHits->at(index);
 		}
 	}
 	IBMutexRelease(&sTraceMutex);
 	return ret;
 }
 
-void AddTraceHit(int tracePoint, const TraceHit& hit)
+void AddTraceHit(int tracePoint, TraceHit& hit)
 {
 	IBMutexLock(&sTraceMutex);
+	uint32_t startTime = 0;
 	std::vector<TraceHit>* pArray = nullptr;
 	for (size_t t = 0, n = sTraceArrays.size(); t < n; ++t) {
 		if (sTraceArrays[t].tpId == tracePoint) {
 			pArray = sTraceArrays[t].traceHits;
+			startTime = sTraceArrays[t].timeStart;
 			break;
 		}
 	}
 	if (!pArray) {
+		// TODO: Determine whether PAL or NTSC timing here.
+		startTime = hit.sw - (hit.line * cycles_per_frame_pal / 263 + hit.cycle);
 		TraceArray tArr;
 		tArr.tpId = tracePoint;
+		tArr.timeStart = startTime;
 		tArr.traceHits = new std::vector<TraceHit>();
 		pArray = tArr.traceHits;
 		sTraceArrays.push_back(tArr);
 	}
 
 	if (pArray) {
+		hit.frame = (hit.sw - startTime) / cycles_per_frame_pal;
 		pArray->push_back(hit);
 	}
 	IBMutexRelease(&sTraceMutex);
