@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include <vector>
 #include "struse/struse.h"
+#include "Traces.h"
+#include "platform.h"
 
 // TRACE Pattern:
 // ID: line starts with #, <bk num>, space, "(Trace store "<trg>")"
@@ -20,15 +22,6 @@
 //#1 (Trace store d40b)  261/$105,   3/$003
 //.C:c617  9D 04 D4    STA $D404,X    - A:10 X:07 Y:00 SP:f6 ..-..I.C   26316174
 
-struct TraceHit {
-	uint32_t sw;
-	uint16_t pc;
-	uint16_t addr;
-	uint16_t line;
-	uint8_t cycle;
-	uint8_t a, x, y, sp, fl;
-};
-
 struct TraceArray {
 	int tpId;
 	std::vector<TraceHit>* traceHits;
@@ -37,8 +30,28 @@ struct TraceArray {
 static bool sTraceStart = false;
 static int sTracePointIdx = 0;
 static TraceHit sTraceInfo = {};
+static IBMutex sTraceMutex;
 
 static std::vector<TraceArray> sTraceArrays;
+
+void InitTraces()
+{
+	IBMutexInit(&sTraceMutex, "Traces mutex");
+}
+
+void ShutdownTraces()
+{
+	IBMutexLock(&sTraceMutex);
+	for (size_t t = 0, n = sTraceArrays.size(); t < n; ++t) {
+		if (sTraceArrays[t].traceHits) {
+			delete sTraceArrays[t].traceHits;
+			sTraceArrays[t].traceHits = nullptr;
+		}
+	}
+	sTraceArrays.clear();
+	IBMutexRelease(&sTraceMutex);
+	IBMutexDestroy(&sTraceMutex);
+}
 
 size_t NumTracePointIds()
 {
@@ -47,11 +60,36 @@ size_t NumTracePointIds()
 
 int GetTracePointId(size_t id)
 {
-	return sTraceArrays[id].tpId;
+	if (id < sTraceArrays.size()) {
+		return sTraceArrays[id].tpId;
+	}
+	return 0;
+}
+
+size_t NumTraceHits(size_t id)
+{
+	if (id < sTraceArrays.size()) {
+		return sTraceArrays[id].traceHits->size();
+	}
+	return 0;
+}
+
+TraceHit GetTraceHit(int id, size_t index)
+{
+	TraceHit ret = {};
+	IBMutexLock(&sTraceMutex);
+	if (id < sTraceArrays.size()) {
+		if (index < sTraceArrays[id].traceHits->size()) {
+			TraceHit ret = sTraceArrays[id].traceHits->at(index);
+		}
+	}
+	IBMutexRelease(&sTraceMutex);
+	return ret;
 }
 
 void AddTraceHit(int tracePoint, const TraceHit& hit)
 {
+	IBMutexLock(&sTraceMutex);
 	std::vector<TraceHit>* pArray = nullptr;
 	for (size_t t = 0, n = sTraceArrays.size(); t < n; ++t) {
 		if (sTraceArrays[t].tpId == tracePoint) {
@@ -60,7 +98,9 @@ void AddTraceHit(int tracePoint, const TraceHit& hit)
 		}
 	}
 	if (!pArray) {
-		TraceArray tArr = { tracePoint, new std::vector<TraceHit> };
+		TraceArray tArr;
+		tArr.tpId = tracePoint;
+		tArr.traceHits = new std::vector<TraceHit>();
 		pArray = tArr.traceHits;
 		sTraceArrays.push_back(tArr);
 	}
@@ -68,7 +108,9 @@ void AddTraceHit(int tracePoint, const TraceHit& hit)
 	if (pArray) {
 		pArray->push_back(hit);
 	}
+	IBMutexRelease(&sTraceMutex);
 }
+
 
 
 strref CaptureVICELine(strref line)
@@ -114,7 +156,7 @@ strref CaptureVICELine(strref line)
 					line.skip_to_whitespace();
 					line.skip_whitespace();
 					if (strref::is_number(line.get_first())) {
-						sTraceInfo.line = (uint16_t)line.atoi_skip();
+						sTraceInfo.cycle = (uint8_t)line.atoi_skip();
 						sTraceStart = true;
 						return strref();
 					}

@@ -69,14 +69,20 @@ void TraceView::Draw()
 		ImGui::SameLine();
 		ImGui::InputInt("Row", &row);
 
-#if 0		
+		if (tracePointNum > numTraceIds) {
+			ImGui::End();
+			return;
+		}
+
+		size_t numHits = NumTraceHits(tracePointNum);
+
 		ImGuiContext* g = ImGui::GetCurrentContext();
 
 		const ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg |
-			ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Resizable | ImGuiTableFlags_Sortable |
-			ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV |
-			ImGuiTableFlags_ScrollY;
+			ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Resizable |
+			ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV;
 
+#if 0		
 		ImVec2 cursorScreen = ImGui::GetCursorScreenPos();
 		ImVec2 outer_size(-FLT_MIN, 0.0f);
 
@@ -87,16 +93,39 @@ void TraceView::Draw()
 		float fontHgt = ImGui::GetFont()->FontSize;
 		bool haveSymbols = SymbolsLoaded();
 		int numColumns = haveSymbols ? 5 : 4;
+//#endif
+		ImVec2 winSize = ImGui::GetWindowSize();
+		size_t r = row;
+
 		if (ImGui::BeginTable("##tracetable", 5, flags)) {
-
-
-			ImGui::TableSetupColumn("B", ImGuiTableColumnFlags_WidthFixed);
-			ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed);
-			ImGui::TableSetupColumn("Addr ", ImGuiTableColumnFlags_WidthStretch);
-			ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthStretch);
-			ImGui::TableSetupColumn("Condition", ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn("addr", ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn("pc", ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn("time", ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn("frame", ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn("regs", ImGuiTableColumnFlags_WidthStretch);
 			ImGui::TableSetupScrollFreeze(0, 1); // Make row always visible
 			ImGui::TableHeadersRow();
+
+			while (r < numHits)
+			{
+				if (ImGui::GetCursorPosY() > (winSize.y - 15.0f)) { break; }
+				ImGui::TableNextRow();
+				TraceHit hit = GetTraceHit(tracePointNum, r);
+				strown<64> str;
+				ImGui::TableSetColumnIndex(0);
+				str.append_num(hit.addr, 4, 16);
+				ImGui::Text(str.c_str());
+				ImGui::TableSetColumnIndex(1);
+				str.clear();
+				str.append_num(hit.pc, 4, 16);
+				ImGui::Text(str.c_str());
+				ImGui::TableSetColumnIndex(2);
+				str.clear();
+				str.append_num(hit.line, 0, 10).append('/').append_num(hit.cycle,0,10);
+				ImGui::Text(str.c_str());
+
+
+			}
 
 			for (size_t bpIdx = 0; bpIdx < numBreakpoints; bpIdx++) {
 				Breakpoint bp = GetBreakpoint(bpIdx);

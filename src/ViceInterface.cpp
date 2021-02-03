@@ -27,7 +27,7 @@
 #include "views/Views.h"
 
 #ifdef _DEBUG
-#define VICELOG
+//#define VICELOG
 #endif
 
 #define SEND_IMMEDIATE

@@ -31,6 +31,7 @@
 #include "Files.h"
 #include "FileDialog.h"
 #include "Breakpoints.h"
+#include "Traces.h"
 #include "Sym.h"
 #include "StartVice.h"
 #include "views/FilesView.h"
@@ -101,6 +102,7 @@ int main(int argc, char* argv[])
 	CreateMainCPU();
 	InitSymbols();
 	InitBreakpoints();
+	InitTraces();
 
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
@@ -230,6 +232,7 @@ int main(int argc, char* argv[])
 		SaveState();
 	}
 
+	ShutdownTraces();
 	ShutdownBreakpoints();
 	ShutdownSymbols();
 	ShutdownMainCPU();
