@@ -4,6 +4,8 @@
 #include "../struse/struse.h"
 #include "../Config.h"
 #include "../Sym.h"
+#include "../6510.h"
+#include "../Mnemonics.h"
 #include "../Traces.h"
 #include "../ViceInterface.h"
 #include "Views.h"
@@ -17,6 +19,7 @@
 TraceView::TraceView() : open(false), row(0)
 {
 	tracePointNum = ~(size_t)0;
+	lastDrawnRows = 1;
 }
 
 void TraceView::WriteConfig(UserData& config)
@@ -78,40 +81,89 @@ void TraceView::Draw()
 
 		ImGuiContext* g = ImGui::GetCurrentContext();
 
-		const ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg |
+		const ImGuiTableFlags flags = /*ImGuiTableFlags_Borders |*/ ImGuiTableFlags_RowBg |
 			ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Resizable |
-			ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV;
+			ImGuiTableFlags_BordersOuter;// | ImGuiTableFlags_BordersV;
 
 #if 0		
 		ImVec2 cursorScreen = ImGui::GetCursorScreenPos();
 		ImVec2 outer_size(-FLT_MIN, 0.0f);
 
-		ImVec2 mousePos = ImGui::GetMousePos();
-		ImVec2 winPos = ImGui::GetWindowPos();
 		ImVec2 winSize = ImGui::GetWindowSize();
 
 		float fontHgt = ImGui::GetFont()->FontSize;
 		bool haveSymbols = SymbolsLoaded();
 		int numColumns = haveSymbols ? 5 : 4;
 #endif
+		ImVec2 winPos = ImGui::GetWindowPos();
 		ImVec2 winSize = ImGui::GetWindowSize();
+		ImVec2 mousePos = ImGui::GetMousePos();
+		size_t numRows = 0;
+
+		if (mousePos.x >= winPos.x && mousePos.x < (winPos.x + winSize.x) &&
+			mousePos.y >= ImGui::GetCursorPos().y && mousePos.y < (winPos.y + winSize.y)) {
+			mouseWheelDiff += ImGui::GetIO().MouseWheel;
+			if (mouseWheelDiff < -0.5f) {
+				row++;
+				mouseWheelDiff += 1.0f;
+			}
+			else if (mouseWheelDiff > 0.5) {
+				if (row) { row--; };
+				mouseWheelDiff -= 1.0f;
+			}
+		} else {
+			mouseWheelDiff = 0.0f;
+		}
+
+		if (ImGui::IsKeyPressed(GLFW_KEY_PAGE_UP)) {
+			row = row > (lastDrawnRows / 2) ? (row - lastDrawnRows / 2) : 0;
+		}
+		if (ImGui::IsKeyPressed(GLFW_KEY_PAGE_DOWN)) {
+			row += lastDrawnRows / 2;
+		}
+
+		if (((size_t)row + lastDrawnRows) > numHits) {
+			row = lastDrawnRows < numHits ? (int)(numHits - lastDrawnRows) : 0;
+		}
+
 		size_t r = row;
 
-		if (ImGui::BeginTable("##tracetable", 5, flags)) {
+		if (ImGui::BeginTable("##tracetable", 4, flags)) {
 			ImGui::TableSetupColumn("addr", ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableSetupColumn("pc", ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableSetupColumn("time", ImGuiTableColumnFlags_WidthStretch);
 			ImGui::TableSetupColumn("frame", ImGuiTableColumnFlags_WidthStretch);
-			ImGui::TableSetupColumn("regs", ImGuiTableColumnFlags_WidthStretch);
-			ImGui::TableSetupScrollFreeze(0, 1); // Make row always visible
+			ImGui::TableSetupScrollFreeze(0, 1); // Make top row always visible
 			ImGui::TableHeadersRow();
 
 			while (r < numHits)
 			{
 				if (ImGui::GetCursorPosY() > (winSize.y - 15.0f)) { break; }
 				ImGui::TableNextRow();
+				ImVec2 curPos = ImGui::GetCursorScreenPos();
 				TraceHit hit = GetTraceHit((int)tracePointNum, r++);
 				strown<64> str;
+				if( mousePos.x > winPos.x && mousePos.x < (winPos.x+winSize.x) &&
+					mousePos.y > curPos.y && mousePos.y < (curPos.y + ImGui::GetFontSize())) {
+					int chars = 0, branchTrg = 0;
+					Disassemble(GetCurrCPU(), hit.pc, str.charstr(), str.cap(),
+								chars, branchTrg, false, true, true, true);
+					str.set_len(chars);
+					str.append('\n');
+					str.append("A:").append_num(hit.a, 2, 16).append(" X:").append_num(hit.x, 2, 16);
+					str.append(" Y:").append_num(hit.y, 2, 16).append(" SP:").append_num(hit.sp, 2, 16);
+					str.append(' ');
+					str.append(hit.fl & 0x80 ? 'N' : '.');
+					str.append(hit.fl & 0x40 ? 'V' : '.');
+					str.append('-');
+					str.append(hit.fl & 0x10 ? 'B' : '.');
+					str.append(hit.fl & 0x08 ? 'D' : '.');
+					str.append(hit.fl & 0x04 ? 'I' : '.');
+					str.append(hit.fl & 0x02 ? 'Z' : '.');
+					str.append(hit.fl & 0x01 ? 'C' : '.');
+					ImGui::SetTooltip(str.c_str());
+					str.clear();
+				}
 				ImGui::TableSetColumnIndex(0);
 				str.append_num(hit.addr, 4, 16);
 				ImGui::Text(str.c_str());
@@ -127,16 +179,12 @@ void TraceView::Draw()
 				str.clear();
 				str.append_num(hit.frame, 0, 10);
 				ImGui::Text(str.c_str());
-				ImGui::TableSetColumnIndex(4);
-				str.clear();
-				str.append("A:").append_num(hit.a, 2, 16).append(" X:").append_num(hit.x, 2, 16);
-				str.append(" Y:").append_num(hit.y, 2, 16).append(" SP:").append_num(hit.sp, 2, 16);
-				str.append(' ').append_num(hit.fl, 8, 2);
-				ImGui::Text(str.c_str());
+				++numRows;
 			}
-
+			lastDrawnRows = (int)(numRows + (size_t)(winSize.y - ImGui::GetCursorPosY()) / ImGui::GetFontSize());
 			ImGui::EndTable();
 		}
+
 	}
 	ImGui::End();
 }

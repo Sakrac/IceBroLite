@@ -1,5 +1,7 @@
 #pragma once
 
+struct CPU6510;
+
 enum AddressModes {
 	// address mode bit index
 
