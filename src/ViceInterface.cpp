@@ -536,7 +536,8 @@ void ViceConnection::connectionThread()
 		}
 
 		// messages to receive
-		int bytesReceived = recv(s, recvBuf + bufferRead, RECEIVE_SIZE, 0);
+		assert(bufferRead < (RECEIVE_SIZE * 3 / 4));
+		int bytesReceived = recv(s, recvBuf + bufferRead, RECEIVE_SIZE - bufferRead, 0);
 		if (bytesReceived == SOCKET_ERROR) {
 		#ifdef _WIN32
 			if (WSAGetLastError() == WSAETIMEDOUT) {

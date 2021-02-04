@@ -11,6 +11,7 @@
 #endif
 #include <inttypes.h>
 #include <malloc.h>
+#include <assert.h>
 #include "platform.h"
 #include "struse/struse.h"
 #include "ViceInterface.h"
@@ -151,7 +152,8 @@ void ViceMonitorConnection::monitorThread()
 			send(s, sInitialCommand.get(), sInitialCommand.get_len(), 0);
 			sInitialCommand.clear();
 		}
-		int bytesReceived = recv(s, recvBuf + bufferRead, RECEIVE_SIZE, 0);
+		assert(bufferRead < (RECEIVE_SIZE / 2));
+		int bytesReceived = recv(s, recvBuf + bufferRead, RECEIVE_SIZE - bufferRead, 0);
 		if (bytesReceived == SOCKET_ERROR) {
 #ifdef _WIN32
 			if (WSAGetLastError() == WSAETIMEDOUT) {
