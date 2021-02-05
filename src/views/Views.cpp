@@ -180,7 +180,7 @@ void ViewContext::LoadState(strref config)
 	while (!conf.Empty()) {
 		strref name, value;
 		ConfigParseType type = conf.Next(&name, &value);
-		if (type == CPT_Struct) {
+		if (type == ConfigParseType::CPT_Struct) {
 			if (name.same_str("ToolBar")) { toolBar.ReadConfig(value); }
 			else if (name.same_str("Registers")) { regView.ReadConfig(value); }
 			else if (name.same_str("Breakpoints")) { breakView.ReadConfig(value); }
@@ -189,7 +189,7 @@ void ViewContext::LoadState(strref config)
 			else if (name.same_str("Console")) { console.ReadConfig(value); }
 			else if (name.same_str("Screen")) { screenView.ReadConfig(value); }
 			else if (name.same_str("Trace")) { traceView.ReadConfig(value); }
-		} else if (type == CPT_Array) {
+		} else if (type == ConfigParseType::CPT_Array) {
 			size_t i = 0;
 			if (name.same_str("Code")) {
 				ConfigParse code(value);

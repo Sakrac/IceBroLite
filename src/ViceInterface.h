@@ -2,12 +2,12 @@
 
 struct CPU6510;
 
-enum VICEMemSpaces {
-	VICE_MainMemory,
-	VICE_Drive8,
-	VICE_Drive9,
-	VICE_Drive10,
-	VICE_Drive11
+enum class VICEMemSpaces {
+	MainMemory,
+	Drive8,
+	Drive9,
+	Drive10,
+	Drive11
 };
 
 bool ViceConnected();
@@ -29,6 +29,7 @@ void ViceStartProgram(const char* loadPrg);
 void ViceReset(uint8_t resetType);
 void ViceRemoveBreakpoint(uint32_t number);
 void ViceAddBreakpoint(uint16_t address);
+void ViceSetCondition(int checkPoint, strref condition);
 void ViceRemoveBreakpointNoList(uint32_t number);
 
 void ViceWaiting();

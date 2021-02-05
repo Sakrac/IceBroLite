@@ -287,19 +287,19 @@ void MemView::ReadConfig(strref config)
 	while (!conf.Empty()) {
 		strref name, value;
 		ConfigParseType type = conf.Next(&name, &value);
-		if (name.same_str("open")&&type==CPT_Value) {
+		if (name.same_str("open")&&type== ConfigParseType::CPT_Value) {
 			open = !value.same_str("Off");
-		} else if (name.same_str("address")&&type==CPT_Value) {
+		} else if (name.same_str("address")&&type== ConfigParseType::CPT_Value) {
 			strovl addr(address, sizeof(address));
 			addr.copy(value); addr.c_str(); evalAddress = true;
-		} else if (name.same_str("span")&&type==CPT_Value) {
+		} else if (name.same_str("span")&&type== ConfigParseType::CPT_Value) {
 			strovl spn(span, sizeof(span));
 			spn.copy(value); spn.c_str(); evalAddress = true;
-		} else if (name.same_str("showAddress")&&type==CPT_Value) {
+		} else if (name.same_str("showAddress")&&type== ConfigParseType::CPT_Value) {
 			showAddress = !value.same_str("Off");
-		} else if (name.same_str("showHex")&&type==CPT_Value) {
+		} else if (name.same_str("showHex")&&type== ConfigParseType::CPT_Value) {
 			showHex = !value.same_str("Off");
-		} else if (name.same_str("showText")&&type==CPT_Value) {
+		} else if (name.same_str("showText")&&type== ConfigParseType::CPT_Value) {
 			showText = !value.same_str("Off");
 		}
 	}

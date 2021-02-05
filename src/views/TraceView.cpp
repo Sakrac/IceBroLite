@@ -33,7 +33,7 @@ void TraceView::ReadConfig(strref config)
 	while (!conf.Empty()) {
 		strref name, value;
 		ConfigParseType type = conf.Next(&name, &value);
-		if (name.same_str("open") && type == CPT_Value) {
+		if (name.same_str("open") && type == ConfigParseType::CPT_Value) {
 			open = !value.same_str("Off");
 		}
 	}

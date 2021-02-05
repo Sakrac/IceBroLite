@@ -153,7 +153,7 @@ void ViceMonitorConnection::monitorThread()
 			sInitialCommand.clear();
 		}
 		assert(bufferRead < (RECEIVE_SIZE / 2));
-		int bytesReceived = recv(s, recvBuf + bufferRead, RECEIVE_SIZE - bufferRead, 0);
+		int bytesReceived = recv(s, recvBuf + bufferRead, int(RECEIVE_SIZE - bufferRead), 0);
 		if (bytesReceived == SOCKET_ERROR) {
 #ifdef _WIN32
 			if (WSAGetLastError() == WSAETIMEDOUT) {

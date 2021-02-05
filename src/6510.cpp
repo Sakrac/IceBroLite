@@ -8,7 +8,7 @@
 static CPU6510* sp6510 = nullptr;
 
 
-CPU6510::CPU6510() : space(VICE_MainMemory)
+CPU6510::CPU6510() : space(VICEMemSpaces::MainMemory), memoryChanged(false)
 {
 	IBMutexInit(&memoryUpdateMutex, "CPU memory sync");
 	ram = (uint8_t*)calloc(1, 64 * 1024);
@@ -18,7 +18,7 @@ void CPU6510::MemoryFromVICE(uint16_t start, uint16_t end, uint8_t *bytes)
 {
 	if (end < start) { return; }
 	IBMutexLock(&memoryUpdateMutex);
-	memcpy(ram + start, bytes, end - start + 1);
+	memcpy(ram + start, bytes, (size_t)end - (size_t)start + 1);
 	memoryChanged = true;
 	IBMutexRelease(&memoryUpdateMutex);
 }

@@ -30,7 +30,7 @@ struct UserData {
 };
 
 
-enum ConfigParseType {
+enum class ConfigParseType {
 	CPT_Error,
 	CPT_Value,
 	CPT_Struct,

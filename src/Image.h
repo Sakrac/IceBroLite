@@ -1,6 +1,6 @@
 #pragma once
 
-enum ViceMonIcons {
+enum class ViceMonIcons {
 	VMI_BreakPoint = 0,
 	VMI_Reload,
 	VMI_Load,

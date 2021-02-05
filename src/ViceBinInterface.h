@@ -163,10 +163,10 @@ struct VICEBinMemGetSet : public VICEBinHeader {
 		startAddress[0] = (uint8_t)start; startAddress[1] = (uint8_t)(start >> 8);
 		endAddress[0] = (uint8_t)end; endAddress[1] = (uint8_t)(end >> 8);
 		bankID[0] = (uint8_t)bank; bankID[1] = (uint8_t)(bank >> 8);
-		memSpace = space;
+		memSpace = (uint8_t)space;
 	}
 
-	VICEBinMemGetSet(uint32_t req, bool sideFX, bool get, uint16_t start, uint16_t end, uint16_t bank, VICEMemSpaces space = VICE_MainMemory)
+	VICEBinMemGetSet(uint32_t req, bool sideFX, bool get, uint16_t start, uint16_t end, uint16_t bank, VICEMemSpaces space = VICEMemSpaces::MainMemory)
 	{
 		Setup(req, sideFX, get, start, end, bank, space);
 	}
@@ -256,20 +256,33 @@ struct VICEBinCheckpointResponse : public VICEBinResponse {
 	uint32_t GetIgnored() {
 		return (uint32_t)ignoreCount[0] + (((uint32_t)ignoreCount[1]) << 8) + (((uint32_t)ignoreCount[2]) << 16) + (((uint32_t)ignoreCount[3]) << 24);
 	}
+};
 
+
+struct VICEBinSetCondition : public VICEBinCheckpoint {
+	uint8_t expressionLength;
+	char expressionString[256];
+
+	void Setup(uint32_t req, uint32_t checkpoint, uint8_t exprLen, const char *expr)
+	{
+		VICEBinHeader::Setup(4 + 1 + exprLen, req, VICE_ConditionSet);
+		SetNumber(checkpoint);
+		expressionLength = exprLen;
+		memcpy(expressionString, expr, exprLen);
+	}
 };
 
 // used for get and available listing
 struct VICEBinRegisters : public VICEBinHeader {
 	uint8_t memSpace;
 
-	void Setup(uint32_t req, bool names, VICEMemSpaces space = VICE_MainMemory)
+	void Setup(uint32_t req, bool names, VICEMemSpaces space = VICEMemSpaces::MainMemory)
 	{
 		VICEBinHeader::Setup(1, req, names ? VICE_RegistersAvailable : VICE_RegistersGet);
 		memSpace = (uint8_t)space;
 	}
 
-	VICEBinRegisters(uint32_t req, bool names, VICEMemSpaces space = VICE_MainMemory) {
+	VICEBinRegisters(uint32_t req, bool names, VICEMemSpaces space = VICEMemSpaces::MainMemory) {
 		Setup(req, names, space);
 	}
 };

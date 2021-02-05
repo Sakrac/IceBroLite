@@ -22,11 +22,11 @@ void LoadState()
 		while (!config.Empty()) {
 			strref name, value;
 			ConfigParseType type = config.Next(&name, &value);
-			if (name.same_str("Filenames") && type == CPT_Struct) {
+			if (name.same_str("Filenames") && type == ConfigParseType::CPT_Struct) {
 				StateLoadFilenames(value);
-			} else if (name.same_str("Views") && type == CPT_Struct) {
+			} else if (name.same_str("Views") && type == ConfigParseType::CPT_Struct) {
 				StateLoadViews(value);
-			} else if (name.same_str("ImGui") && type == CPT_Struct) {
+			} else if (name.same_str("ImGui") && type == ConfigParseType::CPT_Struct) {
 				ImGui::LoadIniSettingsFromMemory(value.get(), value.get_len());
 				ImGuiStateLoaded();
 			}

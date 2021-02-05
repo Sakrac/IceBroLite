@@ -61,22 +61,22 @@ void CodeView::ReadConfig(strref config)
 	while (!conf.Empty()) {
 		strref name, value;
 		ConfigParseType type = conf.Next(&name, &value);
-		if (name.same_str("open")&&type==CPT_Value) {
+		if (name.same_str("open")&&type==ConfigParseType::CPT_Value) {
 			open = !value.same_str("Off");
-		} else if (name.same_str("address")&&type==CPT_Value) {
+		} else if (name.same_str("address")&&type== ConfigParseType::CPT_Value) {
 			strovl addr(address, sizeof(address));
 			addr.copy(value);
 			addr.c_str();
 			evalAddress = true;
-		} else if (name.same_str("showAddress")&&type==CPT_Value) {
+		} else if (name.same_str("showAddress")&&type== ConfigParseType::CPT_Value) {
 			showAddress = !value.same_str("Off");
-		} else if (name.same_str("showBytes")&&type==CPT_Value) {
+		} else if (name.same_str("showBytes")&&type== ConfigParseType::CPT_Value) {
 			showBytes = !value.same_str("Off");
-		} else if (name.same_str("fixedAddress")&&type==CPT_Value) {
+		} else if (name.same_str("fixedAddress")&&type== ConfigParseType::CPT_Value) {
 			fixedAddress = !value.same_str("Off");
-		} else if (name.same_str("showLabels") && type == CPT_Value) {
+		} else if (name.same_str("showLabels") && type == ConfigParseType::CPT_Value) {
 			showLabels = !value.same_str("Off");
-		} else if (name.same_str("showSrc") && type == CPT_Value) {
+		} else if (name.same_str("showSrc") && type == ConfigParseType::CPT_Value) {
 			showSrc = !value.same_str("Off");
 		}
 	}
@@ -316,7 +316,7 @@ void CodeView::Draw(int index)
 			if (BreakpointAt(read, bp)) {
 				ImVec2 savePos = ImGui::GetCursorPos();
 				ImGui::SetCursorPos(linePos);
-				DrawTexturedIcon((bp.flags & Breakpoint::Enabled) ? VMI_BreakPoint : VMI_DisabledBreakPoint, false, fontCharWidth);
+				DrawTexturedIcon((bp.flags & Breakpoint::Enabled) ? ViceMonIcons::VMI_BreakPoint : ViceMonIcons::VMI_DisabledBreakPoint, false, fontCharWidth);
 				ImGui::SetCursorPos(savePos);
 				if (active && addrCursor == read && ImGui::IsKeyPressed(GLFW_KEY_F9, false)) {
 					// remove breakpoint

@@ -33,7 +33,7 @@ void BreakpointView::ReadConfig(strref config)
 	while (!conf.Empty()) {
 		strref name, value;
 		ConfigParseType type = conf.Next(&name, &value);
-		if (name.same_str("open") && type == CPT_Value) {
+		if (name.same_str("open") && type == ConfigParseType::CPT_Value) {
 			open = !value.same_str("Off");
 		}
 	}
@@ -124,7 +124,7 @@ void BreakpointView::Draw()
 					}
 				}
 		 
-				DrawTexturedIcon((bp.flags & Breakpoint::Enabled) ? VMI_BreakPoint : VMI_DisabledBreakPoint, false, ImGui::GetFont()->FontSize);
+				DrawTexturedIcon((bp.flags & Breakpoint::Enabled) ? ViceMonIcons::VMI_BreakPoint : ViceMonIcons::VMI_DisabledBreakPoint, false, ImGui::GetFont()->FontSize);
 				ImGui::TableSetColumnIndex(col++);
 				strown<64> num;
 				if (bp.flags & Breakpoint::Current) { num.append('*'); }
@@ -167,8 +167,10 @@ void BreakpointView::Draw()
 					}
 				}
 				ImGui::TableSetColumnIndex(col++);
-				if (bpIdx == selected_row) {
-					ImGui::InputText("##bpCondition", conditionEdit, sizeof(conditionEdit));
+				if (bpIdx == selected_row && g->CurrentWindow == g->NavWindow) {
+					if (ImGui::InputText("##bpCondition", conditionEdit, sizeof(conditionEdit), ImGuiInputTextFlags_EnterReturnsTrue)) {
+						ViceSetCondition(bp.number, conditionEdit);
+					}
 				} else if (bp.condition) {
 					ImGui::Text(bp.condition);
 				}

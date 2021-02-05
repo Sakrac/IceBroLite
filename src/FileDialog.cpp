@@ -313,7 +313,7 @@ void StateLoadFilenames(strref filenames)
 	while (!config.Empty()) {
 		strref name, value;
 		ConfigParseType type = config.Next(&name, &value);
-		if (type == CPT_Value) {
+		if (type == ConfigParseType::CPT_Value) {
 			if (name.same_str("Binary")) {
 				strovl(sLoadPrgFileName, sizeof(sLoadPrgFileName)).append(value).c_str();
 			} else if (name.same_str("Listing")) {

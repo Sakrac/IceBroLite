@@ -1069,7 +1069,7 @@ protected:
 public:
 	strref_rel() { clear(); }
 	strref_rel(const strref_rel &rel) : offset(rel.offset), length(rel.length) {}
-	strref_rel(strref orig, strref base) {
+	strref_rel(strref orig, strref base) : offset(0) {
 		if (base.is_substr(orig.get())) {
 			offset = strl_t(orig.get()-base.get()); length = orig.get_len();
 		} else

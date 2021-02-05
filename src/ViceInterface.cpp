@@ -303,6 +303,14 @@ void ViceAddBreakpoint(uint16_t address)
 	}
 }
 
+void ViceSetCondition(int checkPoint, strref condition)
+{
+	if (viceCon && viceCon->isConnected()) {
+		VICEBinSetCondition cond;
+		cond.Setup(++lastRequestID, checkPoint, (uint8_t)condition.get_len(), condition.get());
+		viceCon->AddMessage((uint8_t*)&cond, sizeof(VICEBinCheckpoint) + 1 + condition.get_len());
+	}
+}
 
 void ViceRunTo(uint16_t addr)
 {
@@ -446,7 +454,7 @@ bool ViceSetRegisters(const CPU6510& cpu, uint32_t regMask)
 			++count;
 		}
 		rm->Setup(size, ++lastRequestID, VICE_RegistersSet);
-		rm->memSpace = mem;
+		rm->memSpace = (uint8_t)mem;
 		rm->count[0] = (uint8_t)count;
 		rm->count[1] = (uint8_t)(count >> 8);
 		viceCon->AddMessage((uint8_t*)rm, size + sizeof(VICEBinHeader), true);
@@ -537,7 +545,7 @@ void ViceConnection::connectionThread()
 
 		// messages to receive
 		assert(bufferRead < (RECEIVE_SIZE * 3 / 4));
-		int bytesReceived = recv(s, recvBuf + bufferRead, RECEIVE_SIZE - bufferRead, 0);
+		int bytesReceived = recv(s, recvBuf + bufferRead, int(RECEIVE_SIZE - bufferRead), 0);
 		if (bytesReceived == SOCKET_ERROR) {
 		#ifdef _WIN32
 			if (WSAGetLastError() == WSAETIMEDOUT) {
@@ -783,8 +791,8 @@ void ViceConnection::handleStopResume(VICEBinStopResponse* resp)
 		case VICE_Stopped:
 		case VICE_JAM: {
 			stopped = true;
-			ViceGetMemory(0x0000, 0x7fff, VICE_MainMemory);
-			ViceGetMemory(0x8000, 0xffff, VICE_MainMemory);
+			ViceGetMemory(0x0000, 0x7fff, VICEMemSpaces::MainMemory);
+			ViceGetMemory(0x8000, 0xffff, VICEMemSpaces::MainMemory);
 
 			// breakpoint list is just an empty message
 			ClearBreakpoints();

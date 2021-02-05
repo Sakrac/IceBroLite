@@ -101,52 +101,52 @@ void GfxView::ReadConfig(strref config)
 	while (!conf.Empty()) {
 		strref name, value;
 		ConfigParseType type = conf.Next(&name, &value);
-		if (name.same_str("open") && type == CPT_Value) {
+		if (name.same_str("open") && type == ConfigParseType::CPT_Value) {
 			open = !value.same_str("Off");
-		} else if (name.same_str("addressScreen") && type == CPT_Value) {
+		} else if (name.same_str("addressScreen") && type == ConfigParseType::CPT_Value) {
 			strovl addr_scrn_str(address_screen, sizeof(address_screen));
 			addr_scrn_str.copy(value);
 			addrScreenValue = ValueFromExpression(addr_scrn_str.c_str());
 			reeval = true;
-		} else if (name.same_str("addressChars") && type == CPT_Value) {
+		} else if (name.same_str("addressChars") && type == ConfigParseType::CPT_Value) {
 			strovl addr_gfx_str(address_gfx, sizeof(address_gfx));
 			addr_gfx_str.copy(value);
 			addrGfxValue = ValueFromExpression(addr_gfx_str.c_str());
 			reeval = true;
-		} else if (name.same_str("addressColor") && type == CPT_Value) {
+		} else if (name.same_str("addressColor") && type == ConfigParseType::CPT_Value) {
 			strovl addr_gfx_str(address_col, sizeof(address_col));
 			addr_gfx_str.copy(value);
 			addrColValue = ValueFromExpression(addr_gfx_str.c_str());
 			reeval = true;
-		} else if (name.same_str("columns_str") && type == CPT_Value) {
+		} else if (name.same_str("columns_str") && type == ConfigParseType::CPT_Value) {
 			strovl col_str(columns_str, sizeof(columns_str));
 			col_str.copy(value);
 			columns = ValueFromExpression(col_str.c_str());
 			reeval = true;
-		} else if (name.same_str("rows_str") && type == CPT_Value) {
+		} else if (name.same_str("rows_str") && type == ConfigParseType::CPT_Value) {
 			strovl row_str(rows_str, sizeof(rows_str));
 			row_str.copy(value);
 			rows = ValueFromExpression(row_str.c_str());
 			reeval = true;
-		} else if (name.same_str("mode") && type == CPT_Value) {
+		} else if (name.same_str("mode") && type == ConfigParseType::CPT_Value) {
 			displayMode = (int)value.atoi();
 			reeval = true;
-		} else if (name.same_str("system") && type == CPT_Value) {
+		} else if (name.same_str("system") && type == ConfigParseType::CPT_Value) {
 			displaySystem = (int)value.atoi();
 			reeval = true;
-		} else if (name.same_str("genericMode") && type == CPT_Value) {
+		} else if (name.same_str("genericMode") && type == ConfigParseType::CPT_Value) {
 			genericMode = (int)value.atoi();
 			reeval = true;
-		} else if (name.same_str("c64Mode") && type == CPT_Value) {
+		} else if (name.same_str("c64Mode") && type == ConfigParseType::CPT_Value) {
 			c64Mode = (int)value.atoi();
 			reeval = true;
-		} else if (name.same_str("zoom") && type == CPT_Value) {
+		} else if (name.same_str("zoom") && type == ConfigParseType::CPT_Value) {
 			zoom = (int)value.atoi();
 			reeval = true;
-		} else if (name.same_str("columns") && type == CPT_Value) {
+		} else if (name.same_str("columns") && type == ConfigParseType::CPT_Value) {
 			columns = (int)value.atoi();
 			reeval = true;
-		} else if (name.same_str("rows") && type == CPT_Value) {
+		} else if (name.same_str("rows") && type == ConfigParseType::CPT_Value) {
 			rows = (int)value.atoi();
 			reeval = true;
 		}
@@ -351,7 +351,7 @@ void GfxView::Create8bppBitmap(CPU6510* cpu)
 	uint32_t cl = displayMode == C64_Current ? 40 : columns;
 	uint32_t rw = displayMode == C64_Current ? 25 : rows;
 
-	size_t bitmapMem = cl * rw * 64 * 4;
+	size_t bitmapMem = (size_t)cl * (size_t)rw * 64 * 4;
 	if (!bitmap || bitmapMem > bitmapSize) {
 		if (bitmap) { free(bitmap); }
 		bitmap = (uint8_t*)calloc(1, bitmapMem);
@@ -677,7 +677,7 @@ void GfxView::CreateC64MulticolorBitmapBitmap(CPU6510* cpu, uint32_t* d, const u
 			for (int h = 0; h < 8; h++) {
 				uint8_t b = cpu->GetByte(a++);
 				for (int p = 3; p >= 0; p--) {
-					uint8_t c;
+					uint8_t c = 0;
 					switch ((b >> (p << 1)) & 3) {
 						case 0: c = k; break;
 						case 1: c = (sc >> 4); break;

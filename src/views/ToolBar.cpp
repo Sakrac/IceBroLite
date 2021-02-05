@@ -21,7 +21,7 @@ void ToolBar::ReadConfig(strref config)
 	while (!conf.Empty()) {
 		strref name, value;
 		ConfigParseType type = conf.Next(&name, &value);
-		if (name.same_str("open") && type == CPT_Value) {
+		if (name.same_str("open") && type == ConfigParseType::CPT_Value) {
 			open = !value.same_str("Off");
 		}
 	}
@@ -49,37 +49,37 @@ void ToolBar::Draw()
 
 	ImGui::Columns(7, 0, false);
 
-	bool pause = DrawTexturedIconCenter(VMI_Pause, false, -1.0f, ViceRunning() ? C64_PINK : C64_LGRAY);
+	bool pause = DrawTexturedIconCenter(ViceMonIcons::VMI_Pause, false, -1.0f, ViceRunning() ? C64_PINK : C64_LGRAY);
 	pause = CenterTextInColumn("Pause") || pause;
 
 	ImGui::NextColumn();
 
-	bool play = DrawTexturedIconCenter(VMI_Play);
+	bool play = DrawTexturedIconCenter(ViceMonIcons::VMI_Play);
 	play = CenterTextInColumn("Go") || play;
 
 	ImGui::NextColumn();
 
-	bool step = DrawTexturedIconCenter(VMI_Step);
+	bool step = DrawTexturedIconCenter(ViceMonIcons::VMI_Step);
 	step = CenterTextInColumn("Step") || step;
 
 	ImGui::NextColumn();
 
-	bool load = DrawTexturedIconCenter(VMI_Load);
+	bool load = DrawTexturedIconCenter(ViceMonIcons::VMI_Load);
 	load = CenterTextInColumn("Load") || load;
 
 	ImGui::NextColumn();
 
-	bool reload = DrawTexturedIconCenter(VMI_Reload);
+	bool reload = DrawTexturedIconCenter(ViceMonIcons::VMI_Reload);
 	reload = CenterTextInColumn("Reload") || reload;
 
 	ImGui::NextColumn();
 
-	bool reset = DrawTexturedIconCenter(VMI_Reset);
+	bool reset = DrawTexturedIconCenter(ViceMonIcons::VMI_Reset);
 	reset = CenterTextInColumn("Reset") || reset;
 
 	ImGui::NextColumn();
 
-	bool connect = DrawTexturedIconCenter(ViceConnected() ? VMI_Connected : VMI_Disconnected);
+	bool connect = DrawTexturedIconCenter(ViceConnected() ? ViceMonIcons::VMI_Connected : ViceMonIcons::VMI_Disconnected);
 	connect = CenterTextInColumn("Vice") || connect;
 
 	ImGui::Columns(1);

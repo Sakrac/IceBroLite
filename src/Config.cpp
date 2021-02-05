@@ -13,15 +13,17 @@ void UserData::Append( strref str )
 		char* newBuf = (char*)malloc( newCap );
 		curr = newBuf + (curr - start);
 		if( start ) {
-			memcpy( newBuf, start, capacity - left );
+			if (newBuf) { memcpy(newBuf, start, capacity - left); }
 			free( start );
 		}
 		start = newBuf;
 		left += (newCap - capacity);
 		capacity = newCap;
 	}
-	memcpy( curr, str.get(), str.get_len() );
-	curr += str.get_len();
+	if (curr != nullptr) {
+		memcpy(curr, str.get(), str.get_len());
+		curr += str.get_len();
+	}
 	left -= str.get_len();
 }
 
@@ -118,7 +120,7 @@ ConfigParseType ConfigParse::Next( strref * name, strref * value )
 			v = parse.line();
 			v.trim_whitespace();
 			*name = n; *value = v;
-			return CPT_Value;
+			return ConfigParseType::CPT_Value;
 		}
 	}
 
@@ -127,14 +129,14 @@ ConfigParseType ConfigParse::Next( strref * name, strref * value )
 			*name = n;
 			*value = parse.scoped_block_skip(true);
 			value->trim_whitespace();
-			return CPT_Struct;
+			return ConfigParseType::CPT_Struct;
 		case '[':
 			*name = n;
 			*value = parse.scoped_block_skip(true);
 			value->trim_whitespace();
-			return CPT_Array;
+			return ConfigParseType::CPT_Array;
 	}
-	return CPT_Error;
+	return ConfigParseType::CPT_Error;
 }
 
 strref ConfigParse::ArrayElement()

@@ -76,7 +76,7 @@ void LoadIcons()
 
 int GetViceMonIconWidth(ViceMonIcons icon)
 {
-	return aIcons[icon].w;
+	return aIcons[(size_t)icon].w;
 }
 
 bool DrawTexturedIcon(ViceMonIcons icon, bool flipX, float width, const ImVec4& tint, const ImVec4& hover)
@@ -85,9 +85,9 @@ bool DrawTexturedIcon(ViceMonIcons icon, bool flipX, float width, const ImVec4& 
 	if (aIconID) {
 		float iW = 1.0f / (float)sIconTexWidth;
 		float iH = 1.0f / (float)sIconTexHeight;
-		float du = iW * aIcons[icon].w;
-		float u0 = iW * aIcons[icon].x, u1 = u0;
-		float s = width > 0.0f ? width / (float)aIcons[icon].w : 1.0f;
+		float du = iW * aIcons[(size_t)icon].w;
+		float u0 = iW * aIcons[(size_t)icon].x, u1 = u0;
+		float s = width > 0.0f ? width / (float)aIcons[(size_t)icon].w : 1.0f;
 		if (flipX) { u0 += du; } else { u1 += du; }
 
 		// hover or ting?
@@ -96,8 +96,8 @@ bool DrawTexturedIcon(ViceMonIcons icon, bool flipX, float width, const ImVec4& 
 			ImVec2 mousePos = ImGui::GetMousePos();
 			ImVec2 winPos = ImGui::GetWindowPos();
 			ImVec2 curPos = ImGui::GetCursorPos();
-			float w = s * aIcons[icon].w;
-			float h = s * aIcons[icon].h;
+			float w = s * aIcons[(size_t)icon].w;
+			float h = s * aIcons[(size_t)icon].h;
 			float x = mousePos.x - (winPos.x + curPos.x);
 			float y = mousePos.y - (winPos.y + curPos.y);
 			if (x > 0 && x < w && y > 0 && y < h) {
@@ -106,9 +106,9 @@ bool DrawTexturedIcon(ViceMonIcons icon, bool flipX, float width, const ImVec4& 
 			}
 		}
 		ImGui::Image(aIconID,
-					 ImVec2(s * aIcons[icon].w, s * aIcons[icon].h),
-					 ImVec2(u0, iH * aIcons[icon].y),
-					 ImVec2(u1, iH * (aIcons[icon].y + aIcons[icon].h)),
+					 ImVec2(s * aIcons[(size_t)icon].w, s * aIcons[(size_t)icon].h),
+					 ImVec2(u0, iH * aIcons[(size_t)icon].y),
+					 ImVec2(u1, iH * (aIcons[(size_t)icon].y + aIcons[(size_t)icon].h)),
 					 *color);
 	}
 	return ret;
