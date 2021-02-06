@@ -2,9 +2,12 @@
 struct UserData;
 
 struct BreakpointView {
-	bool open;
 	size_t selected_row;
+	int addCheckpointType;
+	char checkStartEdit[64];
+	char checkEndEdit[64];
 	char conditionEdit[64];
+	bool open;
 
 	BreakpointView();
 	void WriteConfig(UserData& config);

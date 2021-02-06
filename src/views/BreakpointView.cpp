@@ -17,9 +17,21 @@
 #define strncpy_s strncpy
 #endif
 
+enum class CheckpointType {
+	Break,
+	WatchStore,
+	WatchLoad,
+	TraceStore,
+	TraceLoad,
+	TraceExec
+};
+
 BreakpointView::BreakpointView() : open(true), selected_row(-1)
 {
+	checkStartEdit[0] = 0;
+	checkEndEdit[0] = 0;
 	conditionEdit[0] = 0;
+	addCheckpointType = (int)CheckpointType::WatchStore;
 }
 
 void BreakpointView::WriteConfig(UserData& config)
@@ -62,6 +74,31 @@ void BreakpointView::Draw()
 	}
 
 	ImGuiContext* g = ImGui::GetCurrentContext();
+
+	const ImGuiTableFlags addFlags = ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp;
+	ImGui::BeginTable("##addBkTable", 4, addFlags);
+	ImGui::TableSetupColumn("CheckpointType", ImGuiTableColumnFlags_WidthStretch);
+	ImGui::TableSetupColumn("StartAddr", ImGuiTableColumnFlags_WidthStretch);
+	ImGui::TableSetupColumn("EndAddr", ImGuiTableColumnFlags_WidthStretch);
+	ImGui::TableSetupColumn("Add", ImGuiTableColumnFlags_WidthStretch);
+	ImGui::TableNextRow();
+	ImGui::TableSetColumnIndex(0);
+	if (ImGui::Combo("##cktype", &addCheckpointType, "Break\0Watch Store\0Watch Load\0Trace Store\0Trace Load\0Trace Exec\0")) {
+
+	}
+	ImGui::TableSetColumnIndex(1);
+	if (ImGui::InputText("start", checkStartEdit, sizeof(checkStartEdit), ImGuiInputTextFlags_EnterReturnsTrue)) {
+
+	}
+	ImGui::TableSetColumnIndex(2);
+	if (ImGui::InputText("end", checkEndEdit, sizeof(checkStartEdit), ImGuiInputTextFlags_EnterReturnsTrue)) {
+
+	}
+	ImGui::TableSetColumnIndex(3);
+	if (ImGui::Button("Add")) {
+
+	}
+	ImGui::EndTable();
 
 	const ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg |
 		ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Resizable | ImGuiTableFlags_Sortable |
