@@ -28,6 +28,8 @@ bool ViceSetRegisters(const CPU6510& cpu, uint32_t regMask);
 void ViceStartProgram(const char* loadPrg);
 void ViceReset(uint8_t resetType);
 void ViceRemoveBreakpoint(uint32_t number);
+void ViceToggleBreakpoint(uint32_t number, bool enable);
+void ViceAddCheckpoint(uint16_t start, uint16_t end, bool stop, bool load, bool store, bool exec);
 void ViceAddBreakpoint(uint16_t address);
 void ViceSetCondition(int checkPoint, strref condition);
 void ViceRemoveBreakpointNoList(uint32_t number);

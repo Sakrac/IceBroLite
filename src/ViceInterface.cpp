@@ -282,6 +282,44 @@ void ViceRemoveBreakpoint(uint32_t number)
 	}
 }
 
+void ViceToggleBreakpoint(uint32_t number, bool enable)
+{
+	if (viceCon && viceCon->isConnected()) {
+		VICEBinCheckpointToggle chkpt;
+		chkpt.Setup(5, ++lastRequestID, VICE_CheckpointToggle);
+		chkpt.SetNumber(number);
+		chkpt.enabled = enable ? 1 : 0;
+		viceCon->AddMessage((uint8_t*)&chkpt, sizeof(chkpt));
+
+		// reset breakpoints
+		ClearBreakpoints();
+		VICEBinHeader breakList;
+		breakList.Setup(0, ++lastRequestID, VICE_CheckpointList);
+		viceCon->AddMessage((uint8_t*)&breakList, sizeof(VICEBinHeader));
+	}
+}
+
+void ViceAddCheckpoint(uint16_t start, uint16_t end, bool stop, bool load, bool store, bool exec)
+{
+	if (viceCon && viceCon->isConnected()) {
+		VICEBinCheckpointSet chkpt;
+		chkpt.Setup(8, ++lastRequestID, VICE_CheckpointSet);
+		chkpt.SetStart(start);
+		chkpt.SetEnd(end);
+		chkpt.stopWhenHit = stop ? 1 : 0;
+		chkpt.enabled = 1;
+		chkpt.operation = (load ? VICE_LoadMem : 0) | (store ? VICE_StoreMem : 0) | (exec ? VICE_Exec : 0);
+		chkpt.temporary = 0;
+		viceCon->AddMessage((uint8_t*)&chkpt, sizeof(chkpt));
+
+		// reset breakpoints
+		ClearBreakpoints();
+		VICEBinHeader breakList;
+		breakList.Setup(0, ++lastRequestID, VICE_CheckpointList);
+		viceCon->AddMessage((uint8_t*)&breakList, sizeof(VICEBinHeader));
+	}
+}
+
 void ViceAddBreakpoint(uint16_t address)
 {
 	if (viceCon && viceCon->isConnected()) {

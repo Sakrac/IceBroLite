@@ -5,6 +5,7 @@
 #include "../Config.h"
 #include "../Image.h"
 #include "../Breakpoints.h"
+#include "../Expressions.h"
 #include "../Sym.h"
 #include "../ViceInterface.h"
 #include "../C64Colors.h"
@@ -96,7 +97,36 @@ void BreakpointView::Draw()
 	}
 	ImGui::TableSetColumnIndex(3);
 	if (ImGui::Button("Add")) {
-
+		int start = ValueFromExpression(checkStartEdit);
+		int end = ValueFromExpression(checkEndEdit);
+		if (start != 0) {
+			if (end == 0 || end < start) { end = start; }
+			bool trace = false, load = false, store = false, exec = false;
+			switch ((CheckpointType)addCheckpointType) {
+				case CheckpointType::Break:
+					exec = true;
+					break;
+				case CheckpointType::WatchStore:
+					store = true;
+					break;
+				case CheckpointType::WatchLoad:
+					load = true;
+					break;
+				case CheckpointType::TraceStore:
+					trace = true;
+					store = true;
+					break;
+				case CheckpointType::TraceLoad:
+					trace = true;
+					load = true;
+					break;
+				case CheckpointType::TraceExec:
+					trace = true;
+					exec = true;
+					break;
+			}
+			ViceAddCheckpoint(start, end, !trace, load, store, exec);
+		}
 	}
 	ImGui::EndTable();
 
@@ -160,8 +190,9 @@ void BreakpointView::Draw()
 						SetSelected((int)selected_row);
 					}
 				}
-		 
-				DrawTexturedIcon((bp.flags & Breakpoint::Enabled) ? ViceMonIcons::VMI_BreakPoint : ViceMonIcons::VMI_DisabledBreakPoint, false, ImGui::GetFont()->FontSize);
+				if (DrawTexturedIcon((bp.flags & Breakpoint::Enabled) ? ViceMonIcons::VMI_BreakPoint : ViceMonIcons::VMI_DisabledBreakPoint, false, ImGui::GetFont()->FontSize)) {
+					ViceToggleBreakpoint(bp.number, !(bp.flags & Breakpoint::Enabled));
+				}
 				ImGui::TableSetColumnIndex(col++);
 				strown<64> num;
 				if (bp.flags & Breakpoint::Current) { num.append('*'); }
