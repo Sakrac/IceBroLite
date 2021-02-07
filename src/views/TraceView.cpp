@@ -20,6 +20,7 @@ TraceView::TraceView() : open(false), row(0)
 {
 	tracePointNum = ~(size_t)0;
 	lastDrawnRows = 1;
+	mouseDrag = false;
 }
 
 void TraceView::WriteConfig(UserData& config)
@@ -49,6 +50,8 @@ void TraceView::Draw()
 		ImGui::End();
 		return;
 	}
+
+	const ImVec2 topLeft = ImGui::GetCursorScreenPos();
 
 	size_t numTraceIds = NumTracePointIds();
 	if (numTraceIds == 0) {
@@ -85,16 +88,6 @@ void TraceView::Draw()
 			ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Resizable |
 			ImGuiTableFlags_BordersOuter;// | ImGuiTableFlags_BordersV;
 
-#if 0		
-		ImVec2 cursorScreen = ImGui::GetCursorScreenPos();
-		ImVec2 outer_size(-FLT_MIN, 0.0f);
-
-		ImVec2 winSize = ImGui::GetWindowSize();
-
-		float fontHgt = ImGui::GetFont()->FontSize;
-		bool haveSymbols = SymbolsLoaded();
-		int numColumns = haveSymbols ? 5 : 4;
-#endif
 		ImVec2 winPos = ImGui::GetWindowPos();
 		ImVec2 winSize = ImGui::GetWindowSize();
 		ImVec2 mousePos = ImGui::GetMousePos();
@@ -184,6 +177,39 @@ void TraceView::Draw()
 			lastDrawnRows = (int)(numRows + (size_t)(winSize.y - ImGui::GetCursorPosY()) / ImGui::GetFontSize());
 			ImGui::EndTable();
 		}
+
+		if (numHits > 0 && lastDrawnRows > 0 && numHits > lastDrawnRows) {
+			size_t scrollBarHeight = (lastDrawnRows * size_t(winSize.y)) / numHits;
+			size_t scrollBarTop = (size_t(row) * size_t(winSize.y)) / numHits;
+			ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+			float x = topLeft.x + winSize.x - 24.0f;
+			float y = topLeft.y + (float)scrollBarTop;
+			float h = (float)scrollBarHeight;
+			bool hover = mousePos.x >= x && mousePos.x < (x + 14.0f) && mousePos.y >= y && mousePos.y < (y + h);
+			const ImU32 col = (hover||mouseDrag) ? ImColor(192, 128, 0, 255) : ImColor(0, 0, 0, 96);
+
+			if (hover && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+				mouseYLast = mousePos.y;
+				mouseDrag = true;
+			}
+			if (mouseDrag && ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
+				float delta = mousePos.y - mouseYLast;
+				if (delta < -0.5f || delta > 0.5f) {
+					mouseYLast = mousePos.y;
+					row += (delta * (numHits - lastDrawnRows)) / winSize.y;
+					if (row < 0) { row = 0; } else if (((size_t)row + lastDrawnRows) > numHits) {
+						row = lastDrawnRows < numHits ? (int)(numHits - lastDrawnRows) : 0;
+					}
+				}
+			} else {
+				mouseDrag = false;
+			}
+			draw_list->AddRectFilled(ImVec2(x, y), ImVec2(x + 14, y + h), col);
+		} else {
+			mouseDrag = false;
+		}
+		//winSize.y;
 
 	}
 	ImGui::End();
