@@ -82,7 +82,7 @@ TraceHit GetTraceHit(int id, size_t index)
 {
 	TraceHit ret = {};
 	IBMutexLock(&sTraceMutex);
-	if (id < sTraceArrays.size()) {
+	if (id < (int)sTraceArrays.size()) {
 		if (index < sTraceArrays[id].traceHits->size()) {
 			ret = sTraceArrays[id].traceHits->at(index);
 		}

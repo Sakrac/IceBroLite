@@ -16,11 +16,9 @@
 #define strncpy_s strncpy
 #endif
 
-TraceView::TraceView() : open(false), row(0)
+TraceView::TraceView() : lastDrawnRows(1), row(0), open(false), mouseDrag(false)
 {
 	tracePointNum = ~(size_t)0;
-	lastDrawnRows = 1;
-	mouseDrag = false;
 }
 
 void TraceView::WriteConfig(UserData& config)
@@ -58,7 +56,7 @@ void TraceView::Draw()
 		ImGui::Text("Create a trace in the Console\nby entering tr <addr> [<addr2>]");
 	} else {
 		strown<16> idStr;
-		if (tracePointNum >= 0 && tracePointNum < (int)numTraceIds) {
+		if (tracePointNum >= 0 && tracePointNum < numTraceIds) {
 			idStr.append_num(GetTracePointId(tracePointNum), 0, 10);
 		} else { idStr.copy("?"); }
 		if (ImGui::BeginCombo("Trace #", idStr.c_str())) {
@@ -81,8 +79,6 @@ void TraceView::Draw()
 		}
 
 		size_t numHits = NumTraceHits(tracePointNum);
-
-		ImGuiContext* g = ImGui::GetCurrentContext();
 
 		const ImGuiTableFlags flags = /*ImGuiTableFlags_Borders |*/ ImGuiTableFlags_RowBg |
 			ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Resizable |
@@ -116,7 +112,7 @@ void TraceView::Draw()
 		}
 
 		if (((size_t)row + lastDrawnRows) > numHits) {
-			row = lastDrawnRows < numHits ? (int)(numHits - lastDrawnRows) : 0;
+			row = (size_t)lastDrawnRows < numHits ? (int)(numHits - lastDrawnRows) : 0;
 		}
 
 		size_t r = row;
@@ -178,7 +174,7 @@ void TraceView::Draw()
 			ImGui::EndTable();
 		}
 
-		if (numHits > 0 && lastDrawnRows > 0 && numHits > lastDrawnRows) {
+		if (numHits > 0 && lastDrawnRows > 0 && numHits > (size_t)lastDrawnRows) {
 			size_t scrollBarHeight = (lastDrawnRows * size_t(winSize.y)) / numHits;
 			size_t scrollBarTop = (size_t(row) * size_t(winSize.y)) / numHits;
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
@@ -199,7 +195,7 @@ void TraceView::Draw()
 					mouseYLast = mousePos.y;
 					row += (delta * (numHits - lastDrawnRows)) / winSize.y;
 					if (row < 0) { row = 0; } else if (((size_t)row + lastDrawnRows) > numHits) {
-						row = lastDrawnRows < numHits ? (int)(numHits - lastDrawnRows) : 0;
+						row = (size_t)lastDrawnRows < numHits ? (int)(numHits - lastDrawnRows) : 0;
 					}
 				}
 			} else {

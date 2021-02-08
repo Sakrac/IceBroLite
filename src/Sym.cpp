@@ -244,7 +244,6 @@ size_t NumHiddenSections() { return hiddenSections.size(); }
 uint64_t GetHiddenSection(size_t index) { return hiddenSections[index]; }
 void HideSection(uint64_t section, bool hide)
 {
-	bool found = false;
 	for (std::vector<uint64_t>::iterator h = hiddenSections.begin(); h != hiddenSections.end(); ++h) {
 		if (*h == section) {
 			if (!hide) {
