@@ -218,6 +218,7 @@ void ViceBreak()
 
 void ViceGo()
 {
+	ClearBreapointsHit();
 	if (viceCon && viceCon->isConnected() && viceCon->isStopped()) {
 		VICEBinHeader resumeMsg;
 		resumeMsg.Setup(0, ++lastRequestID, VICE_Exit);
@@ -227,6 +228,7 @@ void ViceGo()
 
 void ViceStep()
 {
+	ClearBreapointsHit();
 	if (viceCon && viceCon->isConnected() && viceCon->isStopped()) {
 		VICEBinStep stepMsg;
 		stepMsg.Setup(++lastRequestID, false);
@@ -237,6 +239,7 @@ void ViceStep()
 
 void ViceStepOver()
 {
+	ClearBreapointsHit();
 	if (viceCon && viceCon->isConnected() && viceCon->isStopped()) {
 		VICEBinStep stepMsg;
 		stepMsg.Setup(++lastRequestID, true);
@@ -247,6 +250,7 @@ void ViceStepOver()
 
 void ViceStepOut()
 {
+	ClearBreapointsHit();
 	if (viceCon && viceCon->isConnected() && viceCon->isStopped()) {
 		VICEBinHeader stepOutMsg;
 		stepOutMsg.Setup(0, ++lastRequestID, VICE_StepOut);
@@ -352,6 +356,7 @@ void ViceSetCondition(int checkPoint, strref condition)
 
 void ViceRunTo(uint16_t addr)
 {
+	ClearBreapointsHit();
 	if (viceCon && viceCon->isConnected() && viceCon->isStopped()) {
 		VICEBinCheckpointSet checkSet;
 		checkSet.Setup(8, ++lastRequestID, VICE_CheckpointSet);
@@ -769,7 +774,10 @@ void ViceConnection::handleCheckpointGet(VICEBinCheckpointResponse* cp)
 	if (cp->operation & VICE_Exec) flags |= Breakpoint::Exec;
 	if (cp->operation & VICE_LoadMem) flags |= Breakpoint::Load;
 	if (cp->operation & VICE_StoreMem) flags |= Breakpoint::Store;
-	if (cp->wasHit) flags |= Breakpoint::Current;
+	if (cp->wasHit) {
+		flags |= Breakpoint::Current;
+		SetBreakpointHit(cp->GetNumber());
+	}
 	if (cp->temporary) flags |= Breakpoint::Temporary;
 	AddBreakpoint(cp->GetNumber(), flags, cp->GetStart(), cp->GetEnd(),
 				  cp->hasCondition ? "yes" : nullptr);

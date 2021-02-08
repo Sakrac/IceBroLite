@@ -195,7 +195,7 @@ void BreakpointView::Draw()
 				}
 				ImGui::TableSetColumnIndex(col++);
 				strown<64> num;
-				if (bp.flags & Breakpoint::Current) { num.append('*'); }
+				if (BreakpointCurrent(bp.number)) { num.append('*'); }
 				num.append_num(bp.number, 0, 10);
 				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetColumnWidth() - ImGui::CalcTextSize(num.c_str()).x
 									 - ImGui::GetScrollX() - 2 * ImGui::GetStyle().ItemSpacing.x);
