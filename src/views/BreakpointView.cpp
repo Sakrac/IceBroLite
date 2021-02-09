@@ -27,7 +27,7 @@ enum class CheckpointType {
 	TraceExec
 };
 
-BreakpointView::BreakpointView() : open(true), selected_row(-1)
+BreakpointView::BreakpointView() : selected_row(-1), open(true)
 {
 	checkStartEdit[0] = 0;
 	checkEndEdit[0] = 0;
@@ -135,7 +135,6 @@ void BreakpointView::Draw()
 		ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV |
 		ImGuiTableFlags_ScrollY;
 
-	ImVec2 cursorScreen = ImGui::GetCursorScreenPos();
 	ImVec2 outer_size(-FLT_MIN, 0.0f);
 
 	ImVec2 mousePos = ImGui::GetMousePos();
@@ -143,8 +142,6 @@ void BreakpointView::Draw()
 	ImVec2 winSize = ImGui::GetWindowSize();
 
 	float fontHgt = ImGui::GetFont()->FontSize;
-	bool haveSymbols = SymbolsLoaded();
-	int numColumns = haveSymbols ? 5 : 4;
 	if (ImGui::BeginTable("##breakpointstable", 5, flags)) {
 		size_t numBreakpoints = NumBreakpoints();
 
@@ -195,7 +192,7 @@ void BreakpointView::Draw()
 				}
 				ImGui::TableSetColumnIndex(col++);
 				strown<64> num;
-				if (bp.flags & Breakpoint::Current) { num.append('*'); }
+				if (BreakpointCurrent(bp.number)) { num.append('*'); }
 				num.append_num(bp.number, 0, 10);
 				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetColumnWidth() - ImGui::CalcTextSize(num.c_str()).x
 									 - ImGui::GetScrollX() - 2 * ImGui::GetStyle().ItemSpacing.x);
@@ -269,10 +266,10 @@ void BreakpointView::Draw()
 void BreakpointView::SetSelected(int index)
 {
 	conditionEdit[0] = 0;
-	if (index > 0 && index < NumBreakpoints()) {
+	if (index > 0 && (size_t)index < NumBreakpoints()) {
 		Breakpoint bp = GetBreakpoint((size_t)index);
 		if (bp.condition) {
-			strncpy_s(conditionEdit, bp.condition, sizeof(conditionEdit));
+			strncpy_s(conditionEdit, bp.condition, sizeof(conditionEdit)-1);
 		}
 	}
 }

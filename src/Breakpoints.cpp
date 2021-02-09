@@ -15,6 +15,7 @@
 
 static IBMutex sBreakpointMutex;
 static std::vector<Breakpoint> sBreakpoints;
+static std::vector<uint32_t> sCurrentBreakpoints;
 static HashTable<uint16_t, uint32_t> sBreakpointLookup;	// address, VICE breakpoint index
 
 void InitBreakpoints()
@@ -25,6 +26,7 @@ void InitBreakpoints()
 void ShutdownBreakpoints()
 {
 	sBreakpoints.clear();
+	ClearBreapointsHit();
 	IBMutexDestroy(&sBreakpointMutex);
 }
 
@@ -34,6 +36,28 @@ void ClearBreakpoints()
 	sBreakpoints.clear();
 	sBreakpointLookup.Clear();
 	IBMutexRelease(&sBreakpointMutex);
+}
+
+bool BreakpointCurrent(uint32_t number)
+{
+	for (size_t i = 0, n = sCurrentBreakpoints.size(); i < n; ++i) {
+		if (sCurrentBreakpoints[i] == number) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void SetBreakpointHit(uint32_t number)
+{
+	if (!BreakpointCurrent(number)) {
+		sCurrentBreakpoints.push_back(number);
+	}
+}
+
+void ClearBreapointsHit()
+{
+	sCurrentBreakpoints.clear();
 }
 
 void AddBreakpoint(uint32_t number, uint32_t flags, uint16_t start, uint16_t end, const char* condition)

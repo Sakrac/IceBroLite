@@ -90,25 +90,7 @@ void SymbolView::Draw()
         ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV |
         ImGuiTableFlags_ScrollY;
 
-    ImVec2 cursorScreen = ImGui::GetCursorScreenPos();
     ImVec2 outer_size(-FLT_MIN, 0.0f);
-
-    bool goToSymbol = false;
-    float bpHitY = 0.0f;
-    ImVec2 winSize = ImGui::GetWindowSize();
-    ImVec2 winPos = ImGui::GetWindowPos();
-    if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-        ImVec2 mousePos = ImGui::GetMousePos();
-        if (mousePos.x > cursorScreen.x && mousePos.y > cursorScreen.y &&
-            mousePos.x < (winPos.x + winSize.x) && mousePos.y < (winPos.y + winSize.y)) {
-            bpHitY = mousePos.y - cursorScreen.y + ImGui::GetScrollY();
-            goToSymbol = true;
-        }
-    }
-
-    float fontHgt = ImGui::GetFont()->FontSize;
-    bool haveSymbols = SymbolsLoaded();
-    int numColumns = haveSymbols ? 4 : 3;
     if (ImGui::BeginTable("##symbolstable", 3, flags)) {
         ImGui::TableSetupColumn("Addr", ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_WidthStretch, -1.0f, SymbolColumnID_Address);
         ImGui::TableSetupColumn("Symbol", ImGuiTableColumnFlags_WidthStretch, -1.0f, SymbolColumnID_Symbol);
@@ -124,10 +106,6 @@ void SymbolView::Draw()
             }
         }
 
-        int hovered_row = -1;
-        uint32_t hovered_addr = 0;
-        const char* hovName = nullptr;
-        const char* hovered_label = 0;
         for (size_t s = 0, n = NumSymbolSearchMatches(); s < n; ++s) {
             const char* section;
             uint32_t address;

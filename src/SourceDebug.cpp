@@ -240,9 +240,10 @@ bool C64DbgXMLCB(void* user, strref tag_or_data, const strref* tag_stack, int si
 			while (strref bkpt = tag_or_data.line()) {
 				/*strref seg =*/ bkpt.split_token_trim(',');
 				strref addr = bkpt.split_token_trim(',');
-				strref cond = bkpt.split_token_trim(',');
+				/*strref cond =*/ bkpt.split_token_trim(',');
 				if (addr.get_first() == '$') { ++addr; }
 				ViceAddBreakpoint((uint16_t)addr.ahextoui());
+				// TODO: Also send condition for breakpoint void ViceSetCondition(int checkPoint, strref condition)
 			}
 
 		}
@@ -368,7 +369,6 @@ static bool CheckAddrLine(strref& line, uint16_t &addr_ret)
 {
 	strref chk = line;
 	if (chk[0] == '$') {++chk;}
-	uint16_t addr = 0;
 	strref hexStr = chk.split(4);
 	for (int i = 0; i < 4; ++i) {
 		if (!strref::is_hex(hexStr[i])) {
