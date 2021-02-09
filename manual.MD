@@ -2,89 +2,141 @@
 
 	Note: This document is still in development. It is a bit longer than I anticipated and there is still more things to add and it will be updated soon. If anything needs more clarification please let me know
 
-## Overview
+## What is IceBro Lite
 
-IceBro Lite is a GUI debugger built for the new binary monitor protocal introduced in VICE C64 3.5. The debugger must first be connected to a running instance of VICE that has enabled the binary monitor and ideally the text mode monitor protocols. More details about the binary protocol can be found here:
+IceBro Lite is a source-level debugger with a graphical user interface (GUI). The primary purpose of the IceBro Lite debugger is to inspect and validate assembler code.
+
+IceBro Lite is designed for use with the VICE C64 emulator, version 3.5. More specifically, it’s built to take advantage of the new binary monitor protocol introduced in VICE C64 3.5. More details about the binary protocol can be found here:
 
 https://vice-emu.sourceforge.io/vice_13.html
 
-The debugger will only update the machine state after connecting to VICE and then stopping VICE, either by pressing the pause button in the debugger, hitting Alt+H in VICE or hitting a breaking checkpoint. The primary purpose of this debugger is to validate and inspect assembler code.
+**VICE versions older than 3.5 are not compatible with this debugger.** However, if you’d like to keep an earlier version of VICE installed, just install VICE 3.5 into a separate folder.
 
-The process for debugging and iterating on C64 software is up to the user. The program can be started in VICE first and then attaching the debugger or VICE can be connected to the debugger and then the program can be loaded and reloaded within the debugger.
+There are two ways to go about debugging a program in IceBro Lite:
+1) Start the program in VICE, then connect the debugger to VICE.
+2) Connect VICE to the debugger, then load (and reload) the program from within the debugger.
 
-Earlier versions of VICE are not compatible with this debugger, but if you have a reason to primarily use an earlier version you can safely install VICE 3.5 to a different folder.
+**Feedback is always welcome**
 
-There are various other options for debuggers to explore, aside from this software and the built-in VICE monitor. If this software does not handle specific use cases well then other options may suit the problem better. If any improvements could help the processes then there are ways to implement such improvements.
+I'd love to hear thoughts about IceBro Lite and ways to improve it, for instance on twitter [@spacemoguls](https://twitter.com/spacemoguls).
 
-# Setting up VICE for debugging with IceBro Lite
+
+# Setting up your system
 
 ### VICE Settings
 
-To enable external debugging VICE must first be configured to do so. It may be required to revert these settings to enable the built-in monitor again.
+To set up your system for debugging, do the following:
+1) Enable external debugging in VICE. You normally only need to do this once as long as you save the settings
 
-(Note: you can load VICE from the FILE drop down menu instead of following this section and the setup will be handled by passing command line arguments to VICE.)
+2) Connect the debugger to VICE. This you have to do every time you start the debugger up.
 
+Alternatively to the above steps you can start IceBro Lite and then start VICE from the File/Load VICE menu which will start VICE with the settings enabled.
+<br><br>
+The following sections will describe these steps in detail.
+## Enable external debugging in VICE
+
+To enable external debugging in VICE, you must enable the binary monitor and – ideally – the text mode monitor protocols.
+
+Please note that if you wish to enable the built-in monitor of the VICE emulator again, you may have to disable external debugging. 
+
+Follow these steps to enable external debugging in VICE:
+
+**Step 1**: Go to Settings / Settings in the menu.
 First find the settings menu 
 
 ![VICESettingsMenu](img/VICESettingsMenu.png)
 
-Check Enable Remote Monitor and Enable Binary Remote Monitor in the Host sub-menu.
-Consider saving the settings in the Settings Menu at this point to avoid repeating the procedure at a future point.
+**Step 2**: Check Enable Remote Monitor and Enable Binary Remote Monitor in the Host / Monitor sub-menu.
 
 ![VICESettingsMonitor](img/VICESettings_Host_Monitor.png)
 
-VICE is now ready to accept a binary debugger connection!
+**Step 3**: (not mandatory) Check Save settings on exit to avoid having to repeat the procedure at a future point.
 
-# Starting IceBro Lite
+**Step 4**: Done! VICE is now ready to accept a binary debugger connection.
 
-Start IceBroLite.exe. I recommend doing so from a command line or batch script in your project folder as the debugger will save its layout in a text file from where it was started. If using source control consider ignoring "icebrolt.ini" if using in different environments as it stores full path names to previously loaded files.
+# Connect the debugger to VICE
+
+The EXE file for IceBro Lite is called IceBroLite.exe. It’s warmly recommended to launch the file directly from the command prompt – or from a batch script – in your project folder. This is because the debugger will save its layout in a text file in the folder from where it was launched.
+
+Note: If you are using source control (git, svn, etc.), consider ignoring "icebrolt.ini" in your project directory if using in different environments as it stores full path names to previously loaded files.
+
+**Step 1**: Launch IceBroLite.exe (see recommendations earlier in this section).
 
 ![IceBroLite Default Startup](img/IceBroLite_initial.png)
 
-If VICE 3.5 is configured for a binary remote monitor and running simply click the VICE icon in IceBro Lite to connect.
+**Step 2**: Make sure VICE is running and has the binary remote monitor enabled.
+
+**Step 3**: Click on the VICE icon at the top right corner of the screen.
 
 ![Vice Connect Icon](img/VICE_Connect_Icon.png)
 
-If the Icon turns cyan VICE is connected and you can press the pause Icon to look around in the current memory of VICE's C64 instance.
+When the icon turns cyan, VICE is connected. 
 
+**Step 4**: Press the PAUSE icon to look around in the current memory of VICE's C64 instance.
 
-# Dear ImGui Docking concepts
+**Step 5**: Done!
 
-IceBro Lite is built on Dear ImGui Docking Branch which is similar to how for instance Visual Studio organizes windows. You can reorganize the panes any way you like, close ones you don't need and open other ones from the Windows drop down menu.
+# Customizing your debugging window
+
+The IceBro Lite debugging window is fully customizable. It is made up of separate panes, which you may move around and reorganize at will. This is similar to the way e.g. Visual Studio organizes windows. 
+
+Close the panes you don’t need. Reopen them again – or open new ones – from the Windows drop-down menu. 
 
 ![Dear ImGui Drag Pane](img/IceBroLite_Drag_Pane.png)
 
-Grab any pane by its tab (the bar with the name of each pane, such as Code, Graphics, Watch, etc.) then drag it around with your mouse. If you drop it on an anchor in another pane it will preview where the pane will be placed if you drop it.
+In order to move a pane around, grab it by its tab (the bar with the name of each pane, such as Code, Graphics, Watch, etc.) then drag it around with your mouse. If you place it on top of an anchor in another pane the debugger will preview where the pane will be placed if you drop it.
 
-Panes can also be dropped outside of the main window and become detached windows where other panes can be attached if you prefer to work with multiple groupings of windows.
+Panes can also be dropped outside of the main window and become detached windows, onto which other panes may be attached. This makes it possible to work with multiple groupings of windows.
+
+If you reopen a closed pane, it will reappear at its most recent location. You reopen panes from the Windows menu.
+
+Should any problem arise with the tool layout, you may reset it from the drop-down menu.
 
 ![Reset Layout menu](img/IceBroLite_ResetLayout.png)
 
-Any pane that has been closed can be re-opened from the Windows menu where it was last opened. If any problem with the tool layout occurs it can be reset in the drop down menu.
+To re-open closed windows simply select them from te Windows drop down menu.
 
 
-# Getting started with IceBro Lite
+# Start Debugging
 
-With the connection between VICE and the debugger there are two options for starting code in VICE. Either the traditional method of starting from VICE and then stopping execution into the debugger or by clicking the LOAD icon in IceBro Lite and selecting a .prg/.d64 or .crt file from the file browser.
+Note that when connected to VICE, the debugger will only update the machine state after you’ve stopped VICE. There are several ways to stop VICE:
+- Press the pause button in the debugger
+- Hit Alt+H in Vice
+- Hit a breaking checkpoint (break, watch) while executing the code.
+
+## Start executing the program to debug
+There are two ways to go about debugging a program in IceBro Lite:
+1) Start executing the program in VICE, then connect the debugger to VICE.
+2) Connect VICE to the debugger, then load (and reload) the program from within the debugger and execute it from there.
+
+### Executing code from VICE
+
+If you execute code from VICE you can browse for the appropriate symbol file from the debugger "File" menu. When the program is running, you can stop it from inside the debugger.
+
+###Executing code from IceBro Lite
+
+Follow these steps to launch a program from IceBro Lite:
+
+**Step 1**: Click the LOAD icon in IceBro Lite.
 
 ![IceBro Lite Load Icon](img/IceBroLite_Load_Icon.png)
 
-If you start code from the debugger it will try to find a .dbg file (Kick Assembler debugger data), or .sym file (general assembler symbol file) or .vs file (Vice monitor commands) and load symbols / source debug at the same time.
+**Step 2**: Select a .prg/.d64 or .crt file from the file browser.
 
-If you start code in VICE you can browse for the appropriate symbol file from the debugger "File" menu.
+The debugger will now try to find a .dbg file (Kick Assembler debugger data), or .sym file (general assembler symbol file) or .vs file (Vice monitor commands). It will then load symbols and source debug at the same time.
 
-![Starting to debug Witch Rescue Service](img/IceBroLite_WitchRescueService.png)
-
-When starting code from the debugger it will stop a couple of times before running the code, first before it starts loading then again when it is about to run the loaded code.
+When the files are loaded into the debugger, the debugger will stop twice before running the code: first before it starts loading, and second when it is about to run the loaded code.
 
 To return to VICE just press F5 or press the play icon in the toolbar.
 
-If you started code from the LOAD icon you can rebuild the code in your external editor/assembler and restart with the RELOAD icon without shutting down VICE. This has been a significant iteration time reduction for me so far.
+**Step 3**: Done!
 
+## How to debug – tips and advice
+Debugging operations mainly involve dragging a symbol or pointer from one pane into another pane, in order to see what it does there. For this purpose you can drag symbols and pointers from e.g. the Symbol browser or Breakpoint to the tabs of other panes, such as the Code view, the Breakpoint view or the Memory view.
 
-# Getting to know the GUI
+In the image below, a symbol from the Symbol pane is dragged to the Breakpoints view. This adds the symbol as a breakpoint in VICE.
 
-A lot of debugging operations involve taking a symbol or pointer from one pane and seeing it in another. For this purpose you can drag symbols and pointers from for instance the Symbol browser or Breapoints to the tabs of other windows, for instance the Code view, the Breakpoint view or the Memory view. In the image above a symbol form the Symbol pane is dragged to the Breakpoints view, this will add that symbol as a breakpoint in VICE.
+![Starting to debug Witch Rescue Service](img/IceBroLite_WitchRescueService.png)
 
 ### Keyboard controls
 
@@ -162,6 +214,21 @@ This is a combination of the VICE text monitor, if enabled in VICE, and some ext
 
 Type help or ? for a list of VICE commands when connected to VICE, or type CMD for a list of IceBro Lite commands. VICE text monitor output will be shown in this view.
 
+## Graphics View
+
+This view has a lot of fields where addresses and numbers can be edited. It is a little complicated because the C64 has so many ways to show graphics. Here is a quick overview:
+* System: C64 layouts or General layout
+* Screen: Address of Screen Data
+* Chars: Address of font/bitmap/sprite
+* Color: Address of color RAM (always $d800 on a C64, but can be pointed anywhere in the debugger)
+* romFont: Graphics in $1000-$1fff and $9000-$9fff uses the built-in font data
+* Mode: A variety of graphics modes including text, bitmap, sprites, etc. etc. depending on the current System setting.
+* Zoom: How to size the graphics in the view
+* Col: number of columns (chars or sprites)
+* Row: number of rows (chars or sprites)
+
+If the Graphics View is selected press CTRL+C to copy the graphics to the clipboard (Windows only at the moment).
+
 ## Breakpoint View
 
 ..
@@ -176,7 +243,7 @@ Type help or ? for a list of VICE commands when connected to VICE, or type CMD f
 
 ## Screen View
 
-...
+* Press CTRL+C to copy the graphics to the clipboard (Windows only at the moment)
 
 ## Symbol View
 
