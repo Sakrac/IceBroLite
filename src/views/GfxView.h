@@ -56,6 +56,8 @@ struct GfxView {
 
 	uint8_t* bitmap;
 	size_t bitmapSize;
+	int bitmapWidth;
+	int bitmapHeight;
 
 	ImTextureID texture;
 

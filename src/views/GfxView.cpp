@@ -4,6 +4,7 @@
 #include <malloc.h>
 #include <inttypes.h>
 #include "../imgui/imgui.h"
+#include "../imgui/imgui_internal.h"
 #include "../Image.h"
 #include "../Expressions.h"
 #include "../Config.h"
@@ -12,6 +13,7 @@
 #include "../Sym.h"
 #include "Views.h"
 #include "GfxView.h"
+#include "GLFW/glfw3.h"
 
 #ifndef _MSC_VER
 #define sprintf_s sprintf
@@ -187,6 +189,14 @@ void GfxView::Draw(int index)
 		}
 	}
 
+	ImGuiContext* g = ImGui::GetCurrentContext();
+	if (g->CurrentWindow == g->NavWindow) {
+		if (ImGui::IsKeyPressed(GLFW_KEY_C) &&
+			(ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL) || ImGui::IsKeyDown(GLFW_KEY_RIGHT_CONTROL))) {
+			CopyBitmapToClipboard(bitmap, bitmapWidth, bitmapHeight);
+		}
+	}
+
 	bool redraw = false;
 	{
 		strown<32> name("gfxSetupColumns");
@@ -310,7 +320,7 @@ void GfxView::Draw(int index)
 	}
 
 
-	ImVec2 size(float(columns * 8), float(rows * 8));
+	ImVec2 size = ImVec2(float(bitmapWidth), float(bitmapHeight));
 	switch (zoom) {
 		case Zoom_2x2: size.x *= 2; size.y *= 2; break;
 		case Zoom_4x4: size.x *= 4; size.y *= 4; break;
@@ -351,17 +361,27 @@ void GfxView::Create8bppBitmap(CPU6510* cpu)
 	uint32_t cl = displayMode == C64_Current ? 40 : columns;
 	uint32_t rw = displayMode == C64_Current ? 25 : rows;
 
-	size_t bitmapMem = (size_t)cl * (size_t)rw * 64 * 4;
+	int cellWid = 8, cellHgt = 8;
+	if (displayMode == C64_Sprites) {
+		cellWid = 24;
+		cellHgt = 21;
+	}
+
+	size_t bitmapMem = (size_t)cl * (size_t)rw * cellWid * cellHgt * 4;
 	if (!bitmap || bitmapMem > bitmapSize) {
 		if (bitmap) { free(bitmap); }
 		bitmap = (uint8_t*)calloc(1, bitmapMem);
 		bitmapSize = bitmapMem;
 	}
 
-	int linesHigh = rows * 8;
+	int linesHigh = rows * cellHgt;
 
 	uint32_t *d = (uint32_t*)bitmap;
-	uint32_t w = cl * 8;
+	uint32_t w = cl * cellWid;
+
+	bitmapWidth = w;
+	bitmapHeight = linesHigh;
+
 //	uint32_t cw = 8;
 //	const uint32_t* pal = c64pal;// (const uint32_t*)c64Cols;
 
@@ -401,7 +421,7 @@ void GfxView::Create8bppBitmap(CPU6510* cpu)
 	if (!texture) { texture = CreateTexture(); }
 	if (texture) {
 		SelectTexture(texture);
-		UpdateTextureData(cl * 8, rw * 8, bitmap);
+		UpdateTextureData(cl * cellWid, rw * cellHgt, bitmap);
 	}
 }
 
@@ -698,7 +718,7 @@ void GfxView::CreateC64MulticolorBitmapBitmap(CPU6510* cpu, uint32_t* d, const u
 void GfxView::CreateC64SpritesBitmap(CPU6510* cpu, uint32_t* d, int linesHigh, uint32_t w, const uint32_t* pal)
 {
 	uint16_t a = addrGfxValue;
-	int sx = columns / 3;
+	int sx = w / 24;
 	int sy = linesHigh / 21;
 	for (int y = 0; y < sy; y++) {
 		for (int x = 0; x < sx; x++) {

@@ -1,4 +1,7 @@
 #include "platform.h"
+#include <stdint.h>
+#include <malloc.h>
+#include <stdio.h>
 
 void IBMutexInit(IBMutex* mutex, const char* name)
 {
@@ -76,4 +79,32 @@ bool IBDestroyThread(IBThread* thread)
 #endif
 }
 
+#ifdef _WIN32
+HWND GetHWnd();
+#endif
 
+void CopyBitmapToClipboard(void* bitmap, int width, int height)
+{
+#ifdef _WIN32
+	HANDLE hData = GlobalAlloc(GHND | GMEM_SHARE, sizeof(BITMAPINFO) + (width * height - 1) * sizeof(uint32_t));
+	LPVOID pData = (LPVOID)GlobalLock(hData);
+	BITMAPINFO* dib = (BITMAPINFO*)pData;
+	dib->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	dib->bmiHeader.biWidth = width;
+	dib->bmiHeader.biHeight = height;
+	dib->bmiHeader.biPlanes = 1;
+	dib->bmiHeader.biBitCount = 32;
+	dib->bmiHeader.biCompression = BI_RGB;
+	dib->bmiHeader.biSizeImage = width * height * sizeof(uint32_t);
+	dib->bmiHeader.biXPelsPerMeter = 1080;
+	dib->bmiHeader.biYPelsPerMeter = 1080;
+
+	memcpy(dib->bmiColors, bitmap, (size_t)width * (size_t)height * sizeof(uint32_t));
+	GlobalUnlock(hData);
+	if (OpenClipboard(GetHWnd())) {
+		EmptyClipboard();
+		SetClipboardData(CF_DIB, hData);
+		CloseClipboard();
+	}
+#endif
+}

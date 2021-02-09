@@ -36,3 +36,6 @@ bool IBMutexRelease(IBMutex* mutex);
 bool IBCreateThread(IBThread* thread, size_t stackSize, IBThreadFunc func, void* param);
 bool IBDestroyThread(IBThread* thread);
 
+void CopyBitmapToClipboard(void* bitmap, int width, int height);
+
+

@@ -27,6 +27,10 @@
 #endif
 #include <stdint.h>
 #include <GLFW/glfw3.h>
+#ifdef _WIN32
+#define GLFW_EXPOSE_NATIVE_WIN32
+#endif
+#include <GLFW/glfw3native.h>
 #include "struse/struse.h"
 #include "Files.h"
 #include "FileDialog.h"
@@ -66,11 +70,14 @@ static void glfw_error_callback(int error, const char* description)
 
 // Global Variables:
 #ifdef _WIN32
+HWND hWnd;
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 
-int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
+HWND GetHWnd() { return hWnd; }
+
+int /*APIENTRY*/ wWinMain(_In_ HINSTANCE hInstance,
 					  _In_opt_ HINSTANCE hPrevInstance,
 					  _In_ LPWSTR    lpCmdLine,
 					  _In_ int       nCmdShow)
@@ -96,6 +103,10 @@ int main(int argc, char* argv[])
 	glfwSetWindowIcon(window, 1, &image);
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1); // Enable vsync
+
+#ifdef _WIN32
+	hWnd = glfwGetWin32Window(window);
+#endif
 
 	LoadIcons();
 	InitStartFolder();
