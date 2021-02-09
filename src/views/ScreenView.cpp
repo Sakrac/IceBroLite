@@ -1,8 +1,10 @@
 #include <malloc.h>
-#include "GLFW/glfw3.h"
 #include "../imgui/imgui.h"
+#include "../imgui/imgui_internal.h"
 #include "../Image.h"
 #include "../Config.h"
+#include "../platform.h"
+#include "GLFW/glfw3.h"
 #include "ScreenView.h"
 
 
@@ -39,6 +41,14 @@ void ScreenView::Draw()
 		if (texture) {
 			SelectTexture(texture);
 			UpdateTextureData(width, height, bitmap);
+		}
+	}
+
+	ImGuiContext* g = ImGui::GetCurrentContext();
+	if (g->CurrentWindow == g->NavWindow) {
+		if (ImGui::IsKeyPressed(GLFW_KEY_C) &&
+			(ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL) || ImGui::IsKeyDown(GLFW_KEY_RIGHT_CONTROL))) {
+			CopyBitmapToClipboard(bitmap, width, height);
 		}
 	}
 

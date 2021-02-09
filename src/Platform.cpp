@@ -86,9 +86,17 @@ HWND GetHWnd();
 void CopyBitmapToClipboard(void* bitmap, int width, int height)
 {
 #ifdef _WIN32
-	HANDLE hData = GlobalAlloc(GHND | GMEM_SHARE, sizeof(BITMAPINFO) + (width * height - 1) * sizeof(uint32_t));
+	size_t pixelSize = (size_t)width * (size_t)height;
+	size_t byteSize = pixelSize * sizeof(uint32_t);
+	HANDLE hData = GlobalAlloc(GHND | GMEM_SHARE, sizeof(BITMAPINFO) + byteSize - sizeof(uint32_t));
+	if (hData == nullptr) { return; }
 	LPVOID pData = (LPVOID)GlobalLock(hData);
+
 	BITMAPINFO* dib = (BITMAPINFO*)pData;
+	if (dib == nullptr) {
+		GlobalFree(hData);
+		return;
+	}
 	dib->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 	dib->bmiHeader.biWidth = width;
 	dib->bmiHeader.biHeight = height;
@@ -99,7 +107,17 @@ void CopyBitmapToClipboard(void* bitmap, int width, int height)
 	dib->bmiHeader.biXPelsPerMeter = 1080;
 	dib->bmiHeader.biYPelsPerMeter = 1080;
 
-	memcpy(dib->bmiColors, bitmap, (size_t)width * (size_t)height * sizeof(uint32_t));
+	uint32_t *src = (uint32_t*)bitmap + pixelSize - width;
+	uint32_t *dst = (uint32_t*)dib->bmiColors;
+
+	for (size_t y = 0; y < height; ++y) {
+		for (size_t x = 0; x < width; ++x) {
+			uint32_t c = *src++;
+			*dst++ = ((c << 16) & 0xff0000) | (c & 0xff00ff00) | ((c >> 16) & 0xff);
+		}
+		src -= 2 * (size_t)width;
+	}
+
 	GlobalUnlock(hData);
 	if (OpenClipboard(GetHWnd())) {
 		EmptyClipboard();

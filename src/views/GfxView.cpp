@@ -374,7 +374,7 @@ void GfxView::Create8bppBitmap(CPU6510* cpu)
 		bitmapSize = bitmapMem;
 	}
 
-	int linesHigh = rows * cellHgt;
+	int linesHigh = rw * cellHgt;
 
 	uint32_t *d = (uint32_t*)bitmap;
 	uint32_t w = cl * cellWid;
