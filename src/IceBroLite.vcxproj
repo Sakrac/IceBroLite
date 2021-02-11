@@ -37,6 +37,8 @@
     <ClInclude Include="ImGui_Helper.h" />
     <ClInclude Include="Mnemonics.h" />
     <ClInclude Include="platform.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="resource1.h" />
     <ClInclude Include="SourceDebug.h" />
     <ClInclude Include="StartVice.h" />
     <ClInclude Include="stb\stb_image.h" />
@@ -114,6 +116,12 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="data\license.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="IceBroLite.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="IceBroLite.rc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

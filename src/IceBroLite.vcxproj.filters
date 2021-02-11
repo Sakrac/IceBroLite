@@ -111,6 +111,8 @@
     <ClInclude Include="views\TraceView.h">
       <Filter>views</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="resource1.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\imgui.cpp">
@@ -216,5 +218,11 @@
     <Text Include="data\license.txt">
       <Filter>data</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="IceBroLite.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="IceBroLite.rc" />
   </ItemGroup>
 </Project>
