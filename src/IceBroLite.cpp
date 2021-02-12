@@ -139,6 +139,7 @@ int main(int argc, char* argv[])
 
 	io.Fonts->AddFontDefault();
 	InitViews();
+	InitSourceDebug();
 	LoadState();
 
 	// Our state
@@ -245,6 +246,7 @@ int main(int argc, char* argv[])
 
 	ShutdownTraces();
 	ShutdownBreakpoints();
+	ShutdownSourceDebug();
 	ShutdownSymbols();
 	ShutdownMainCPU();
 	// Cleanup

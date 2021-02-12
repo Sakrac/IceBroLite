@@ -412,14 +412,16 @@ void AddSymbol(uint32_t address, const char *symbol, size_t symbolLen, const cha
 		if (sect.same_str(sectionNames[sectIdx]) || (!sect.valid() && !sectionNames[sectIdx][0])) { break; }
 	}
 	if (sectIdx == numSects) {
-		char* sectionCopy = (char*)calloc(1, sect.get_len() + 1);
-		if (sect.get_len()) { memcpy(sectionCopy, sect.get(), sect.get_len()); }
-		sectionNames.push_back(sectionCopy);
+		if (char* sectionCopy = (char*)calloc(1, (size_t)sect.get_len() + 1)) {
+			if (sect.get_len()) { memcpy(sectionCopy, sect.get(), sect.get_len()); }
+			sectionNames.push_back(sectionCopy);
+		}
 	}
-	char* copy = (char*)calloc(1, sym.get_len() + 1);
-	memcpy(copy, sym.get(), sym.get_len());
-	SymbolInfo symInfo = { address, (uint32_t)sectIdx, copy };
-	labelList.push_back(symInfo);
+	if (char* copy = (char*)calloc(1, (size_t)sym.get_len() + 1)) {
+		memcpy(copy, sym.get(), sym.get_len());
+		SymbolInfo symInfo = { address, (uint32_t)sectIdx, copy };
+		labelList.push_back(symInfo);
+	}
 	IBMutexRelease(&symbolMutex);
 }
 

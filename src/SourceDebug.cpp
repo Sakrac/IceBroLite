@@ -7,6 +7,7 @@
 #include "ViceInterface.h"
 #include "Breakpoints.h"
 #include "SourceDebug.h"
+#include "platform.h"
 
 // Format:
 //	parse as XML
@@ -38,10 +39,13 @@ SourceDebug* sSourceDebug = nullptr;
 
 char* sListing = nullptr;
 size_t sListingSize = 0;
+static IBMutex sSrcDbgMutex;
+
 
 strref GetSourceAt(uint16_t addr, int &spaces)
 {
 	if (sSourceDebug) {
+		IBMutexLock(&sSrcDbgMutex);
 		for (size_t s = 0, n = sSourceDebug->segments.size(); s < n; ++s) {
 			const SourceDebugSegment& seg = sSourceDebug->segments[s];
 			if (seg.addrFirst <= addr && seg.addrLast >= addr) {
@@ -49,11 +53,13 @@ strref GetSourceAt(uint16_t addr, int &spaces)
 					const SourceDebugLine& line = seg.lines[addr - seg.addrFirst];
 					if (line.line) {
 						spaces = line.spaces;
+						IBMutexRelease(&sSrcDbgMutex);
 						return strref(line.line, (strl_t)line.len);
 					}
 				}
 			}
 		}
+		IBMutexRelease(&sSrcDbgMutex);
 	}
 	return strref();
 }
@@ -62,6 +68,7 @@ strref GetSourceAt(uint16_t addr, int &spaces)
 void ClearSourceDebugMap()
 {
 	if (SourceDebug* dbg = sSourceDebug) {
+		IBMutexLock(&sSrcDbgMutex);
 		while (dbg->segments.size()) {
 			SourceDebugSegment& seg = dbg->segments[dbg->segments.size() - 1];
 			free(seg.lines);
@@ -76,11 +83,14 @@ void ClearSourceDebugMap()
 			dbg->files.pop_back();
 		}
 		free(dbg);
+		sSourceDebug = nullptr;
+		IBMutexRelease(&sSrcDbgMutex);
 	}
 }
 
-void ShutdownSourceDebug()
+void ClearSourceDebug()
 {
+	IBMutexLock(&sSrcDbgMutex);
 	if (SourceDebug* dbg = sSourceDebug) {
 		sSourceDebug = nullptr;
 		while (dbg->segments.size()) {
@@ -98,11 +108,24 @@ void ShutdownSourceDebug()
 		}
 		free(dbg);
 	}
+	IBMutexRelease(&sSrcDbgMutex);
 	if (sListing) {
 		free(sListing);
 		sListing = nullptr;
 		sListingSize = 0;
 	}
+}
+
+void InitSourceDebug()
+{
+	IBMutexInit(&sSrcDbgMutex, "Source Debug");
+}
+
+void ShutdownSourceDebug()
+{
+	ClearSourceDebug();
+
+	IBMutexDestroy(&sSrcDbgMutex);
 }
 
 // These structs are for parsing the XML, gets converted to a SourceDebug when all is available
@@ -264,8 +287,9 @@ bool ReadC64DbgSrc(const char* filename)
 	size_t size;
 	bool success = false;
 	if (void* voidbuf = LoadBinary(filename, size)) {
+		ClearSourceDebug();
+		IBMutexLock(&sSrcDbgMutex);
 		if (ParseXML(strref((const char*)voidbuf, (strl_t)size), C64DbgXMLCB, &parse)) {
-			ShutdownSourceDebug();
 			//ShutdownListing();
 
 			SourceDebug* dbg = new SourceDebug;
@@ -341,6 +365,7 @@ bool ReadC64DbgSrc(const char* filename)
 			}
 			parse.segments.pop_back();
 		}
+		IBMutexRelease(&sSrcDbgMutex);
 	}
 	return success;
 }
@@ -350,7 +375,7 @@ bool ReadListingFile(const char* filename)
 	size_t listSize;
 	if (uint8_t* listingFile = LoadBinary(filename, listSize)) {
 		if (sListing) {
-			ShutdownSourceDebug();
+			ClearSourceDebug();
 			free(sListing);
 		}
 		sListing = (char*)listingFile;
