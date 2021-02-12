@@ -4,6 +4,7 @@
 #include "Files.h"
 #include <malloc.h>
 #include <vector>
+#include <assert.h>
 #include "ViceInterface.h"
 #include "Breakpoints.h"
 #include "SourceDebug.h"
@@ -251,7 +252,9 @@ bool C64DbgXMLCB(void* user, strref tag_or_data, const strref* tag_stack, int si
 					label = label.split_token_trim(',');
 					if (addr.get_first() == '$') { ++addr; }
 					if (label) {
-						AddSymbol((uint16_t)addr.ahextoui(), label.get(), label.get_len(), seg.get(), seg.get_len());
+						AddSymbol((uint16_t)addr.ahextoui(),
+								  label.get(), label.get_len(),
+								  seg.get(), seg.get_len());
 					}
 				}
 				FilterSectionSymbols();
@@ -288,16 +291,17 @@ bool ReadC64DbgSrc(const char* filename)
 	bool success = false;
 	if (void* voidbuf = LoadBinary(filename, size)) {
 		ClearSourceDebug();
+		ClearSymbols();
 		IBMutexLock(&sSrcDbgMutex);
 		if (ParseXML(strref((const char*)voidbuf, (strl_t)size), C64DbgXMLCB, &parse)) {
-			//ShutdownListing();
-
 			SourceDebug* dbg = new SourceDebug;
 			sSourceDebug = dbg;
 
 			// remember the file pointers for later cleanup
 			dbg->files.reserve(parse.files.size());
-			for (size_t f = 0; f < parse.files.size(); ++f) { dbg->files.push_back(parse.files[f]->file); }
+			for (size_t f = 0; f < parse.files.size(); ++f) {
+				dbg->files.push_back(parse.files[f]->file);
+			}
 
 			// segments depend on if they have data or not, could be empty.
 			for (size_t s = 0; s < parse.segments.size(); ++s) {
@@ -320,7 +324,7 @@ bool ReadC64DbgSrc(const char* filename)
 					SourceDebugSegment* segSrc = &dbg->segments[dbg->segments.size() - 1];
 					segSrc->addrFirst = addrFirst;
 					segSrc->addrLast = addrLast;
-					segSrc->lines = (SourceDebugLine*)calloc(addrLast + 1 - addrFirst, sizeof(SourceDebugLine));
+					segSrc->lines = (SourceDebugLine*)calloc((size_t)addrLast + 1 - (size_t)addrFirst, sizeof(SourceDebugLine));
 					segSrc->blockNames = (strref*)calloc(seg->blocks.size(), sizeof(strref));
 					segSrc->name = seg->name;
 					for (size_t b = 0; b < seg->blocks.size(); ++b) {
@@ -333,12 +337,14 @@ bool ReadC64DbgSrc(const char* filename)
 							uint16_t ft = lin->first, lt = lin->last;
 							if (ft <= lt) {
 								for (uint16_t a = ft; a <= lt; ++a) {
+									assert(a <= addrLast);
 									SourceDebugLine* ln = segSrc->lines + (a-addrFirst);
 									ln->block = (uint8_t)b;
 									strref lineStr = lin->line;
 									uint8_t spaces = 0;
 									while (lineStr.get_first() <= 0x20 && spaces < 255) {
-										if (lineStr.get_first() == '\t') { spaces += 4; } else { ++spaces; }
+										if (lineStr.get_first() == '\t') { spaces += 4; }
+										else { ++spaces; }
 										++lineStr;
 									}
 									ln->spaces = spaces;

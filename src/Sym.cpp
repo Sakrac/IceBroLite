@@ -65,6 +65,20 @@ void ShutdownSymbols()
 	IBMutexDestroy(&symbolMutex);
 }
 
+char* StringCopy(strref orig)
+{
+	char* copy = (char*)malloc((size_t)orig.get_len() + 1);
+	if (copy) {
+		if (orig.get_len()) { memcpy(copy, orig.get(), orig.get_len()); }
+		copy[orig.get_len()] = 0;
+	}
+	return copy;
+}
+
+void StringFree(char* str)
+{
+	if (str) { free(str); }
+}
 
 void ResetSymbols()
 {
@@ -276,14 +290,14 @@ void BeginAddingSymbols()
 	for (size_t i = 0, n = sectionNames.size(); i < n; ++i) {
 		if (char* sectName = sectionNames[i]) {
 			sectionNames[i] = nullptr;
-			free(sectName);
+			StringFree(sectName);
 		}
 	}
 	sectionNames.clear();
 	for (size_t i = 0, n = labelList.size(); i < n; ++i) {
 		if (char* symName = labelList[i].label) {
 			labelList[i].label = nullptr;
-			free(symName);
+			StringFree(symName);
 		}
 	}
 	labelList.clear();
@@ -291,10 +305,28 @@ void BeginAddingSymbols()
 	IBMutexRelease(&symbolMutex);
 }
 
+bool LabelAssignedToAddress(uint16_t address, strref lbl)
+{
+	if (const int16_t count = sLabelCount[address].count) {
+		if (count == 1) {
+			if (lbl.same_str_case(sLabelEntries[address].unique)) { return true; }
+		} else {
+			if (const char** ppStr = sLabelEntries[address].multi->names) {
+				for (size_t i = 0, n = count; i < n; ++i) {
+					if (lbl.same_str(*ppStr)) { return true; }
+					++ppStr;
+				}
+			}
+		}
+	}
+	return false;
+}
+
 // discard all symbol lookups and fill out with a filtered set of sections
 // call after loading symbols
 void FilterSectionSymbols()
 {
+#if 1
 	size_t numSects = sectionNames.size();
 	uint8_t* hidden = (uint8_t*)calloc(1, numSects);
 	if (hidden == nullptr) { return; }
@@ -338,26 +370,16 @@ void FilterSectionSymbols()
 
 		// 16 bit symbol support
 		if (sym->address < 0x10000) {
-			uint16_t address = (uint16_t)sym->address;
-			if (sLabelCount[address].count) {
-				if (sLabelCount[address].count == 1) {
-					if (lbl.same_str_case(sLabelEntries[address].unique)) { return; }
-				} else {
-					if (const char** ppStr = sLabelEntries[address].multi->names) {
-						for (size_t i = 0, n = sLabelCount[address].count; i < n; ++i) {
-							if (lbl.same_str(*ppStr)) { continue; }
-							++ppStr;
-						}
-					}
-				}
-			}
+			const uint16_t address = (uint16_t)sym->address;
+			if (LabelAssignedToAddress(address, lbl)) { continue; }
 
 			if (!sLabelCount[address].count) {
 				sLabelCount[address].count = 1;
 				sLabelEntries[address].unique = sym->label;
 			} else if (sLabelCount[address].count == 1) {
 				const char* prev = sLabelEntries[address].unique;
-				sLabelEntries[address].multi = (SymList*)malloc(sizeof(SymList) + sizeof(const char*) * (SymList::MIN_LIST - 1));
+				sLabelEntries[address].multi = (SymList*)malloc(sizeof(SymList) +
+					sizeof(const char*) * (SymList::MIN_LIST - 1));
 				sLabelEntries[address].multi->capacity = SymList::MIN_LIST;
 				sLabelCount[address].count = 2;
 				sLabelEntries[address].multi->names[0] = prev;
@@ -365,13 +387,16 @@ void FilterSectionSymbols()
 			} else {
 				SymList* entries = sLabelEntries[address].multi;
 				if (entries->capacity == (size_t)sLabelCount[address].count) {
+					size_t newCapacity = entries->capacity + SymList::GROW_LIST;
 					sLabelEntries[address].multi = (SymList*)malloc(
-						sizeof(SymList) + sizeof(const char*) * (entries->capacity + SymList::GROW_LIST - 1));
-					sLabelEntries[address].multi->capacity = entries->capacity + SymList::GROW_LIST;
-					memcpy(sLabelEntries[address].multi->names, entries->names, sizeof(const char*) * sLabelCount[address].count);
+						sizeof(SymList) + sizeof(const char*) * (newCapacity - 1));
+					sLabelEntries[address].multi->capacity = newCapacity;
+					memcpy(sLabelEntries[address].multi->names, entries->names,
+						sizeof(const char*) * sLabelCount[address].count);
 					free(entries);
 					entries = sLabelEntries[address].multi;
 				}
+				assert(entries->capacity > (size_t)sLabelCount[address].count);
 				entries->names[sLabelCount[address].count++] = sym->label;
 			}
 
@@ -392,7 +417,11 @@ void FilterSectionSymbols()
 	IBMutexRelease(&symbolMutex);
 
 	SortSymbols(lastSortedUp, lastSortedName);
+
+#endif
 }
+
+
 
 void AddSymbol(uint32_t address, const char *symbol, size_t symbolLen, const char *section, size_t sectionLen)
 {
@@ -409,16 +438,16 @@ void AddSymbol(uint32_t address, const char *symbol, size_t symbolLen, const cha
 
 	size_t sectIdx = 0, numSects = sectionNames.size();
 	for (; sectIdx < numSects; ++sectIdx) {
-		if (sect.same_str(sectionNames[sectIdx]) || (!sect.valid() && !sectionNames[sectIdx][0])) { break; }
+		if (sect.same_str(sectionNames[sectIdx]) || (!sect.valid() && !sectionNames[sectIdx][0])) {
+			break;
+		}
 	}
 	if (sectIdx == numSects) {
-		if (char* sectionCopy = (char*)calloc(1, (size_t)sect.get_len() + 1)) {
-			if (sect.get_len()) { memcpy(sectionCopy, sect.get(), sect.get_len()); }
+		if (char* sectionCopy = StringCopy(sect)) {
 			sectionNames.push_back(sectionCopy);
 		}
 	}
-	if (char* copy = (char*)calloc(1, (size_t)sym.get_len() + 1)) {
-		memcpy(copy, sym.get(), sym.get_len());
+	if (char* copy = StringCopy(sym)) {
 		SymbolInfo symInfo = { address, (uint32_t)sectIdx, copy };
 		labelList.push_back(symInfo);
 	}

@@ -193,7 +193,7 @@ void TraceView::Draw()
 				float delta = mousePos.y - mouseYLast;
 				if (delta < -0.5f || delta > 0.5f) {
 					mouseYLast = mousePos.y;
-					row += (delta * (numHits - lastDrawnRows)) / winSize.y;
+					row += (int)((delta * (numHits - lastDrawnRows)) / winSize.y);
 					if (row < 0) { row = 0; } else if (((size_t)row + lastDrawnRows) > numHits) {
 						row = (size_t)lastDrawnRows < numHits ? (int)(numHits - lastDrawnRows) : 0;
 					}
@@ -205,8 +205,6 @@ void TraceView::Draw()
 		} else {
 			mouseDrag = false;
 		}
-		//winSize.y;
-
 	}
 	ImGui::End();
 }
