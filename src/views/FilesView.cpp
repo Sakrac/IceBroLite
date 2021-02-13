@@ -54,58 +54,67 @@ void FVFileView::Draw(const char *title)
 			}
 			ImGui::Text(filterStr.c_str());
 		}
-		ImGui::BeginChild("Directory", ImVec2(0, 0), true);
-		for (size_t i=0, n=files.size(); i<n; ++i) {
-			strown<PATH_MAX_LEN> fileTxt;
-			if( files[i].fileType == FVFileInfo::dir) {
-				fileTxt.copy("(dir)");
-			} else {
-				fileTxt.append_num((uint32_t)files[i].size, 0, 10);
-			}
-			fileTxt.pad_to(' ', 12);
-			fileTxt.append(files[i].name);
+		const ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg |
+			ImGuiTableFlags_SizingStretchProp |/* ImGuiTableFlags_Resizable |*/ ImGuiTableFlags_NoSavedSettings |
+			ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersH |
+			ImGuiTableFlags_ScrollY;
+		if (ImGui::BeginTable("##directory", 2, flags)) {
+			ImGui::TableSetupColumn("Size", ImGuiTableColumnFlags_WidthAuto);
+			ImGui::TableSetupColumn("Filename", ImGuiTableColumnFlags_WidthAuto);
 
-			if( ImGui::Selectable(fileTxt.c_str(), i == selectIndex, ImGuiSelectableFlags_AllowDoubleClick)) {
-				if (ImGui::IsMouseDoubleClicked(0)) {
-					strown<PATH_MAX_LEN> newPath(path);
-					newPath.append(DIR_SEP).append(files[i].name);
-					newPath.cleanup_path();
-
-					if( files[i].fileType == FVFileInfo::dir) {
-						strovl usr(userPath, sizeof(userPath));
-						usr.copy(newPath);
-						usr.c_str();
-						userFile[0] = 0;
-						ReadDir(newPath.c_str(), filter);
-						ImGui::SetScrollHereY(0.0f);
-						break;
-					} else {
-						strovl sel(selectedFile, sizeof(selectedFile));
-						sel.copy(newPath);
-						sel.c_str();
-						if (pathTarget && pathTargetSize) {
-							strovl target(pathTarget, pathTargetSize);
-							target.copy(newPath);
-							target.c_str();
-						}
-						if (selected) { *selected = true; }
-						open = false;
-						break;
-					}
+			for (size_t i = 0, n = files.size(); i < n; ++i) {
+				ImGui::TableNextRow();
+				ImGui::TableSetColumnIndex(0);
+				strown<PATH_MAX_LEN> fileTxt;
+				if (files[i].fileType == FVFileInfo::dir) {
+					ImGui::Text("(dir)");
 				} else {
-					strovl usr(userFile, sizeof(userFile));
-					usr.copy(files[i].name);
-					usr.c_str();
-					selectIndex = i;
+					if (files[i].size < (10 * 1024)) { ImGui::Text("%d", files[i].size); }
+					else  if (files[i].size < (1024 * 1024)) { ImGui::Text("%.1fkb", (float)(files[i].size/1024.0f)); }
+					else { ImGui::Text("%.2fMb", (float)(files[i].size / (1024.0f*1024.0f))); }
+				}
+				ImGui::TableSetColumnIndex(1);
+
+				if (ImGui::Selectable(files[i].name, i == selectIndex, ImGuiSelectableFlags_AllowDoubleClick)) {
+					if (ImGui::IsMouseDoubleClicked(0)) {
+						strown<PATH_MAX_LEN> newPath(path);
+						newPath.append(DIR_SEP).append(files[i].name);
+						newPath.cleanup_path();
+
+						if (files[i].fileType == FVFileInfo::dir) {
+							strovl usr(userPath, sizeof(userPath));
+							usr.copy(newPath);
+							usr.c_str();
+							userFile[0] = 0;
+							ReadDir(newPath.c_str(), filter);
+							ImGui::SetScrollHereY(0.0f);
+							break;
+						} else {
+							strovl sel(selectedFile, sizeof(selectedFile));
+							sel.copy(newPath);
+							sel.c_str();
+							if (pathTarget && pathTargetSize) {
+								strovl target(pathTarget, pathTargetSize);
+								target.copy(newPath);
+								target.c_str();
+							}
+							if (selected) { *selected = true; }
+							open = false;
+							break;
+						}
+					} else {
+						strovl usr(userFile, sizeof(userFile));
+						usr.copy(files[i].name);
+						usr.c_str();
+						selectIndex = i;
+					}
 				}
 			}
+			ImGui::EndTable();
 		}
-		ImGui::EndChild();
 		ImGui::End();
 	}
 }
-
-
 
 void FVFileInfo::Free()
 {
@@ -208,7 +217,6 @@ void FVFileList::ReadDir(const char *full_path, const char*file_filter)
 void FVFileList::ReadDir(const char* full_path, const char* file_filter)
 {
 	WIN32_FIND_DATA ffd;
-	LARGE_INTEGER filesize;
 	strown<MAX_PATH> szDir(full_path);
 	HANDLE hFind = INVALID_HANDLE_VALUE;
 	DWORD dwError = 0;
@@ -243,13 +251,12 @@ void FVFileList::ReadDir(const char* full_path, const char* file_filter)
 			info.name = _strdup(ffd.cFileName);
 			info.fileType = FVFileInfo::dir;
 		} else {
-			filesize.LowPart = ffd.nFileSizeLow;
-			filesize.HighPart = ffd.nFileSizeHigh;
 			// check against filter
 			if(filter && !CheckFileFilter(strref(ffd.cFileName), strref(filter))) {
 				continue;
 			}
 			info.name = _strdup(ffd.cFileName);
+			info.size = (size_t)ffd.nFileSizeLow + (((size_t)ffd.nFileSizeHigh)<<32);
 			info.fileType = FVFileInfo::file;
 		}
 		InsertAlphabetically(info);
