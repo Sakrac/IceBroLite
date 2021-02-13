@@ -362,9 +362,16 @@ void ViewContext::GlobalKeyCheck()
 
 	bool shift = ImGui::IsKeyDown(GLFW_KEY_LEFT_SHIFT) || ImGui::IsKeyDown(GLFW_KEY_RIGHT_SHIFT);
 	bool ctrl = ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL) || ImGui::IsKeyDown(GLFW_KEY_RIGHT_CONTROL);
+	bool alt = ImGui::IsKeyDown(GLFW_KEY_LEFT_ALT) || ImGui::IsKeyDown(GLFW_KEY_RIGHT_ALT);
+
+	// mimic vice monitor key combo
+	if (alt && ImGui::IsKeyPressed(GLFW_KEY_H)) {
+		ViceBreak();
+	}
 
 	if (ImGui::IsKeyPressed(GLFW_KEY_F5, false)) {
-		ViceGo();
+		if (shift) { ViceBreak(); }
+		else { ViceGo(); }
 //		if (ctrl) {} else if (shift) { CPUReverse(); } else { CPUGo(); }
 	}
 	if (ImGui::IsKeyPressed(GLFW_KEY_F10, false)) {

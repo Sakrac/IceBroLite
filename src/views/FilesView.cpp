@@ -3,6 +3,7 @@
 #include "FilesView.h"
 #include <string.h>
 #include <malloc.h>
+#include "GLFW/glfw3.h"
 #include "imgui.h"
 
 #ifdef __linux__
@@ -112,6 +113,10 @@ void FVFileView::Draw(const char *title)
 			}
 			ImGui::EndTable();
 		}
+		if (ImGui::IsKeyPressed(GLFW_KEY_ESCAPE)) {
+			open = false;
+		}
+
 		ImGui::End();
 	}
 }

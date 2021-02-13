@@ -39,13 +39,12 @@ void SectionView::Draw()
         return;
     }
 
-    size_t nHidden = NumHiddenSections();
     size_t nSections = NumSections();
     for (size_t s = 0; s < nSections; ++s) {
         const char* name = GetSectionName(s);
         uint64_t hash = strref(name).fnv1a_64();
         bool enabled = true;
-        for (size_t h = 0; h < nHidden; ++h) {
+        for (size_t h = 0, nh = NumHiddenSections(); h < nh; ++h) {
             if (hash == GetHiddenSection(h)) { enabled = false; break; }
         }
         if (ImGui::Checkbox(name[0] ? name : "<empty>", &enabled)) {
