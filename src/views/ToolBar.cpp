@@ -28,7 +28,7 @@ void ToolBar::ReadConfig(strref config)
 	}
 }
 
-bool CenterTextInColumn(const char* text)
+bool CenterTextButtonInColumn(const char* text)
 {
 	ImVec2 textSize = ImGui::CalcTextSize(text);
 	textSize.x += 12.0f;
@@ -36,6 +36,15 @@ bool CenterTextInColumn(const char* text)
 	ImGui::SetCursorPosX(0.5f * (ImGui::GetColumnWidth() - textSize.x) + ImGui::GetColumnOffset());
 //	ImGui::Text( text );
 	return ImGui::Button(text, textSize);
+}
+
+void CenterTextonInColumn(const char* text)
+{
+	ImVec2 textSize = ImGui::CalcTextSize(text);
+	textSize.x += 12.0f;
+	textSize.y += 4.0f;
+	ImGui::SetCursorPosX(0.5f * (ImGui::GetColumnWidth() - textSize.x) + ImGui::GetColumnOffset());
+	ImGui::Text( text );
 }
 
 void ToolBar::Draw()
@@ -55,47 +64,51 @@ void ToolBar::Draw()
 	bool stopGo = DrawTexturedIconCenter(
 		playing ? ViceMonIcons::VMI_Pause : ViceMonIcons::VMI_Play,
 		false, -1.0f, connected ? (playing ? C64_PINK : C64_WHITE ) : C64_LGRAY);
-	stopGo = CenterTextInColumn(playing ? "Pause" : "Go") || stopGo;
+	stopGo = CenterTextButtonInColumn(playing ? "Pause" : "Go") || stopGo;
+	if (connected) { CenterTextonInColumn(playing ? "Shift+F5" : "F5"); }
 
 	ImGui::NextColumn();
 
 	bool step = DrawTexturedIconCenter(ViceMonIcons::VMI_Step);
-	step = CenterTextInColumn("Step") || step;
+	step = CenterTextButtonInColumn("Step") || step;
+	CenterTextonInColumn("F11");
 
 	ImGui::NextColumn();
 
 	bool stepOver = DrawTexturedIconCenter(ViceMonIcons::VMI_Step);
-	stepOver = CenterTextInColumn("Step Over") || stepOver;
+	stepOver = CenterTextButtonInColumn("Step Over") || stepOver;
+	CenterTextonInColumn("F10");
 
 	ImGui::NextColumn();
 
 	bool stepOut = DrawTexturedIconCenter(ViceMonIcons::VMI_Step);
-	stepOut = CenterTextInColumn("Step Out") || stepOut;
+	stepOut = CenterTextButtonInColumn("Step Out") || stepOut;
+	CenterTextonInColumn("Shift+F11");
 
 	ImGui::NextColumn();
 
 	bool load = DrawTexturedIconCenter(ViceMonIcons::VMI_Load);
-	load = CenterTextInColumn("Load") || load;
+	load = CenterTextButtonInColumn("Load") || load;
 
 	ImGui::NextColumn();
 
 	bool reload = DrawTexturedIconCenter(ViceMonIcons::VMI_Reload);
-	reload = CenterTextInColumn("Reload") || reload;
+	reload = CenterTextButtonInColumn("Reload") || reload;
 
 	ImGui::NextColumn();
 
 	bool reset = DrawTexturedIconCenter(ViceMonIcons::VMI_Reset);
-	reset = CenterTextInColumn("Reset") || reset;
+	reset = CenterTextButtonInColumn("Reset") || reset;
 
 	ImGui::NextColumn();
 
 	bool connect = DrawTexturedIconCenter(ViceConnected() ? ViceMonIcons::VMI_Connected : ViceMonIcons::VMI_Disconnected);
-	connect = CenterTextInColumn("Connect") || connect;
+	connect = CenterTextButtonInColumn("Connect") || connect;
 
 	ImGui::NextColumn();
 
 	bool viceToggle = DrawTexturedIconCenter(ViceConnected() ? ViceMonIcons::VMI_Connected : ViceMonIcons::VMI_Disconnected);
-	viceToggle = CenterTextInColumn("Vice") || viceToggle;
+	viceToggle = CenterTextButtonInColumn("Vice") || viceToggle;
 
 	ImGui::Columns(1);
 	ImGui::End();
