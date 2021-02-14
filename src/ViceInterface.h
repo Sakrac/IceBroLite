@@ -15,6 +15,7 @@ bool ViceRunning();
 
 void ViceDisconnect();
 void ViceConnect(const char* ip, uint32_t port);
+void ViceQuit();
 
 void ViceBreak();
 void ViceGo();

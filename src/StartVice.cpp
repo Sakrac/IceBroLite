@@ -40,6 +40,7 @@ bool LoadViceEXE()
 
 	char* viceEXEPath = GetViceEXEPath();
 	if (viceEXEPath == nullptr) {
+		SetViceEXEPathDialog();
 		return false;
 	}
 #if 0
@@ -105,6 +106,7 @@ bool LoadViceEXE()
 
 	char* viceEXEPath = GetViceEXEPath();
 	if (viceEXEPath == nullptr) {
+		SetViceEXEPathDialog();
 		return false;
 	}
 	pid_t     pid;

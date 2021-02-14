@@ -208,6 +208,16 @@ void ViceDisconnect()
 	}
 }
 
+void ViceQuit()
+{
+	if (viceCon && viceCon->isConnected()) {
+		VICEBinHeader viceQuit;
+		viceQuit.Setup(0, ++lastRequestID, VICE_Quit);
+		viceCon->AddMessage((uint8_t*)&viceQuit, sizeof(viceQuit));
+		VicePing(); // this will fail but will cause the connection thread exit cleanly
+	}
+}
+
 void ViceBreak()
 {
 	if (viceCon && viceCon->isConnected() && !viceCon->isStopped()) {

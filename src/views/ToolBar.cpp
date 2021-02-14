@@ -6,6 +6,7 @@
 #include "../Config.h"
 #include "../FileDialog.h"
 #include "../Sym.h"
+#include "../StartVice.h"
 #include "ToolBar.h"
 
 ToolBar::ToolBar() : open(true) {}
@@ -47,20 +48,29 @@ void ToolBar::Draw()
 		return;
 	}
 
-	ImGui::Columns(7, 0, false);
+	ImGui::Columns(9, 0, false);
 
-	bool pause = DrawTexturedIconCenter(ViceMonIcons::VMI_Pause, false, -1.0f, ViceRunning() ? C64_PINK : C64_LGRAY);
-	pause = CenterTextInColumn("Pause") || pause;
-
-	ImGui::NextColumn();
-
-	bool play = DrawTexturedIconCenter(ViceMonIcons::VMI_Play);
-	play = CenterTextInColumn("Go") || play;
+	bool connected = ViceConnected();
+	bool playing = connected && ViceRunning();
+	bool stopGo = DrawTexturedIconCenter(
+		playing ? ViceMonIcons::VMI_Pause : ViceMonIcons::VMI_Play,
+		false, -1.0f, connected ? (playing ? C64_PINK : C64_WHITE ) : C64_LGRAY);
+	stopGo = CenterTextInColumn(playing ? "Pause" : "Go") || stopGo;
 
 	ImGui::NextColumn();
 
 	bool step = DrawTexturedIconCenter(ViceMonIcons::VMI_Step);
 	step = CenterTextInColumn("Step") || step;
+
+	ImGui::NextColumn();
+
+	bool stepOver = DrawTexturedIconCenter(ViceMonIcons::VMI_Step);
+	stepOver = CenterTextInColumn("Step Over") || stepOver;
+
+	ImGui::NextColumn();
+
+	bool stepOut = DrawTexturedIconCenter(ViceMonIcons::VMI_Step);
+	stepOut = CenterTextInColumn("Step Out") || stepOut;
 
 	ImGui::NextColumn();
 
@@ -80,24 +90,24 @@ void ToolBar::Draw()
 	ImGui::NextColumn();
 
 	bool connect = DrawTexturedIconCenter(ViceConnected() ? ViceMonIcons::VMI_Connected : ViceMonIcons::VMI_Disconnected);
-	connect = CenterTextInColumn("Vice") || connect;
+	connect = CenterTextInColumn("Connect") || connect;
+
+	ImGui::NextColumn();
+
+	bool viceToggle = DrawTexturedIconCenter(ViceConnected() ? ViceMonIcons::VMI_Connected : ViceMonIcons::VMI_Disconnected);
+	viceToggle = CenterTextInColumn("Vice") || viceToggle;
 
 	ImGui::Columns(1);
 	ImGui::End();
 
-	if (pause) {
-		if (ViceRunning()) { ViceBreak(); }
+	if (connected && stopGo) {
+		if (playing) { ViceBreak(); }
+		else { ViceGo(); }
 	}
 
-	if (play) {
-		if (!ViceRunning() && ViceConnected()) { ViceGo(); }
-	}
-
-//	if (reverse) {
-//		if (!ViceRunning() && !IsCPURunning()) { CPUReverse(); }
-//	}
-
-	if (step && !ViceRunning()) { ViceStep(); }
+	if (step) { ViceStep(); }
+	if (stepOver) { ViceStepOver(); }
+	if (stepOut) { ViceStepOut(); }
 
 //	if (stepBack && !ViceRunning()) { CPUStepBack(); }
 
@@ -106,6 +116,14 @@ void ToolBar::Draw()
 			ViceDisconnect();
 		} else {
 			ViceConnect("127.0.0.1", 6502);
+		}
+	}
+
+	if (viceToggle) {
+		if (connected) {
+			ViceQuit();
+		} else {
+			LoadViceEXE();
 		}
 	}
 
