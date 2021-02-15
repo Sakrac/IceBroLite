@@ -75,13 +75,13 @@ void ToolBar::Draw()
 
 	ImGui::NextColumn();
 
-	bool stepOver = DrawTexturedIconCenter(ViceMonIcons::VMI_Step);
+	bool stepOver = DrawTexturedIconCenter(ViceMonIcons::VMI_StepOver);
 	stepOver = CenterTextButtonInColumn("Step Over") || stepOver;
 	CenterTextonInColumn("F10");
 
 	ImGui::NextColumn();
 
-	bool stepOut = DrawTexturedIconCenter(ViceMonIcons::VMI_Step);
+	bool stepOut = DrawTexturedIconCenter(ViceMonIcons::VMI_StepOut);
 	stepOut = CenterTextButtonInColumn("Step Out") || stepOut;
 	CenterTextonInColumn("Shift+F11");
 
@@ -107,7 +107,7 @@ void ToolBar::Draw()
 
 	ImGui::NextColumn();
 
-	bool viceToggle = DrawTexturedIconCenter(ViceConnected() ? ViceMonIcons::VMI_Connected : ViceMonIcons::VMI_Disconnected);
+	bool viceToggle = DrawTexturedIconCenter(ViceConnected() ? ViceMonIcons::VMI_ViceLoaded : ViceMonIcons::VMI_ViceNotLoaded);
 	viceToggle = CenterTextButtonInColumn("Vice") || viceToggle;
 
 	ImGui::Columns(1);
