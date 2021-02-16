@@ -103,12 +103,12 @@ void ToolBar::Draw()
 	ImGui::NextColumn();
 
 	bool connect = DrawTexturedIconCenter(ViceConnected() ? ViceMonIcons::VMI_Connected : ViceMonIcons::VMI_Disconnected);
-	connect = CenterTextButtonInColumn("Connect") || connect;
+	connect = CenterTextButtonInColumn(ViceConnected() ? "Disconnect" : "Connect") || connect;
 
 	ImGui::NextColumn();
 
 	bool viceToggle = DrawTexturedIconCenter(ViceConnected() ? ViceMonIcons::VMI_ViceLoaded : ViceMonIcons::VMI_ViceNotLoaded);
-	viceToggle = CenterTextButtonInColumn("Vice") || viceToggle;
+	viceToggle = CenterTextButtonInColumn(ViceConnected() ? "Quit Vice" : "Start Vice") || viceToggle;
 
 	ImGui::Columns(1);
 	ImGui::End();
