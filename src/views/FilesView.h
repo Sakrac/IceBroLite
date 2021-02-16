@@ -15,7 +15,7 @@ struct FVFileInfo {
 		dir
 	};
 	char *name;
-	size_t size;
+	uint64_t size;
 	type fileType;
 	void Free();
 };

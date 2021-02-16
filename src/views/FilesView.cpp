@@ -1,11 +1,4 @@
 // attempting a home made file dialog in ImGui for a little more portability
-#include "../struse/struse.h"
-#include "FilesView.h"
-#include <string.h>
-#include <malloc.h>
-#include "GLFW/glfw3.h"
-#include "imgui.h"
-
 #ifdef __linux__
 #include <dirent.h>
 #include <sys/stat.h>
@@ -13,6 +6,14 @@
 #include <windows.h>
 #include <stdio.h>
 #endif
+
+#include "../struse/struse.h"
+#include "FilesView.h"
+#include <string.h>
+#include <malloc.h>
+#include "imgui.h"
+
+#include "GLFW/glfw3.h"
 
 #ifdef _MSC_VER 
 #define strncasecmp _strnicmp
@@ -261,7 +262,7 @@ void FVFileList::ReadDir(const char* full_path, const char* file_filter)
 				continue;
 			}
 			info.name = _strdup(ffd.cFileName);
-			info.size = (size_t)ffd.nFileSizeLow + (((size_t)ffd.nFileSizeHigh)<<32);
+			info.size = (uint64_t)ffd.nFileSizeLow + (((uint64_t)ffd.nFileSizeHigh)<<32);
 			info.fileType = FVFileInfo::file;
 		}
 		InsertAlphabetically(info);

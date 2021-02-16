@@ -110,8 +110,8 @@ void CopyBitmapToClipboard(void* bitmap, int width, int height)
 	uint32_t *src = (uint32_t*)bitmap + pixelSize - width;
 	uint32_t *dst = (uint32_t*)dib->bmiColors;
 
-	for (size_t y = 0; y < height; ++y) {
-		for (size_t x = 0; x < width; ++x) {
+	for (int y = 0; y < height; ++y) {
+		for (int x = 0; x < width; ++x) {
 			uint32_t c = *src++;
 			*dst++ = ((c << 16) & 0xff0000) | (c & 0xff00ff00) | ((c >> 16) & 0xff);
 		}
