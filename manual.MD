@@ -159,6 +159,23 @@ Breakpoint pane Keys (after clicking on a breakpoint)
 * **Up/Down**: Move through breakpoints
 * **Delete**: Delete breakpoint
 
+# Views
+
+## Toolbar
+
+![Toolbar View](img/Toolbar.png)
+
+The toolbar consists of buttons that controls the debugger and VICE such as Go/Stop, Step, Load a program/disk/cartridge or reload (a reload will clean VICE so you can iterate your code and start over without restarting VICE).
+Connect will attach the debugger to an existing instance of VICE, Start VICE will try to start a new instance of VICE.
+* Go/Stop: If VICE is connected start/stop execution, same as F5/Shift F5 on the keyboard.
+* Step: If VICE is connected and stopped, step one instruction. Step in to jsr. Same as F11.
+* Step Over: Step over jsr. Same as F10.
+* Step Out: Run until exiting a subroutine (after calling jsr if possible). Same as Shift F11
+* Load: Open the load program dialog, select a .prg, .d64 or .crt file. VICE will reset then load in the program.
+* Reload: repeat the last file opened using Load
+* Reset: Reset the c64 in VICE
+* Connect/Disconnect: Connect to a running instance of VICE or disconnect if already connected
+* Start/Quit VICE: Load VICE or if already connected, Quit VICE.
 
 ## Code View
 
@@ -239,7 +256,9 @@ If the Graphics View is selected press CTRL+C to copy the graphics to the clipbo
 
 ## Register View
 
-...
+![Edit Registers](img/Registers.png)
+
+In this view you can quickly check the current registers and flags and also edit them while VICE is stopped. Just click on any value and edit, cursor left/right to navigate when editing is active. Press Esc to stop editing.
 
 ## Screen View
 

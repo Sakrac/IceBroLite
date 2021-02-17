@@ -8,10 +8,13 @@ struct RegisterView
 	RegisterView();
 	void WriteConfig( UserData & config );
 	void ReadConfig( strref config );
+	void Draw();
+
+
 	int cursor;
 	float cursorTime;
 	bool open;
+	bool editing;
 	bool wasActive;
-	void Draw();
 };
 

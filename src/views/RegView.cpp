@@ -1,5 +1,6 @@
 #include <malloc.h>
 #include "../imgui/imgui.h"
+#include "../imgui/imgui_internal.h"
 #include "../struse/struse.h"
 #include "../ImGui_Helper.h"
 #include "../Config.h"
@@ -11,7 +12,7 @@
 
 constexpr auto CursorFlashPeriod = 64.0f/50.0f;
 
-RegisterView::RegisterView() : cursorTime(0.0f), open(true), wasActive(false)
+RegisterView::RegisterView() : cursorTime(0.0f), open(true), wasActive(false), editing(false)
 {
 	cursor = -1;
 }
@@ -43,32 +44,38 @@ void RegisterView::Draw()
 		return;
 	}
 
-	float fontCharWidth = CurrFontSize();
+	float fontCharWidth = ImGui::GetFont()->GetCharAdvance('0');
 
-	ImGui::BeginChild(ImGui::GetID("regEdit"));
+	ImGuiContext* g = ImGui::GetCurrentContext();
 
-	bool active = KeyboardCanvas("RegisterView");// IsItemActive();
+	bool active = g->CurrentWindow == g->NavWindow;
 
 	if (active && !wasActive) {
 		cursorTime = 0.5f * CursorFlashPeriod;
 	}
 
-//	ImVec2 topPos = ImGui::GetCursorPos();
-
 	ImGui::Text("ADDR A  X  Y  SP 00 01 NV-BDIZC LIN CYC");
+
 	cursorTime += ImGui::GetIO().DeltaTime;
 	if (cursorTime >= CursorFlashPeriod) { cursorTime -= CursorFlashPeriod; }
 
 	if (ImGui::IsMouseClicked(0)) {
 		ImVec2 mousePos = ImGui::GetMousePos();
-		ImVec2 winPos = ImGui::GetWindowPos();
-		ImVec2 winSize = ImGui::GetWindowSize();
-		if (mousePos.x >= winPos.x && mousePos.y >= winPos.y &&
-			mousePos.x < (winPos.x + winSize.x) && mousePos.y < (winPos.y + winSize.y)) {
-			int clickPos = int((mousePos.x - winPos.x) / fontCharWidth);
-			if (clickPos < 31) { cursor = clickPos; }
+		ImVec2 cursorPos = ImGui::GetCursorScreenPos();
+		float regTextWid = 39.0f * fontCharWidth;
+		if (mousePos.x >= cursorPos.x && mousePos.x < (cursorPos.x + regTextWid) && mousePos.y >= cursorPos.y) {
+			float regTextHgt = ImGui::GetFont()->FontSize;
+			if (mousePos.y < (cursorPos.y + regTextHgt)) {
+				int clickPos = int((mousePos.x - cursorPos.x) / fontCharWidth);
+				if (clickPos < 31) {
+					cursor = clickPos;
+					editing = true;
+				}
+			}
 		}
 	}
+
+	if (editing && (!active || ImGui::IsKeyPressed(GLFW_KEY_ESCAPE))) { editing = false; }
 
 	CPU6510* cpu = GetCurrCPU();
 
@@ -87,7 +94,7 @@ void RegisterView::Draw()
 	ImVec2 curPos = ImGui::GetCursorPos();
 	ImGui::Text(regs.c_str());
 
-	if (active && cursor >= 0) {
+	if (active && editing && cursor >= 0) {
 		int o = cursor;
 		uint8_t b = InputHex();
 		if (b <= 0xf) {
@@ -138,7 +145,7 @@ void RegisterView::Draw()
 		if (ImGui::IsKeyPressed(GLFW_KEY_RIGHT)) { cursor++; }
 	}
 
-	if (active && cursor >= 0 && cursorTime > (0.5f * CursorFlashPeriod)) {
+	if (active && editing && cursor >= 0 && cursorTime > (0.5f * CursorFlashPeriod)) {
 		if ((uint32_t)cursor > regs.len()) {
 			cursor = regs.len() - 1;
 		}
@@ -153,7 +160,6 @@ void RegisterView::Draw()
 		ImGui::TextColored(style.Colors[ImGuiCol_ChildBg], curChr.c_str());
 	}
 
-	ImGui::EndChild();
 	wasActive = active;
 	ImGui::End();
 }
