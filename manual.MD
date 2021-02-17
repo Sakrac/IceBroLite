@@ -181,24 +181,37 @@ Connect will attach the debugger to an existing instance of VICE, Start VICE wil
 
 Disassembly and Source Debugging lives here, but that is not all. There are a number of optional "columns" to customize this view
 
+![Toolbar View](img/CodeView.png)
+
 * Address
 * Bytes - the bytes that makes up each instruction
 * Disassembly - you can hide the disassembly to save some screen space for Source Debugging
 * References - looks at the address the instruction is referencing and shows what it currently contains
 * Labels - *not* a column, but expands addresses in instructions into labels if found
-* Source - show or hide source debugging
+* Source - show or hide source debugging (if available)
 
-Code Views have an active state. If you see a purple cursor below an instruction that view is active. This means you can press enter to edit code or toggle breakpoints with F9. Cursor keys move the cursor and Page Up/Page Down moves the address of the view by half a page.
+Addresses can be selected in the disassembly by clicking on them.
+A purple cursor shows the current selected address. Addresses can be navigated with cursor up/down and page up/down.
 
-The address field can be anything that can be evaluated, either a hex value preceeded by $ or a decimal value. It can also be an expression, see the Watch View for expression details.
+Keyboard shortcuts while the code view is selected:
+* Tab: jump to current PC
+* Shift+Tab: set PC to current selected address
+* Cursor up/down: move cursor to previous/next addresss
+* Page up/down: move cursor half a screen
+* F9: Toggle breakpoint at line
+* Enter: edit disassembly at address
 
-If the address field expression is preceeded by = this means lock the view to the expression which can be handy to for example see the current jsr address:
+The address field can be any expression  that evaluates, either a hex value preceeded by $ or a decimal value. It can also be an expression, see the Watch View for expression details.
+
+If the address field expression is preceeded by = this means lock the view to the expression which can be handy to for example see the address of the jsr instruction that entered the code unless other data is on the stack:
 
 	={$101+s}-2
 
 ## Watch View
 
 A watch is a live expression, type in any expression here to monitor the result at any time.
+
+![Watch View](img/WatchView.png)
 
 Each watch expression will be saved to the .ini file at shutdown.
 
@@ -229,9 +242,18 @@ Expression operators are:
 
 This is a combination of the VICE text monitor, if enabled in VICE, and some extra commands for IceBro Lite.
 
+![VICE text monitor](img/ViceMonitor.png)
+
+To use the console view the remote monitor must be enabled in VICE in addition to the remote binary monitor. This enables a few more features not available in the binary protocol. Tracepoint output will be filtered into the Trace View instead.
+
 Type help or ? for a list of VICE commands when connected to VICE, or type CMD for a list of IceBro Lite commands. VICE text monitor output will be shown in this view.
 
 ## Graphics View
+
+The Graphics View is a viewer for graphics anywhere in RAM in a
+variety of modes.
+
+![Graphics View](img/GraphicsView.png)
 
 This view has a lot of fields where addresses and numbers can be edited. It is a little complicated because the C64 has so many ways to show graphics. Here is a quick overview:
 * System: C64 layouts or General layout
@@ -248,7 +270,29 @@ If the Graphics View is selected press CTRL+C to copy the graphics to the clipbo
 
 ## Breakpoint View
 
-..
+The Breakpoint View is a list of the current checkpoints which includes breakpoints (stop on execution of address), watchpoints (stop when reading or writing to an address or range), tracepoints (tracks loading/storing/execution but does not stop VICE).
+
+![Breakpoint View](img/BreakpointView.png)
+
+While debugging code it is usually easiest to toggle breakpoints from the code view, at the top of the Breakpoint View there is a drop down to create other types of checkpoints.
+
+In the table a checkpoint can be selected, conditions can be added, clicking on a checkpoint icon disables/enables the checkpoint.
+
+Keyboard shortcuts when a checkpoint is selected:
+* cursor up/down: move to previous/next checkpoint in table
+* Delete: delete the selected checkpoint
+
+## Trace View
+
+Tracepoints have their own view as they are not stopping VICE but are counted.
+
+![Trace View](img/TraceView.png)
+
+Each Tracepoints has an ID and in the Trace View there is a dropdown to select a trace to display. This includes which address the trace was hit, the PC when it was hit, line & cycle and an estimated frame from the first trace. The frame number is currently assuming European PAL timing.
+
+A tooltip will show disassembly, registers and flags when the mouse cursor hovers above a trace sample.
+
+Since the binary monitor protocol doesn't include all the same info as the text monitor protocol the list of breakpoints must first be listed in the Vice Console to generate the trace output. Type "bk" in the Vice Console to do this.
 
 ## Memory View
 
