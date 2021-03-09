@@ -216,6 +216,9 @@ void ViewContext::LoadState(strref config)
 	}
 }
 
+
+
+
 void ViewContext::Draw()
 {
 	memoryWasChanged = GetCurrCPU()->MemoryChange();
@@ -230,7 +233,8 @@ void ViewContext::Draw()
 				if (GetViceEXEPath()) {
 					if (ImGui::MenuItem("Reload VICE")) { LoadViceEXE(); }
 				}
-
+				if (ImGui::MenuItem("Read .prg to RAM")) { ReadPRGDialog(); }
+				if (ImGui::MenuItem("Reread .prg to RAM")) { GetCurrCPU()->ReadPRGToRAM(ReadPRGFile()); }
 
 				if (ImGui::MenuItem("Quit", "Alt+F4")) {}
 				ImGui::EndMenu();
@@ -331,6 +335,8 @@ void ViewContext::Draw()
 		screenView.open = true;
 		traceView.open = false;
 	}
+
+	if (const char* prg = ReadPRGToRAMReady()) { GetCurrCPU()->ReadPRGToRAM(prg); }
 
 	toolBar.Draw();
 	regView.Draw();

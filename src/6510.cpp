@@ -1,6 +1,7 @@
 #include <cstring>
 #include "struse/struse.h"
 #include "6510.h"
+#include "Files.h"
 #include <malloc.h>
 
 // for now support 1 CPU
@@ -34,6 +35,28 @@ void CPU6510::SetByte(uint16_t addr, uint8_t byte)
 	ViceSetMemory(addr, 1, ram + addr, space);
 }
 
+void CPU6510::CopyToRAM(uint16_t address, uint8_t* data, size_t size)
+{
+	uint32_t bytes = 0x10000 - address;
+	if (size_t(bytes) > size) { bytes = (uint32_t)size; }
+	memcpy(ram + address, data, bytes);
+	memoryChanged = true;
+	ViceSetMemory(address, bytes, ram + address, space);
+}
+
+void CPU6510::ReadPRGToRAM(const char *filename)
+{
+	if (filename) {
+		size_t size;
+		if (uint8_t* file = LoadBinary(filename, size)) {
+			if (size > 2) {
+				uint16_t addr = file[0] + (((uint16_t)file[1]) << 8);
+				CopyToRAM(addr, file + 2, size - 2);
+				free(file);
+			}
+		}
+	}
+}
 void CPU6510::SetPC(uint16_t pc)
 {
 	regs.PC = pc;

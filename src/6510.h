@@ -36,8 +36,10 @@ struct CPU6510 {
 
 	uint8_t GetByte(uint16_t addr);
 	void SetByte(uint16_t addr, uint8_t byte);
+	void CopyToRAM(uint16_t address, uint8_t* data, size_t size);
 	bool MemoryChange() { return memoryChanged; }
 	void WemoryChangeRefreshed() { memoryChanged = false; }
+	void ReadPRGToRAM(const char *filename);
 	void SetPC(uint16_t pc);
 
 protected:

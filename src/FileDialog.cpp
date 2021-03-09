@@ -37,6 +37,7 @@ static bool sLoadKickDbgReady = false;
 static bool sLoadSymbolsReady = false;
 static bool sLoadViceCmdReady = false;
 static bool sSetViceEXEPathReady = false;
+static bool sReadPrgReady = false;
 
 static char sLoadPrgFileName[PATH_MAX_LEN] = {};
 static char sLoadLstFileName[PATH_MAX_LEN] = {};
@@ -44,7 +45,7 @@ static char sLoadDbgFileName[PATH_MAX_LEN] = {};
 static char sLoadSymFileName[PATH_MAX_LEN] = {};
 static char sLoadViceFileName[PATH_MAX_LEN] = {};
 static char sViceEXEPath[PATH_MAX_LEN] = {};
-
+static char sReadPrgFileName[PATH_MAX_LEN] = {};
 
 static char sFileDialogFolder[PATH_MAX_LEN];
 
@@ -64,7 +65,7 @@ static const char sLoadKickDbgParams[] = "Kick Asm Debug:*.dbg";
 static const char sLoadSymbolsParams[] = "Symbols:*.sym";
 static const char sLoadViceCmdParams[] = "Vice Commands:*.vs";
 static const char sViceEXEParams[] = "Vice EXE path:*x64*";
-
+static const char sReadPrgParams[] = "Prg files:*.prg";
 #endif
 
 void InitStartFolder()
@@ -93,12 +94,22 @@ void ResetStartFolder()
 bool IsFileDialogOpen() { return sFileDialogOpen; }
 
 const char* ReloadProgramFile() { return sLoadPrgFileName[0] ? sLoadPrgFileName : nullptr; }
+const char* ReadPRGFile() { return sReadPrgFileName[0] ? sReadPrgFileName : nullptr; }
 
 const char* LoadProgramReady()
 {
 	if (sLoadProgramReady) {
 		sLoadProgramReady = false;
 		return sLoadPrgFileName;
+	}
+	return nullptr;
+}
+
+const char* ReadPRGToRAMReady()
+{
+	if (sReadPrgReady) {
+		sReadPrgReady = false;
+		return sReadPrgFileName;
 	}
 	return nullptr;
 }
@@ -258,6 +269,22 @@ void LoadKickDbgDialog()
 #endif
 }
 
+void ReadPRGDialog()
+{
+	sReadPrgReady = false;
+	sFileDialogOpen = true;
+
+#if defined(_WIN32) && !defined(CUSTOM_FILEVIEWER)
+	hThreadFileDialog = CreateThread(NULL, FILE_LOAD_THREAD_STACK, (LPTHREAD_START_ROUTINE)FileLoadDialogThreadRun, &aLoadGrabInfo,
+									 0, NULL);
+#else
+	FVFileView* filesView = GetFileView();
+	if (filesView && !filesView->IsOpen()) {
+		filesView->Show(strown<PATH_MAX_LEN>(StartFolder(sReadPrgFileName)).c_str(), &sReadPrgReady, sReadPrgFileName, sizeof(sReadPrgFileName), sReadPrgParams);
+	}
+#endif
+}
+
 void LoadSymbolsDialog()
 {
 	sLoadSymbolsReady = false;
@@ -326,6 +353,8 @@ void StateLoadFilenames(strref filenames)
 				strovl(sLoadViceFileName, sizeof(sLoadViceFileName)).append(value).c_str();
 			} else if (name.same_str("ViceExePath")) {
 				strovl(sViceEXEPath, sizeof(sViceEXEPath)).append(value).c_str();
+			} else if (name.same_str("ReadPRGToRAMPath")) {
+				strovl(sReadPrgFileName, sizeof(sReadPrgFileName)).append(value).c_str();
 			}
 		}
 	}
@@ -350,6 +379,9 @@ void StateSaveFilenames(UserData& conf)
 	}
 	if (sViceEXEPath[0]) {
 		conf.AddValue("ViceExePath", strref(sViceEXEPath));
+	}
+	if (sReadPrgFileName[0]) {
+		conf.AddValue("ReadPRGToRAMPath", strref(sReadPrgFileName));
 	}
 
 }
