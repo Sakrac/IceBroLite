@@ -17,7 +17,7 @@ typedef HANDLE IBMutex;
 typedef HANDLE IBThread;
 typedef IBThreadRet(WINAPI* IBThreadFunc)(void* data);
 
-#elif __linux__
+#else
 
 #define IBMutex_Clear 0
 #define IBThread_Clear 0
@@ -25,7 +25,6 @@ typedef void* IBThreadRet;
 typedef pthread_mutex_t IBMutex;
 typedef pthread_t IBThread;
 typedef IBThreadRet(*IBThreadFunc)(void* data);
-#else
 
 #endif
 

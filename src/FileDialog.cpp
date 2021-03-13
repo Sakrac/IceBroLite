@@ -5,19 +5,16 @@
 #endif
 #include <stdio.h>
 #include "Config.h"
+#include "Files.h"
 #include "FileDialog.h"
 #include "views/FilesView.h"
 #include "views/Views.h"
 #include "struse/struse.h"
-#ifdef __linux__
+#ifndef _WIN32
 #include <unistd.h>
-#include <linux/limits.h>
-#define PATH_MAX_LEN PATH_MAX
 #define sprintf_s sprintf
 #define GetCurrentDirectory(size, buf) getcwd(buf, size)
 #define SetCurrentDirectory(str) chdir(str)
-#else
-#define PATH_MAX_LEN _MAX_PATH
 #endif
 
 //#ifdef __linux__

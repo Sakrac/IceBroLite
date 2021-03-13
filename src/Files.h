@@ -9,7 +9,8 @@ int fopen_s(FILE **f, const char* filename, const char *options);
 #endif
 
 #ifndef _WIN32
-#include <linux/limits.h>
+//#include <linux/limits.h>
+#include <limits.h>
 #define PATH_MAX_LEN PATH_MAX
 #define sprintf_s sprintf
 #else
