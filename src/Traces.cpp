@@ -78,6 +78,15 @@ size_t NumTraceHits(size_t id)
 	return 0;
 }
 
+void ClearTrace(size_t id)
+{
+	IBMutexLock(&sTraceMutex);
+	if (id < (int)sTraceArrays.size()) {
+		sTraceArrays[id].traceHits->clear();
+	}
+	IBMutexRelease(&sTraceMutex);
+}
+
 TraceHit GetTraceHit(int id, size_t index)
 {
 	TraceHit ret = {};

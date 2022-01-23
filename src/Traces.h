@@ -15,6 +15,7 @@ size_t NumTracePointIds();
 int GetTracePointId(size_t id);
 size_t NumTraceHits(size_t id);
 TraceHit GetTraceHit(int traceId, size_t index);
+void ClearTrace(size_t id);
 
 void InitTraces();
 void ShutdownTraces();
