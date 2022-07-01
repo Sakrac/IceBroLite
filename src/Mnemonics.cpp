@@ -469,7 +469,7 @@ struct dismnm a6502_ops[256] = {
 	{ mnm_inv, AM_NON, 0 },
 	{ mnm_sta, AM_ZP_REL_X, 1 },
 	{ mnm_inv, AM_NON, 0 },
-	{ mnm_sax, AM_ZP_REL_Y, 1 },
+	{ mnm_sax, AM_ZP_Y_REL, 1 },
 	{ mnm_sty, AM_ZP, 1 },
 	{ mnm_sta, AM_ZP, 1 },
 	{ mnm_stx, AM_ZP, 1 },
@@ -485,7 +485,7 @@ struct dismnm a6502_ops[256] = {
 	{ mnm_bcc, AM_BRANCH, 1 },
 	{ mnm_sta, AM_ZP_Y_REL, 1 },
 	{ mnm_inv, AM_NON, 0 },
-	{ mnm_ahx, AM_ZP_REL_Y, 1 },
+	{ mnm_ahx, AM_ZP_Y_REL, 1 },
 	{ mnm_sty, AM_ZP_X, 1 },
 	{ mnm_sta, AM_ZP_X, 1 },
 	{ mnm_stx, AM_ZP_Y, 1 },
@@ -501,7 +501,7 @@ struct dismnm a6502_ops[256] = {
 	{ mnm_ldy, AM_IMM, 1 },
 	{ mnm_lda, AM_ZP_REL_X, 1 },
 	{ mnm_ldx, AM_IMM, 1 },
-	{ mnm_lax, AM_ZP_REL_Y, 1 },
+	{ mnm_lax, AM_ZP_Y_REL, 1 },
 	{ mnm_ldy, AM_ZP, 1 },
 	{ mnm_lda, AM_ZP, 1 },
 	{ mnm_ldx, AM_ZP, 1 },
@@ -657,7 +657,7 @@ int InstrRef(CPU6510* cpu, uint16_t pc, char* buf, size_t bufSize)
 			return str.sprintf("(%04x)=%04x", addr, rel);
 		}
 		case AM_ACC:
-		{	// 9 A
+		{	// 9 AS
 			return str.sprintf("A=%02x", cpu->regs.A);
 		}
 		case AM_ZP_REL_Y:

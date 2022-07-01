@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
 	glfwSetErrorCallback(glfw_error_callback);
 	if (!glfwInit())
 		return 1;
-	GLFWwindow* window = glfwCreateWindow(1280, 720, "IceBro Lite", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(1700, 960, "IceBro Lite", NULL, NULL);
 	if (window == NULL)
 		return 1;
 	glfwMakeContextCurrent(window);

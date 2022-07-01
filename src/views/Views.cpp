@@ -45,7 +45,7 @@ struct ViewContext {
 
 	ImFont* aFonts[sNumFontSizes];
 
-	int currFont;
+	int currFont, nextFont;
 	float currFontSize;
 	bool setupDocking;
 	bool memoryWasChanged;
@@ -123,11 +123,13 @@ ViewContext::ViewContext() : currFont(3), setupDocking(true), saveSettingsOnExit
 		aFonts[f] = io.Fonts->AddFontFromMemoryCompressedTTF(GetC64FontData(), GetC64FontSize(), sFontSizes[f], NULL, C64CharRanges);
 		assert(aFonts[f] != NULL);
 	}
+	nextFont = currFont;
 	currFontSize = sFontSizes[currFont];
 	memView[0].open = true;
 	codeView[0].open = true;
 	watchView[0].open = true;
 	console.open = true;
+	memoryWasChanged = false;
 }
 
 void ViewContext::SaveState(UserData& conf)
@@ -172,6 +174,7 @@ void ViewContext::SaveState(UserData& conf)
 	// ScreenView screenView;
 	conf.BeginStruct("Screen"); screenView.WriteConfig(conf); conf.EndStruct();
 	conf.BeginStruct("Trace"); traceView.WriteConfig(conf); conf.EndStruct();
+	conf.AddValue("FontSize", currFont);
 }
 
 void ViewContext::LoadState(strref config)
@@ -180,6 +183,12 @@ void ViewContext::LoadState(strref config)
 	while (!conf.Empty()) {
 		strref name, value;
 		ConfigParseType type = conf.Next(&name, &value);
+		if (type == ConfigParseType::CPT_Value) {
+			if (name.same_str("FontSize")) {
+				int fontSize = value.atoi();
+				SelectFont(fontSize);
+			}
+		}
 		if (type == ConfigParseType::CPT_Struct) {
 			if (name.same_str("ToolBar")) { toolBar.ReadConfig(value); }
 			else if (name.same_str("Registers")) { regView.ReadConfig(value); }
@@ -360,6 +369,10 @@ void ViewContext::Draw()
 		GetCurrCPU()->WemoryChangeRefreshed();
 	}
 
+	if (nextFont != currFont) {
+		SelectFont(nextFont);
+	}
+
 }
 
 void ViewContext::GlobalKeyCheck()
@@ -447,11 +460,18 @@ uint8_t InputHex()
 
 void SelectFont(int size)
 {
+	// check if another font change is already pending
+	if (size != viewContext->nextFont && viewContext->nextFont != viewContext->currFont) { return; }
+
+	// attempt to set this font
 	if (viewContext && size >= 0 && size < ViewContext::sNumFontSizes) {
-		viewContext->currFont = size;
-		viewContext->currFontSize = sFontSizes[size];
-		ImGui::SetCurrentFont(viewContext->aFonts[viewContext->currFont]);
-		GImGui->IO.FontDefault = viewContext->aFonts[viewContext->currFont];
+		if (viewContext->aFonts[size]->IsLoaded()) {
+			viewContext->currFont = size;
+			viewContext->currFontSize = sFontSizes[size];
+			ImGui::SetCurrentFont(viewContext->aFonts[viewContext->currFont]);
+			GImGui->IO.FontDefault = viewContext->aFonts[viewContext->currFont];
+		}
+		viewContext->nextFont = size;
 	}
 }
 
