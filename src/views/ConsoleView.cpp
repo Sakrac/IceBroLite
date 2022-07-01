@@ -279,12 +279,14 @@ void IceConsole::AddLog(strref line)
 void IceConsole::AddLogSafe(strref line)
 {
 	char* copy = (char*)malloc(line.get_len() + 1);
-	memcpy(copy, line.get(), line.get_len());
-	copy[line.get_len()] = 0;
+	if (copy) {
+		memcpy(copy, line.get(), line.get_len());
+		copy[line.get_len()] = 0;
 
-	IBMutexLock(&logSafe_mutex);
-	safeItems.push_back(copy);
-	IBMutexRelease(&logSafe_mutex);
+		IBMutexLock(&logSafe_mutex);
+		safeItems.push_back(copy);
+		IBMutexRelease(&logSafe_mutex);
+	}
 }
 
 void IceConsole::FlushLogSafe()

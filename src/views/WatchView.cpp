@@ -18,6 +18,9 @@ WatchView::WatchView() : open(false), rebuildAll(false), recalcAll(false)
 	numExpressions = 0;
 	editExpression = -1;
 	prevWidth = 0;
+	for (int t = 0, nt = sizeof(types) / sizeof(types[0]); t < nt; ++t) {
+		types[t] = WT_NORMAL;
+	}
 }
 
 static void DrawBlueTextLine()

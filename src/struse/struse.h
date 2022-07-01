@@ -1078,8 +1078,9 @@ public:
 	strref_rel(const char *str, strl_t len, strref base) {
 		if (base.is_substr(str)) {
 			offset = strl_t(str-base.get()); length = len;
-		} else
-			length = 0;
+		} else {
+			offset = 0; length = 0;
+		}
 	}
 
 	strref get(strref base) { return strref(base.get() + offset, length); }

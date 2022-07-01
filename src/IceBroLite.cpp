@@ -12,7 +12,10 @@
 
 #ifdef _WIN32
 #include "framework.h"
+#else
+#define APIENTRY
 #endif
+
 // C RunTime Header Files
 #include <stdlib.h>
 #include <malloc.h>
@@ -77,7 +80,7 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 
 HWND GetHWnd() { return hWnd; }
 
-int /*APIENTRY*/ wWinMain(_In_ HINSTANCE hInstance,
+int __stdcall wWinMain(_In_ HINSTANCE hInstance,
 					  _In_opt_ HINSTANCE hPrevInstance,
 					  _In_ LPWSTR    lpCmdLine,
 					  _In_ int       nCmdShow)

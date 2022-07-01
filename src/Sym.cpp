@@ -390,12 +390,15 @@ void FilterSectionSymbols()
 					size_t newCapacity = entries->capacity + SymList::GROW_LIST;
 					sLabelEntries[address].multi = (SymList*)malloc(
 						sizeof(SymList) + sizeof(const char*) * (newCapacity - 1));
-					sLabelEntries[address].multi->capacity = newCapacity;
-					memcpy(sLabelEntries[address].multi->names, entries->names,
-						sizeof(const char*) * sLabelCount[address].count);
-					free(entries);
-					entries = sLabelEntries[address].multi;
+					if (sLabelEntries[address].multi) {
+						sLabelEntries[address].multi->capacity = newCapacity;
+						memcpy(sLabelEntries[address].multi->names, entries->names,
+							sizeof(const char*) * sLabelCount[address].count);
+						free(entries);
+						entries = sLabelEntries[address].multi;
+					}
 				}
+				assert(entries);
 				assert(entries->capacity > (size_t)sLabelCount[address].count);
 				entries->names[sLabelCount[address].count++] = sym->label;
 			}

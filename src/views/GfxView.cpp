@@ -771,7 +771,7 @@ void GfxView::CreateC64ColorTextColumns(CPU6510* cpu, uint32_t* d, const uint32_
 
 
 
-GfxView::GfxView() : open(false), reeval(false), color(false), multicolor(false), useRomFont(true)
+GfxView::GfxView() : open(false), reeval(false), color(false), multicolor(false), useRomFont(true), bitmapWidth(0)
 {
 	addrScreenValue = 0x0400;
 	addrGfxValue = 0x1000;

@@ -185,7 +185,7 @@ void ViewContext::LoadState(strref config)
 		ConfigParseType type = conf.Next(&name, &value);
 		if (type == ConfigParseType::CPT_Value) {
 			if (name.same_str("FontSize")) {
-				int fontSize = value.atoi();
+				int fontSize = (int)value.atoi();
 				SelectFont(fontSize);
 			}
 		}

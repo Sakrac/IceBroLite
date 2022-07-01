@@ -16,7 +16,7 @@
 #define strncpy_s strncpy
 #endif
 
-TraceView::TraceView() : lastDrawnRows(1), row(0), open(false), mouseDrag(false)
+TraceView::TraceView() : lastDrawnRows(1), row(0), open(false), mouseDrag(false), mouseWheelDiff(0)
 {
 	tracePointNum = ~(size_t)0;
 }
