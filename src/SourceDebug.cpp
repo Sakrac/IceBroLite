@@ -71,15 +71,15 @@ void ClearSourceDebugMap()
 	if (SourceDebug* dbg = sSourceDebug) {
 		IBMutexLock(&sSrcDbgMutex);
 		while (dbg->segments.size()) {
-			SourceDebugSegment& seg = dbg->segments[dbg->segments.size() - 1];
+			SourceDebugSegment& seg = dbg->segments.back();
 			free(seg.lines);
 			free(seg.blockNames);
 			dbg->segments.pop_back();
 		}
 		while (dbg->files.size()) {
-			void* file = dbg->files[dbg->files.size() - 1];
+			void* file = dbg->files.back();
 			if (file != sListing) {
-				free(dbg->files[dbg->files.size() - 1]);
+				free(file);
 			}
 			dbg->files.pop_back();
 		}

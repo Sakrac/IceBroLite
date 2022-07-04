@@ -301,7 +301,6 @@ void BeginAddingSymbols()
 		}
 	}
 	labelList.clear();
-	hiddenSections.clear();
 	IBMutexRelease(&symbolMutex);
 }
 
