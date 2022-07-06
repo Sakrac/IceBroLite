@@ -233,6 +233,40 @@ void CodeView::Draw(int index)
 			editAsmFocusRequested = true;
 		}
 
+		// mouse hover
+		if (mousePos.y >= (winPos.y + linePos.y) && mousePos.y <= (winPos.y + linePos.y + lineHeight) &&
+			mousePos.x > linePos.x && mousePos.x < (winPos.x + winSize.x - 8)) {
+			// check for custom tooltip
+			uint8_t opcode = cpu->GetByte(read);
+			bool disasm = false;
+			uint16_t ref_addr;
+			if (opcode == 0x20 || opcode == 0x4c) {
+				disasm = true;
+				ref_addr = cpu->GetByte(read + 1) | (((uint16_t)cpu->GetByte(read + 2)) << 8);
+			} else if ((opcode | 0xe0) == 0xf0) {
+				disasm = true;
+				uint8_t offs = cpu->GetByte(read + 1);
+				ref_addr = read + 2 + ((offs & 0x80) ? (offs - 0x100) : offs);
+			}
+			if (disasm) {
+				strown<512> disbuf;
+				size_t dsof = 0, l = 0;
+				while (disbuf.left() && l < 10) {
+					int branchTrg = -1;
+					disbuf.sprintf_append("$%04x ", ref_addr);
+					int bytes = Disassemble(cpu, ref_addr, disbuf.end(), disbuf.left(), chars, branchTrg, false, true, true, true);
+					ref_addr += bytes;
+					disbuf.set_len(disbuf.get_len()+chars);
+					disbuf.append('\n');
+					++l;
+				}
+				ImGui::SetNextWindowBgAlpha(0.75f);
+				ImGui::BeginTooltip();
+				ImGui::Text(disbuf.c_str());
+				ImGui::EndTooltip();
+			}
+
+		}
 
 		line.clear();
 		line.append(regs.PC==read ? '>' : ' ');
