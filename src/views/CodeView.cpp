@@ -188,14 +188,11 @@ void CodeView::Draw(int index)
 		}
 	}
 
-//	ImVec2 p0 = ImGui::GetCursorScreenPos();
-//	ImVec2 pt = ImGui::GetCursorPos();
 	strown<128> line;
 	uint16_t read = addrValue;
 	int lineNum = 0;
 	float fontCharWidth = CurrFontSize();
 	float lineHeight = ImGui::GetTextLineHeightWithSpacing()-2;
-//	float lineWidth = fontCharWidth * (1+(showAddress ? 5 : 0)+(showBytes ? 9 : 0)+9);
 
 	if (sY<0) {
 		uint16_t addr = addrValue;

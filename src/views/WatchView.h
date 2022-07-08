@@ -1,8 +1,10 @@
 #pragma once
+#include <stdint.h>
+
 struct UserData;
 
 struct WatchView {
-	enum WatchType {
+	enum class WatchType : uint8_t {
 		WT_NORMAL,
 		WT_BYTES,
 		WT_DISASM
@@ -12,17 +14,19 @@ struct WatchView {
 		MaxExp = 128
 	};
 
-	int numExpressions;
-	int editExpression;
-	int prevWidth;
 	strown<128> expressions[MaxExp];
 	strown<128> rpnExp[MaxExp];
 	strown<64> results[MaxExp];
-	WatchType types[MaxExp];
+	int numExpressions;
+	int editExpression;
+	int prevWidth;
+	int activeIndex;
 	int values[MaxExp];
+	WatchType types[MaxExp];
 	bool open;
 	bool rebuildAll;
 	bool recalcAll;
+	bool forceEdit;
 
 	WatchView();
 
