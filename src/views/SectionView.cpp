@@ -39,6 +39,14 @@ void SectionView::Draw()
         return;
     }
 
+    if (ImGui::Button("Hide All")) {
+        HideAllSections();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Show All")) {
+        ShowAllSections();
+    }
+
     size_t nSections = NumSections();
     for (size_t s = 0; s < nSections; ++s) {
         const char* name = GetSectionName(s);

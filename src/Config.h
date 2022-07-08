@@ -22,6 +22,7 @@ struct UserData {
 	void AppendIndent();
 	void AddValue( strref name, strref value );
 	void AddValue( strref name, int value );
+	void AddArrayValue(strref value);
 	void BeginStruct( strref name = strref() );
 	void EndStruct();
 	void BeginArray( strref name = strref() );

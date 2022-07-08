@@ -4,6 +4,7 @@
 #include "imgui/imgui.h"
 #include "Files.h"
 #include "FileDialog.h"
+#include "Sym.h"
 
 void StateLoadFilenames(strref filenames);
 void StateSaveFilenames(UserData& conf);
@@ -26,6 +27,8 @@ void LoadState()
 				StateLoadFilenames(value);
 			} else if (name.same_str("Views") && type == ConfigParseType::CPT_Struct) {
 				StateLoadViews(value);
+			} else if (name.same_str("HiddenSections") && type == ConfigParseType::CPT_Array) {
+				StateLoadHiddenSections(value);
 			} else if (name.same_str("ImGui") && type == ConfigParseType::CPT_Struct) {
 				ImGui::LoadIniSettingsFromMemory(value.get(), value.get_len());
 				ImGuiStateLoaded();
@@ -47,6 +50,10 @@ void SaveState()
 	conf.BeginStruct(strref("Views"));
 	StateSaveViews(conf);
 	conf.EndStruct();
+
+	conf.BeginArray(strref("HiddenSections"));
+	StateSaveHiddenSections(conf);
+	conf.EndArray();
 
 	conf.BeginStruct(strref("ImGui"));
 	size_t ImGuiSize;

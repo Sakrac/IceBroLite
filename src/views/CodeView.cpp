@@ -265,7 +265,6 @@ void CodeView::Draw(int index)
 				ImGui::Text(disbuf.c_str());
 				ImGui::EndTooltip();
 			}
-
 		}
 
 		line.clear();

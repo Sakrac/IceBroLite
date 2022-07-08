@@ -1,5 +1,8 @@
 #pragma once
 
+struct UserData;
+class strref;
+
 bool ReadSymbols(const char *binname);
 void ReadViceCommandFile(const char *symFile);
 void ReadSymbolsForBinary(const char *binname);
@@ -23,9 +26,14 @@ void SearchSymbols(const char* pattern, bool case_sensitive);
 size_t NumHiddenSections();
 uint64_t GetHiddenSection(size_t index);
 void HideSection(uint64_t section, bool hide);
+void HideAllSections();
+void ShowAllSections();
 size_t NumSections();
 const char* GetSectionName(size_t index);
 bool IsSectionVisible(uint64_t section);
+
+void StateSaveHiddenSections(UserData& conf);
+void StateLoadHiddenSections(strref conf);
 
 void InitSymbols();
 void ShutdownSymbols();

@@ -64,6 +64,13 @@ void UserData::AddValue( strref name, int value )
 	Append( num.c_str() );
 }
 
+void UserData::AddArrayValue(strref value) {
+	AppendIndent();
+	Append("{ ");
+	Append(value);
+	Append(" }\n");
+}
+
 // add a struct
 void UserData::BeginStruct( strref name )
 {

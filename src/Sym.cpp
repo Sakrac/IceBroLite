@@ -13,6 +13,7 @@
 #include "Sym.h"
 #include "Breakpoints.h"
 #include "platform.h"
+#include "Config.h"
 
 struct SymEntry {
 	int16_t count;
@@ -272,6 +273,19 @@ void HideSection(uint64_t section, bool hide)
 }
 size_t NumSections() { return sectionNames.size(); }
 const char* GetSectionName(size_t index) { return sectionNames[index]; }
+
+void HideAllSections() {
+	hiddenSections.clear();
+	size_t numSects = sectionNames.size();
+	for (size_t j = 0; j < numSects; ++j) {
+		strref section(sectionNames[j]);
+		hiddenSections.push_back(section.fnv1a_64());
+	}
+}
+
+void ShowAllSections() {
+	hiddenSections.clear();
+}
 
 bool IsSectionVisible(uint64_t section)
 {
@@ -581,3 +595,25 @@ void ReadSymbolsForBinary(const char *binname)
 	ReadViceCommandFile(symFile.c_str());
 }
 
+void StateSaveHiddenSections(UserData &conf) {
+	size_t numSects = sectionNames.size();
+	for (std::vector<uint64_t>::iterator i = hiddenSections.begin(); i != hiddenSections.end(); ++i) {
+		uint64_t hiddenName = *i;
+		for (size_t j = 0; j < numSects; ++j) {
+			strref section(sectionNames[j]);
+			if (section.get_len() && section.fnv1a_64() == hiddenName) {
+				conf.AddArrayValue(sectionNames[j]);
+				break;
+			}
+		}
+	}
+}
+
+void StateLoadHiddenSections(strref conf)
+{
+	hiddenSections.clear();
+	ConfigParse parse(conf);
+	while (strref sect = parse.ArrayElement()) {
+		hiddenSections.push_back(sect.fnv1a_64());
+	}
+}
