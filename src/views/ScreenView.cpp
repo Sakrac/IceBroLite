@@ -1,4 +1,5 @@
 #include <malloc.h>
+#include <stdint.h>
 #include "../imgui/imgui.h"
 #include "../imgui/imgui_internal.h"
 #include "../Image.h"
@@ -89,7 +90,13 @@ void ScreenView::Refresh(uint8_t* img, uint16_t w, uint16_t h)
 	if (bitmap) {
 		width = w;
 		height = h;
-		memcpy(bitmap, img, bitmapSize);
+//		memcpy(bitmap, img, bitmapSize);
+		uint32_t* bo = (uint32_t*)bitmap;
+		for (int y = 0; y < h; ++y) {
+			for (int x = 0; x < w; ++x) {
+				*bo++ = c64pal[(*img++)&0xf];
+			}
+		}
 		refresh = true;
 	}
 }

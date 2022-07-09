@@ -827,7 +827,7 @@ void ViceConnection::handleDisplayGet(VICEBinDisplayResponse* resp)
 //	uint16_t sw = resp->GetWidthScreen();
 //	uint16_t sh = resp->GetHeightScreen();
 
-	RefreshScreen(img, w, h);
+	RefreshScreen(img, 504, 312);// w + 16, h + 16);
 }
 
 void ViceConnection::handleStopResume(VICEBinStopResponse* resp)
@@ -858,7 +858,7 @@ void ViceConnection::handleStopResume(VICEBinStopResponse* resp)
 
 			// update the vice display
 			// TODO: skip if ScreenView is hidden
-			VICEBinDisplay getDisplay(++lastRequestID, VICEDisplay_RGBA);
+			VICEBinDisplay getDisplay(++lastRequestID, VICEDisplay_Indexed);
 			AddMessage((uint8_t*)&getDisplay, sizeof(VICEBinDisplay));
 
 			break;

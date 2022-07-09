@@ -45,7 +45,7 @@ struct VICEBinHeader {
 	void Setup(uint32_t len, uint32_t req, VICECommandTypes cmd)
 	{
 		STX = 2;
-		API_ID = 1;
+		API_ID = 2;
 		length[0] = (uint8_t)len;
 		length[1] = (uint8_t)(len>>8);
 		length[2] = (uint8_t)(len>>16);

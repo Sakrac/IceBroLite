@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "imgui/imgui.h"
 #include "GLFW/glfw3.h"
 #include "Image.h"
@@ -5,6 +6,26 @@
 extern const int sIcons_Width;
 extern const int sIcons_Height;
 extern const unsigned char sIcons_Pixels[];
+
+#define ColRGBA( r, g, b, a ) uint32_t((a<<24)|(b<<16)|(g<<8)|(r))
+uint32_t c64pal[16] = {
+	ColRGBA(0,0,0,255),
+	ColRGBA(255,255,255,255),
+	ColRGBA(136,57,50,255),
+	ColRGBA(103,182,189,255),
+	ColRGBA(139,63,150,255),
+	ColRGBA(85,160,73,255),
+	ColRGBA(64,49,141,255),
+	ColRGBA(191,206,114,255),
+	ColRGBA(139,84,41,255),
+	ColRGBA(87,66,0,255),
+	ColRGBA(184,105,98,255),
+	ColRGBA(80,80,80,255),
+	ColRGBA(120,120,120,255),
+	ColRGBA(148,224,137,255),
+	ColRGBA(120,105,196,255),
+	ColRGBA(159,159,159,255)
+};
 
 ImTextureID CreateTexture()
 {

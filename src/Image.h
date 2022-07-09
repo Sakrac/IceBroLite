@@ -38,3 +38,4 @@ void SelectTexture(ImTextureID img);
 void UpdateTextureData(int width, int height, const void* data);
 //ImTextureID LoadTexture( const char* filename, int* width, int* height );
 
+extern uint32_t c64pal[16];
