@@ -1641,14 +1641,14 @@ uint64_t strref::ahextou64() const
 	}
 	uint64_t hex = 0;
 	while (left) {
-		char c = *scan++;
+		uint8_t c = uint8_t(*scan++);
 		left--;
 		if (c>='0' && c<='9')
-			hex = (hex<<4) | (c-'0');
+			hex = (hex<<4) | uint64_t(c-'0');
 		else if (c>='a' && c<='f')
-			hex = (hex<<4) | (c-'a'+10);
+			hex = (hex<<4) | uint64_t(c-'a'+10);
 		else if (c>='A' && c<='F')
-			hex = (hex<<4) | (c-'A'+10);
+			hex = (hex<<4) | uint64_t(c-'A'+10);
 		else
 			break;
 	}

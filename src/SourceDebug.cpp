@@ -70,13 +70,13 @@ void ClearSourceDebugMap()
 {
 	if (SourceDebug* dbg = sSourceDebug) {
 		IBMutexLock(&sSrcDbgMutex);
-		while (dbg->segments.size()) {
+		while (!dbg->segments.empty()) {
 			SourceDebugSegment& seg = dbg->segments.back();
 			free(seg.lines);
 			free(seg.blockNames);
 			dbg->segments.pop_back();
 		}
-		while (dbg->files.size()) {
+		while (!dbg->files.empty()) {
 			void* file = dbg->files.back();
 			if (file != sListing) {
 				free(file);
@@ -136,6 +136,7 @@ struct ParseDebugSource {
 	size_t size;
 	// temp line index -> buffer offset
 	std::vector<uint32_t> lineOffsets;
+	ParseDebugSource() : file(nullptr), size(0) {}
 };
 
 struct ParseDebugLine {
@@ -450,10 +451,10 @@ void ListingToSrcDebug(int column)
 		SourceDebugSegment* segSrc = &sSourceDebug->segments[sSourceDebug->segments.size() - 1];
 		segSrc->addrFirst = addrFirst;
 		segSrc->addrLast = addrLast;
-		segSrc->lines = (SourceDebugLine*)calloc(addrLast + 1 - addrFirst, sizeof(SourceDebugLine));
+		segSrc->lines = (SourceDebugLine*)calloc(size_t(addrLast) + 1 - size_t(addrFirst), sizeof(SourceDebugLine));
 		segSrc->blockNames = (strref*)calloc(1, sizeof(strref));
 		segSrc->name = "Listing";
-		segSrc->blockNames[0] = "Listing";
+		if (segSrc->blockNames) { segSrc->blockNames[0] = "Listing"; }
 			// fill in addresses with line info
 		for (size_t l = 0; l < parseLines.size(); ++l) {
 			ParseDebugLine* lin = &parseLines[l];
@@ -461,7 +462,7 @@ void ListingToSrcDebug(int column)
 			if (ft <= lt) {
 				for (uint16_t a = ft; a <= lt; ++a) {
 					SourceDebugLine* ln = segSrc->lines + (a - addrFirst);
-					ln->block = 0;
+					if (ln->block) { ln->block = 0; }
 					strref lineStr = lin->line;
 					uint8_t spaces = 0;
 					while (lineStr.get_first() <= 0x20 && spaces < 255) {

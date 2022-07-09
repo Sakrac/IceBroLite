@@ -148,7 +148,7 @@ void WatchView::Draw(int index)
 		}
 		id = ImGui::GetCurrentWindow()->ID;
 	}
-	bool entered = false;
+
 	if (ImGui::BeginDragDropTarget()) {
 		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("AddressDragDrop")) {
 			IM_ASSERT(payload->DataSize == sizeof(SymbolDragDrop));
@@ -164,6 +164,49 @@ void WatchView::Draw(int index)
 		ImGui::EndDragDropTarget();
 	}
 
+	if (activeIndex >= 0 && GImGui->NavWindow == ImGui::GetCurrentWindow()) {
+		if (ImGui::IsKeyPressed(GLFW_KEY_UP) && activeIndex > 0) {
+			--activeIndex;
+			editExpression = -1;
+		}
+		else if (ImGui::IsKeyPressed(GLFW_KEY_DOWN) && activeIndex < numExpressions) {
+			++activeIndex;
+			editExpression = -1;
+		}
+		else if (ImGui::IsKeyPressed(GLFW_KEY_DELETE) && activeIndex < numExpressions) {
+			for (int i = activeIndex, n = numExpressions - 1; i < n; ++i) {
+				expressions[i] = expressions[i + 1];
+				rpnExp[i] = rpnExp[i + 1];
+				results[i] = results[i + 1];
+			}
+			--numExpressions;
+			expressions[numExpressions].clear();
+			rpnExp[numExpressions].clear();
+			results[numExpressions].clear();
+			editExpression = -1;
+		}
+		else if (ImGui::IsKeyPressed(GLFW_KEY_INSERT) && numExpressions < MaxExp) {
+			for (int i = numExpressions; i > activeIndex; --i) {
+				expressions[i] = expressions[i - 1];
+				rpnExp[i] = rpnExp[i - 1];
+				results[i] = results[i - 1];
+			}
+			++numExpressions;
+			expressions[activeIndex].clear();
+			rpnExp[activeIndex].clear();
+			results[activeIndex].clear();
+			editExpression = -1;
+		}
+		else if (ImGui::IsKeyPressed(GLFW_KEY_ENTER)) {
+			editExpression = activeIndex;
+			forceEdit = true;
+		}
+	}
+	else if (editExpression >= 0) {
+		editExpression = -1;
+	}
+
+
 	CPU6510* cpu = GetCurrCPU();
 	int currWidth = -1;
 	int numLines = numExpressions < MaxExp ? (numExpressions + 1) : MaxExp;
@@ -177,7 +220,7 @@ void WatchView::Draw(int index)
 				ImVec2 mousePos = ImGui::GetMousePos();
 				float dx = mousePos.x - winPos.x - cursorPos.x;
 				float dy = mousePos.y - winPos.y - cursorPos.y;
-				if (dx >= 0.0f && dx < ImGui::GetWindowWidth() && dy >= 0 && dy < CurrFontSize()) {
+				if (dx >= 0.0f && dx < (ImGui::GetWindowWidth()-10.0f) && dy >= 0 && dy < CurrFontSize()) {
 					activeIndex = i;
 					if (dx < ImGui::GetColumnWidth()) {
 						editExpression = i;
@@ -201,7 +244,6 @@ void WatchView::Draw(int index)
 				Evaluate(i);
 				if (i >= numExpressions) { numExpressions = i + 1; }
 				editExpression = -1;
-				entered = true;
 			}
 		}
 		ImGui::NextColumn();
@@ -235,41 +277,13 @@ void WatchView::Draw(int index)
 	if (activeIndex >= 0 && GImGui->NavWindow == ImGui::GetCurrentWindow()) {
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
 		ImVec2 winPos = ImGui::GetWindowPos();
-		draw_list->AddRect(activeRowPos,
+		draw_list->AddRect(ImVec2(activeRowPos.x, activeRowPos.y - ImGui::GetScrollY()),
 			ImVec2(activeRowPos.x + ImGui::GetWindowWidth() - 1.0f,
-				activeRowPos.y + ImGui::GetTextLineHeightWithSpacing() - 1.0f),
+				activeRowPos.y - ImGui::GetScrollY() + ImGui::GetTextLineHeightWithSpacing() - 1.0f),
 			ImColor(C64_LGREEN), 0.0f, 0, 1.0f);
-		if (ImGui::IsKeyPressed(GLFW_KEY_UP) && activeIndex > 0) {
-			--activeIndex;
+
+		if (editExpression >= 0 && ImGui::IsKeyPressed(GLFW_KEY_ESCAPE)) {
 			editExpression = -1;
-		} else if (ImGui::IsKeyPressed(GLFW_KEY_DOWN) && activeIndex < numExpressions) {
-			++activeIndex;
-			editExpression = -1;
-		} else if (ImGui::IsKeyPressed(GLFW_KEY_DELETE) && activeIndex < numExpressions) {
-			for (int i = activeIndex, n=numExpressions-1; i < n; ++i) {
-				expressions[i] = expressions[i + 1];
-				rpnExp[i] = rpnExp[i + 1];
-				results[i] = results[i + 1];
-			}
-			--numExpressions;
-			expressions[numExpressions].clear();
-			rpnExp[numExpressions].clear();
-			results[numExpressions].clear();
-			editExpression = -1;
-		} else if (ImGui::IsKeyPressed(GLFW_KEY_INSERT) && numExpressions < MaxExp) {
-			for (int i = numExpressions; i > activeIndex; --i) {
-				expressions[i] = expressions[i - 1];
-				rpnExp[i] = rpnExp[i - 1];
-				results[i] = results[i - 1];
-			}
-			++numExpressions;
-			expressions[activeIndex].clear();
-			rpnExp[activeIndex].clear();
-			results[activeIndex].clear();
-			editExpression = -1;
-		} else if (ImGui::IsKeyPressed(GLFW_KEY_ENTER) && !entered) {
-			editExpression = activeIndex;
-			forceEdit = true;
 		}
 	}
 	ImGui::End();

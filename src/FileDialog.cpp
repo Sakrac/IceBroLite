@@ -351,7 +351,7 @@ void StateLoadFilenames(strref filenames)
 				strovl(sLoadSymFileName, sizeof(sLoadSymFileName)).append(value).c_str();
 			} else if (name.same_str("ViceMonCommands")) {
 				strovl(sLoadViceFileName, sizeof(sLoadViceFileName)).append(value).c_str();
-			} else if (name.same_str("ViceExePath")) {
+			} else if (name.same_str("VicePath")) {
 				strovl(sViceEXEPath, sizeof(sViceEXEPath)).append(value).c_str();
 			} else if (name.same_str("ReadPRGToRAMPath")) {
 				strovl(sReadPrgFileName, sizeof(sReadPrgFileName)).append(value).c_str();
@@ -378,7 +378,7 @@ void StateSaveFilenames(UserData& conf)
 		conf.AddValue("ViceMonCommands", strref(sLoadViceFileName));
 	}
 	if (sViceEXEPath[0]) {
-		conf.AddValue("ViceExePath", strref(sViceEXEPath));
+		conf.AddValue("VicePath", strref(sViceEXEPath));
 	}
 	if (sReadPrgFileName[0]) {
 		conf.AddValue("ReadPRGToRAMPath", strref(sReadPrgFileName));

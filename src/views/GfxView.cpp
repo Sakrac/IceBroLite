@@ -519,10 +519,10 @@ void GfxView::CreateC64CurrentBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* 
 	}
 }
 
-void GfxView::CreateC64BitmapBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t a, uint32_t cl, uint32_t rw)
+void GfxView::CreateC64BitmapBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t a, size_t cl, uint32_t rw)
 {
-	for (uint32_t y = 0; y < rw; y++) {
-		for (uint32_t x = 0; x < cl; x++) {
+	for (size_t y = 0; y < rw; y++) {
+		for (size_t x = 0; x < cl; x++) {
 			uint32_t* o = d + y * 64 * cl + x * 8;
 			for (int h = 0; h < 8; h++) {
 				uint8_t b = cpu->GetByte(a++);
@@ -538,10 +538,10 @@ void GfxView::CreateC64BitmapBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* p
 	}
 }
 
-void GfxView::CreateC64ColorBitmapBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t a, uint16_t c, uint32_t cl, uint32_t rw)
+void GfxView::CreateC64ColorBitmapBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t a, uint16_t c, size_t cl, uint32_t rw)
 {
-	for (uint32_t y = 0; y < rw; y++) {
-		for (uint32_t x = 0; x < cl; x++) {
+	for (size_t y = 0; y < rw; y++) {
+		for (size_t x = 0; x < cl; x++) {
 			uint32_t* o = d + y * 64 * cl + x * 8;
 			uint8_t col = cpu->GetByte(c++);
 			for (int h = 0; h < 8; h++) {
@@ -558,13 +558,13 @@ void GfxView::CreateC64ColorBitmapBitmap(CPU6510* cpu, uint32_t* d, const uint32
 	}
 }
 
-void GfxView::CreateC64ExtBkgTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t cm, uint32_t cl, uint32_t rw)
+void GfxView::CreateC64ExtBkgTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t cm, size_t cl, uint32_t rw)
 {
-	for (uint32_t y = 0; y < rw; y++) {
-		for (uint32_t x = 0; x < cl; x++) {
+	for (size_t y = 0; y < rw; y++) {
+		for (size_t x = 0; x < cl; x++) {
 			uint8_t chr = cpu->GetByte(a++);
 			uint32_t bg = pal[cpu->GetByte((chr >> 6) + 0xd021) & 0xf];
-			uint32_t fg = pal[cpu->GetByte(y * 40 + x + cm) & 0xf];
+			uint32_t fg = pal[cpu->GetByte(uint16_t(y * 40 + x + cm)) & 0xf];
 			chr &= 0x3f;
 			uint16_t cs = g + 8 * chr;
 			for (int h = 0; h < 8; h++) {
@@ -584,11 +584,11 @@ void GfxView::CreateC64ExtBkgTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_
 	}
 }
 
-void GfxView::CreateC64TextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint32_t cl, uint32_t rw)
+void GfxView::CreateC64TextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, size_t cl, uint32_t rw)
 {
 	uint16_t a = addrScreenValue;
-	for (uint32_t y = 0; y < rw; y++) {
-		for (uint32_t x = 0; x < cl; x++) {
+	for (size_t y = 0; y < rw; y++) {
+		for (size_t x = 0; x < cl; x++) {
 			uint8_t chr = cpu->GetByte(a++);
 			uint16_t cs = addrGfxValue + 8 * chr;
 			for (int h = 0; h < 8; h++) {
@@ -608,12 +608,12 @@ void GfxView::CreateC64TextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal
 	}
 }
 
-void GfxView::CreateC64ColorTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t f, uint32_t cl, uint32_t rw)
+void GfxView::CreateC64ColorTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t f, size_t cl, uint32_t rw)
 {
 	uint8_t k = cpu->GetByte(0xd021) & 0xf;
 	uint32_t *o = d;
-	for (int y = 0, ye = rw; y < ye; y++) {
-		for (uint32_t x = 0; x < cl; x++) {
+	for (size_t y = 0, ye = rw; y < ye; y++) {
+		for (size_t x = 0; x < cl; x++) {
 			uint8_t c = cpu->GetByte(f++) & 0xf;
 			uint8_t chr = cpu->GetByte(a++);
 			uint16_t cs = g + 8 * chr;
@@ -636,12 +636,12 @@ void GfxView::CreateC64ColorTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t
 
 }
 
-void GfxView::CreateC64MulticolorTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t cm, uint32_t cl, uint32_t rw)
+void GfxView::CreateC64MulticolorTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t cm, size_t cl, uint32_t rw)
 {
 	uint8_t k[4] = { uint8_t(cpu->GetByte(0xd021) & 0xf), uint8_t(cpu->GetByte(0xd022) & 0xf), uint8_t(cpu->GetByte(0xd023) & 0xf), 0 };
 	uint32_t *o = d;
-	for (uint32_t y = 0; y < rw; y++) {
-		for (uint32_t x = 0; x < cl; x++) {
+	for (size_t y = 0; y < rw; y++) {
+		for (size_t x = 0; x < cl; x++) {
 			k[3] = cpu->GetByte(cm++) & 0xf;
 			int mc = k[3] & 0x8;
 			k[3] &= 7;
@@ -668,11 +668,11 @@ void GfxView::CreateC64MulticolorTextBitmap(CPU6510* cpu, uint32_t* d, const uin
 	}
 }
 
-void GfxView::CreateC64MulticolorBitmapBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t a, uint16_t s, uint16_t cm, uint32_t cl, uint32_t rw)
+void GfxView::CreateC64MulticolorBitmapBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t a, uint16_t s, uint16_t cm, size_t cl, uint32_t rw)
 {
 	uint8_t k = cpu->GetByte(0xd021) & 15;
-	for (uint32_t y = 0; y < rw; y++) {
-		for (uint32_t x = 0; x < cl; x++) {
+	for (size_t y = 0; y < rw; y++) {
+		for (size_t x = 0; x < cl; x++) {
 			uint8_t sc = cpu->GetByte(s++);
 			uint8_t fc = cpu->GetByte(cm++);
 			for (int h = 0; h < 8; h++) {
@@ -701,8 +701,8 @@ void GfxView::CreateC64SpritesBitmap(CPU6510* cpu, uint32_t* d, int linesHigh, u
 	uint16_t a = addrGfxValue;
 	int sx = w / 24;
 	int sy = linesHigh / 21;
-	for (int y = 0; y < sy; y++) {
-		for (int x = 0; x < sx; x++) {
+	for (size_t y = 0; y < sy; y++) {
+		for (size_t x = 0; x < sx; x++) {
 			for (int l = 0; l < 21; l++) {
 				uint32_t *ds = d + (y * 21 + l)*w + x * 24;
 				for (int s = 0; s < 3; s++) {
@@ -719,12 +719,12 @@ void GfxView::CreateC64SpritesBitmap(CPU6510* cpu, uint32_t* d, int linesHigh, u
 	}
 }
 
-void GfxView::CreateC64ColorTextColumns(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t f, uint32_t cl, uint32_t rw)
+void GfxView::CreateC64ColorTextColumns(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t f, size_t cl, uint32_t rw)
 {
 	uint8_t k[4] = { uint8_t(cpu->GetByte(0xd021) & 0xf), uint8_t(cpu->GetByte(0xd022) & 0xf), uint8_t(cpu->GetByte(0xd023) & 0xf), 0 };
-	for (uint32_t x = 0; x < cl; x++) {
+	for (size_t x = 0; x < cl; x++) {
 		uint32_t* o = d + x * 8;
-		for (uint32_t y = 0; y < rw; y++) {
+		for (size_t y = 0; y < rw; y++) {
 			uint8_t chr = cpu->GetByte(a++);
 			uint8_t charCol = cpu->GetByte(f++);
 			k[3] = charCol & 7;
