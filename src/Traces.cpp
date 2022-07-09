@@ -160,7 +160,7 @@ strref CaptureVICELine(strref line)
 			AddTraceHit(sTracePointIdx, sTraceInfo);
 			return strref();
 		}
-	} else if (line.get_len() >= 42 && line[0] == '#' && strref::is_number(line[1])) {
+	} else if (line.get_len() >= 40 && line[0] == '#' && strref::is_number(line[1])) {
 		++line;
 		sTracePointIdx = line.atoi_skip();
 		line.skip_whitespace();

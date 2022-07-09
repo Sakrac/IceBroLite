@@ -1,12 +1,9 @@
 // Expression View
 
 #include <stdint.h>
-#include "Views.h"
-#include "GLFW/glfw3.h"
-#include "../struse/struse.h"
-#include "WatchView.h"
 #include "../imgui/imgui.h"
 #include "../imgui/imgui_internal.h"
+#include "../struse/struse.h"
 #include "../C64Colors.h"
 #include "../Expressions.h"
 #include "../Config.h"
@@ -14,6 +11,9 @@
 #include "../Mnemonics.h"
 #include "../Sym.h"
 #include "../C64Colors.h"
+#include "GLFW/glfw3.h"
+#include "Views.h"
+#include "WatchView.h"
 
 WatchView::WatchView() : open(false), rebuildAll(false), recalcAll(false), forceEdit(false), 
   activeIndex(-1)
@@ -272,8 +272,6 @@ void WatchView::Draw(int index)
 			forceEdit = true;
 		}
 	}
-
 	ImGui::End();
-
 }
 
