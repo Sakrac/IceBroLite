@@ -46,6 +46,8 @@ void ScreenView::Draw()
 		return;
 	}
 
+	ImVec2 cursorTop = ImGui::GetCursorPos();
+
 	if (refresh) {
 		if (!texture) {
 			texture = CreateTexture();
@@ -119,6 +121,9 @@ void ScreenView::Draw()
 			ImVec2 winPos = ImGui::GetWindowPos();
 			ImVec2 winSize = ImGui::GetWindowSize();
 
+			winPos.x += cursorTop.x;
+			winPos.y += cursorTop.y;
+
 			CPU6510* cpu = GetCurrCPU();
 
 			float line = (float)cpu->regs.LIN * s - (height * uv0.y) * s;
@@ -131,7 +136,7 @@ void ScreenView::Draw()
 		}
 
 		if (ImGui::GetCurrentWindow() == GImGui->HoveredWindow) {
-			ImGui::SetCursorPos(ImVec2(0, 0));
+			ImGui::SetCursorPos(cursorTop);
 			ImGui::Text("Select Crop Mode");
 			ImGui::RadioButton("Full View", &borderMode, 0);
 			ImGui::RadioButton("Normal Borders", &borderMode, 1);
