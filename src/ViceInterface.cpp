@@ -819,15 +819,9 @@ void ViceConnection::updateRegisters(VICEBinRegisterResponse* resp)
 
 void ViceConnection::handleDisplayGet(VICEBinDisplayResponse* resp)
 {
-	uint8_t* img = resp->lengthBeforeReserved + resp->GetLengthField();
-	uint16_t w = resp->GetWidthImage();
-	uint16_t h = resp->GetHeightImage();
-//	uint16_t sx = resp->GetLeftScreen();
-//	uint16_t sy = resp->GetTopScreen();
-//	uint16_t sw = resp->GetWidthScreen();
-//	uint16_t sh = resp->GetHeightScreen();
-
-	RefreshScreen(img, 504, 312);// w + 16, h + 16);
+	RefreshScreen(resp->image, resp->GetWidthImage(), resp->GetHeightImage(),
+		resp->GetLeftScreen(), resp->GetTopScreen(),
+		resp->GetWidthScreen(), resp->GetHeightScreen());
 }
 
 void ViceConnection::handleStopResume(VICEBinStopResponse* resp)

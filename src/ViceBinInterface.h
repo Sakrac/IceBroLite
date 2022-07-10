@@ -376,8 +376,6 @@ struct VICEBinDisplay : public VICEBinHeader {
 
 struct VICEBinDisplayResponse : public VICEBinResponse {
 	uint8_t lengthField[4];	// Length of fields before reserved area
-	uint8_t lengthBeforeReserved[4];
-	uint8_t lengthDisplay[4]; // Length of display buffer
 	uint8_t width[2]; // Debug width of display buffer(uncropped)  The largest width the screen gets
 	uint8_t height[2]; // Debug height of display buffer(uncropped) The largest height the screen gets.
 	uint8_t offsScreenX[2]; // X offset to the inner part of the screen.
@@ -386,10 +384,9 @@ struct VICEBinDisplayResponse : public VICEBinResponse {
 	uint8_t heightScreen[2]; // Height of the inner part of the screen.
 	uint8_t bitsPerPixel;	// Bits per pixel of display buffer, 8, 24 or 32
 	uint8_t lengthReserved[4]; // Length of the reserved area
-	// display buffer bytes follow
+	uint8_t image[1];	// image starts here
 
 	uint32_t GetLengthField() { return Get4Bytes(lengthField); }
-	uint32_t GetLengthDisplay() { return Get4Bytes(lengthDisplay); }
 	uint32_t GetWidthImage() { return Get2Bytes(width); }
 	uint32_t GetHeightImage() { return Get2Bytes(height); }
 	uint32_t GetLeftScreen() { return Get2Bytes(offsScreenX); }

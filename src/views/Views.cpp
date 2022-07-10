@@ -483,10 +483,11 @@ void UseDefaultFont()
 	}
 }
 
-void RefreshScreen(uint8_t* img, uint16_t w, uint16_t h)
+void RefreshScreen(uint8_t* img, uint16_t w, uint16_t h,
+	uint16_t sx, uint16_t sy, uint16_t sw, uint16_t sh)
 {
 	if (viewContext) {
-		viewContext->screenView.Refresh(img, w, h);
+		viewContext->screenView.Refresh(img, w, h, sx, sy, sw, sh);
 	}
 }
 
