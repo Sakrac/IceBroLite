@@ -100,24 +100,12 @@ int main(int argc, char* argv[])
 	argc += 1;
 	argv = (char**)calloc(argc+1, sizeof(char*));
 	for (int i = 1; i < argc; ++i) {
-		size_t len = wcslen(szArglist[i-1] + 1);
+		size_t len = wcslen(szArglist[i-1]);
 		size_t count;
-		argv[i] = (char*)LocalAlloc(LMEM_FIXED, len);
+		argv[i] = (char*)LocalAlloc(LMEM_FIXED, len+1);
 		wcstombs_s(&count, argv[i], len+1, szArglist[i-1], len);
 	}
 #endif
-
-	for (int i = 1; i < argc; ++i) {
-		strref line = argv[i];
-		if (line[0] == '-') {
-			++line;
-			strref arg = line.split_token_trim('=');
-			if (line.get_first() == '"') { line.skip(1); }
-			if (line.get_last() == '"') { line.clip(1); }
-			if (arg.same_str("load")) { strovl ovl(forceLoadProgram, sizeof(forceLoadProgram)); ovl.copy(line); ovl.c_str(); }
-			else if (arg.same_str("symbols")) { strovl ovl(forceLoadSymbols, sizeof(forceLoadSymbols)); ovl.copy(line); ovl.c_str(); }
-		}
-	}
 
 	GetStartFolder();
 
@@ -175,6 +163,29 @@ int main(int argc, char* argv[])
 	InitViews();
 	InitSourceDebug();
 	LoadState();
+
+	for (int i = 1; i < argc; ++i) {
+		strref line = argv[i];
+		if (line[0] == '-') {
+			++line;
+			strref cmd = line.split_token_trim('=');
+			if (line.get_first() == '"') { line.skip(1); }
+			if (line.get_last() == '"') { line.clip(1); }
+			if (cmd.same_str("load")) { strovl ovl(forceLoadProgram, sizeof(forceLoadProgram)); ovl.copy(line); ovl.c_str(); }
+			else if (cmd.same_str("symbols")) { strovl ovl(forceLoadSymbols, sizeof(forceLoadSymbols)); ovl.copy(line); ovl.c_str(); }
+			else if (cmd.same_str("connect")) { ViceConnect("127.0.0.1", 6502); }
+			else if (cmd.same_str("start")) { if (line) { SetViceEXEPath(line); } LoadViceEXE(); }
+		}
+	}
+
+#ifdef _WIN32
+	// release win32 command line
+	for (int i = 1; i < argc; ++i) {
+		LocalFree(argv[i]);
+	}
+	if (argv) { free(argv); }
+#endif
+
 
 	// Our state
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);

@@ -164,6 +164,11 @@ char* GetViceEXEPath()
 	return sViceEXEPath[0] ? sViceEXEPath : nullptr;
 }
 
+void SetViceEXEPath(strref path)
+{
+	strovl(sViceEXEPath, sizeof(sViceEXEPath)).append(path).c_str();
+}
+
 
 #if defined(_WIN32) && !defined(CUSTOM_FILEVIEWER)
 void *FileLoadDialogThreadRun( void *param )

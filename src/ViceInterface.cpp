@@ -694,6 +694,11 @@ void ViceConnection::connectionThread()
 						case VICE_DisplayGet:
 							handleDisplayGet((VICEBinDisplayResponse*)resp);
 							break;
+						case VICE_AutoStart:
+#ifdef _DEBUG
+							OutputDebugStringA("Loaded!\n");
+#endif
+							break;
 					}
 					if (bufferRead > bytes) {
 						memmove(recvBuf, recvBuf + bytes, bufferRead - bytes);
