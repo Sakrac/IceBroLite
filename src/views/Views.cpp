@@ -245,7 +245,7 @@ void ViewContext::Draw()
 				}
 				if (ImGui::MenuItem("Read .prg to RAM")) { ReadPRGDialog(); }
 				if (ImGui::MenuItem("Reread .prg to RAM")) { GetCurrCPU()->ReadPRGToRAM(ReadPRGFile()); }
-				if (ImGui::MenuItem("Deatch Cartridge")) { SendViceMonitorLine(DetachCartridgeCommand, sizeof(DetachCartridgeCommand)); }
+				if (ImGui::MenuItem("Detach Cartridge")) { SendViceMonitorLine(DetachCartridgeCommand, sizeof(DetachCartridgeCommand)); }
 
 				if (ImGui::MenuItem("Quit", "Alt+F4")) {}
 				ImGui::EndMenu();
