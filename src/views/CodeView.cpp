@@ -264,6 +264,15 @@ void CodeView::Draw(int index)
 			}
 		}
 
+		int srcSpaces = 0;
+		strl_t srcCol = 0;
+		strref srcLine = {};
+		if (showSrc) {
+			srcLine = GetSourceAt(read, srcSpaces);
+			srcCol = (showAddress ? 6 : 0) + (showBytes ? 9 : 0) + (showRefs ? 11 : 0) + (showLabels ? 6 : 0) + (showDisAsm ? 12 : 0) + (srcSpaces + 3) / 4;
+		}
+
+
 		line.clear();
 		line.append(regs.PC==read ? '>' : ' ');
 		if (showAddress) { line.append_num(read, 4, 16); line.append(' '); }
@@ -305,6 +314,7 @@ void CodeView::Draw(int index)
 			if (setPCAtCursor && read==addrCursor) {
 				cpu->SetPC(addrCursor);
 			}
+			if (srcLine && line.get_len() > srcCol) { line.set_len(srcCol); }
 			if (addrCursor>=read && addrCursor<(read+bytes)) {
 				if (ImGui::IsKeyPressed(GLFW_KEY_F6)) {
 					ViceRunTo(addrCursor);
@@ -360,19 +370,14 @@ void CodeView::Draw(int index)
 			ImGui::Text(line.c_str());
 
 				
-			if (showSrc) {
-				int spaces = 0;
-				strref srcLine = GetSourceAt(read, spaces);
-				if (srcLine) {
-					ImGui::SameLine();
-					strl_t col = (showAddress ? 6 : 0) + (showBytes ? 9 : 0) + (showRefs ? 11 : 0) + (showLabels ? 6 : 0) + ( showDisAsm ? 12 : 0 ) + (spaces + 3) / 4;
-					ImVec2 srcPos(linePos.x + col * fontCharWidth, linePos.y);
-					ImGui::SetCursorPos(srcPos);
-					ImGui::PushStyleColor(ImGuiCol_Text, C64_YELLOW);
-					line.copy(srcLine);
-					ImGui::TextUnformatted(line.c_str());
-					ImGui::PopStyleColor();
-				}
+			if (showSrc && srcLine) {
+				ImGui::SameLine();
+				ImVec2 srcPos(linePos.x + srcCol * fontCharWidth, linePos.y);
+				ImGui::SetCursorPos(srcPos);
+				ImGui::PushStyleColor(ImGuiCol_Text, C64_YELLOW);
+				line.copy(srcLine);
+				ImGui::TextUnformatted(line.c_str());
+				ImGui::PopStyleColor();
 			}
 		}
 
