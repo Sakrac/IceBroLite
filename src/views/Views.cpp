@@ -226,7 +226,8 @@ void ViewContext::LoadState(strref config)
 }
 
 
-
+void SendViceMonitorLine(const char* message, int size);
+static const char DetachCartridgeCommand[] = "detach 20\n";
 
 void ViewContext::Draw()
 {
@@ -244,6 +245,7 @@ void ViewContext::Draw()
 				}
 				if (ImGui::MenuItem("Read .prg to RAM")) { ReadPRGDialog(); }
 				if (ImGui::MenuItem("Reread .prg to RAM")) { GetCurrCPU()->ReadPRGToRAM(ReadPRGFile()); }
+				if (ImGui::MenuItem("Deatch Cartridge")) { SendViceMonitorLine(DetachCartridgeCommand, sizeof(DetachCartridgeCommand)); }
 
 				if (ImGui::MenuItem("Quit", "Alt+F4")) {}
 				ImGui::EndMenu();

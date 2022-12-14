@@ -64,7 +64,7 @@ static const char sLoadListingParams[] = "Listing:*.lst";
 static const char sLoadKickDbgParams[] = "Kick Asm Debug:*.dbg";
 static const char sLoadSymbolsParams[] = "Symbols:*.sym";
 static const char sLoadViceCmdParams[] = "Vice Commands:*.vs";
-static const char sViceEXEParams[] = "Vice EXE path:*x64*";
+static const char sViceEXEParams[] = "Vice EXE path:x*.exe";
 static const char sReadPrgParams[] = "Prg files:*.prg";
 #endif
 

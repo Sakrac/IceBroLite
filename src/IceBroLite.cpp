@@ -12,6 +12,7 @@
 
 #ifdef _WIN32
 #include "framework.h"
+#include <shellapi.h>
 #else
 #define APIENTRY
 #endif
@@ -71,6 +72,9 @@ static void glfw_error_callback(int error, const char* description)
 
 #define MAX_LOADSTRING _MAX_PATH
 
+static char forceLoadProgram[PATH_MAX_LEN];
+static char forceLoadSymbols[PATH_MAX_LEN];
+
 // Global Variables:
 #ifdef _WIN32
 HWND hWnd;
@@ -88,6 +92,33 @@ int __stdcall wWinMain(_In_ HINSTANCE hInstance,
 int main(int argc, char* argv[])
 #endif
 {
+#ifdef _WIN32
+	int argc;
+	LPWSTR* szArglist = CommandLineToArgvW(lpCmdLine, &argc);
+	char** argv = nullptr;
+
+	argc += 1;
+	argv = (char**)calloc(argc+1, sizeof(char*));
+	for (int i = 1; i < argc; ++i) {
+		size_t len = wcslen(szArglist[i-1] + 1);
+		size_t count;
+		argv[i] = (char*)LocalAlloc(LMEM_FIXED, len);
+		wcstombs_s(&count, argv[i], len+1, szArglist[i-1], len);
+	}
+#endif
+
+	for (int i = 1; i < argc; ++i) {
+		strref line = argv[i];
+		if (line[0] == '-') {
+			++line;
+			strref arg = line.split_token_trim('=');
+			if (line.get_first() == '"') { line.skip(1); }
+			if (line.get_last() == '"') { line.clip(1); }
+			if (arg.same_str("load")) { strovl ovl(forceLoadProgram, sizeof(forceLoadProgram)); ovl.copy(line); ovl.c_str(); }
+			else if (arg.same_str("symbols")) { strovl ovl(forceLoadSymbols, sizeof(forceLoadSymbols)); ovl.copy(line); ovl.c_str(); }
+		}
+	}
+
 	GetStartFolder();
 
 	// Setup window
@@ -221,6 +252,20 @@ int main(int argc, char* argv[])
 		}
 
 		glfwSwapBuffers(window);
+
+		if (forceLoadProgram[0] != 0 && ViceConnected()) {
+			ViceStartProgram(forceLoadProgram);
+			if (forceLoadSymbols[0] != 0) {
+				strref ext = strref(forceLoadSymbols).after_last('.');
+				if (ext.same_str("dbg")) ReadC64DbgSrc(forceLoadSymbols);
+				if (ext.same_str("sym")) ReadSymbols(forceLoadSymbols);
+				if (ext.same_str("vs")) ReadViceCommandFile(forceLoadSymbols);
+			} else {
+				ReadSymbolsForBinary(forceLoadProgram);
+			}
+			forceLoadProgram[0] = 0;
+			forceLoadSymbols[0] = 0;
+		}
 
 		if (const char* kickDbgFile = LoadKickDbgReady()) {
 			ReadC64DbgSrc(kickDbgFile);
