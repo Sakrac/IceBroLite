@@ -118,9 +118,9 @@ int main(int argc, char* argv[])
 		return 1;
 	glfwMakeContextCurrent(window);
 	GLFWimage image;
-	image.height = 32;
-	image.width = 32;
-	image.pixels = (unsigned char*)sIcon;
+	image.height = 42;
+	image.width = 42;
+	image.pixels = (unsigned char*)sIcon_Pixels;
 
 	glfwSetWindowIcon(window, 1, &image);
 	glfwMakeContextCurrent(window);
