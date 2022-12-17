@@ -5,19 +5,32 @@
 #include "Files.h"
 #include "FileDialog.h"
 #include "Sym.h"
+#include "SaveState.h"
 
 void StateLoadFilenames(strref filenames);
 void StateSaveFilenames(UserData& conf);
 void StateLoadViews(strref conf);
 void StateSaveViews(UserData& conf);
+void SaveStateWindow(UserData& conf);
 void ImGuiStateLoaded();
 
 static const char* sSaveStateFile = "icebrolt.ini";
 
-void LoadState()
-{
+SaveStateFile ReadState() {
 	size_t size;
 	uint8_t* data = LoadBinary(sSaveStateFile, size);
+	SaveStateFile ret = { data, size };
+	return ret;
+}
+
+void ReleaseState(SaveStateFile file) {
+	if (file.data && file.size) { free(file.data); }
+}
+
+void ParseState(SaveStateFile file)
+{
+	size_t size = file.size;
+	uint8_t* data = file.data;
 	if(data) {
 		ConfigParse config(data, size);
 		while (!config.Empty()) {
@@ -34,14 +47,18 @@ void LoadState()
 				ImGuiStateLoaded();
 			}
 		}
-		free(data);
 	}
 }
+
+
+
 
 void SaveState()
 {
 	UserData conf;
 	strown<128> arg;
+
+	SaveStateWindow(conf);
 
 	conf.BeginStruct("Filenames");
 	StateSaveFilenames(conf);
@@ -78,3 +95,4 @@ void UserSaveLayoutUpdate()
 		SaveState();
 	}
 }
+

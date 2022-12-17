@@ -64,7 +64,7 @@ void StyleC64();
 void StyleC64_Darker();
 void StyleC64_Mid();
 
-
+static int imgui_style = 0;
 static ViewContext* viewContext = nullptr;
 static float sFontSizes[ViewContext::sNumFontSizes] = { 8.0f, 10.0f, 12.0, 14.0f, 16.0f, 20.0f, 24.0f };
 static const ImWchar C64CharRanges[] =
@@ -175,6 +175,8 @@ void ViewContext::SaveState(UserData& conf)
 	conf.BeginStruct("Screen"); screenView.WriteConfig(conf); conf.EndStruct();
 	conf.BeginStruct("Trace"); traceView.WriteConfig(conf); conf.EndStruct();
 	conf.AddValue("FontSize", currFont);
+
+	conf.AddValue("Style", imgui_style);
 }
 
 void ViewContext::LoadState(strref config)
@@ -187,6 +189,16 @@ void ViewContext::LoadState(strref config)
 			if (name.same_str("FontSize")) {
 				int fontSize = (int)value.atoi();
 				SelectFont(fontSize);
+			} else if(name.same_str("Style")) {
+				switch (value.atoi()) {
+					case 0: break;// default
+					case 1: ImGui::StyleColorsDark(); break;
+					case 2: ImGui::StyleColorsLight(); break;
+					case 3: ImGui::StyleColorsClassic(); break;
+					case 4: StyleC64_Darker(); break;
+					case 5: StyleC64_Mid(); break;
+					default: break;
+				}
 			}
 		}
 		if (type == ConfigParseType::CPT_Struct) {
@@ -295,12 +307,12 @@ void ViewContext::Draw()
 			}
 
 			if (ImGui::BeginMenu("Style")) {
-				if (ImGui::MenuItem("MonstersGoBoom C64")) { StyleC64(); }
-				if (ImGui::MenuItem("Dark")) { ImGui::StyleColorsDark(); }
-				if (ImGui::MenuItem("Light")) { ImGui::StyleColorsLight(); }
-				if (ImGui::MenuItem("Classic")) { ImGui::StyleColorsClassic(); }
-				if (ImGui::MenuItem("High Noon C64")) { StyleC64_Darker(); }
-				if (ImGui::MenuItem("Regular C64")) { StyleC64_Mid(); }
+				if (ImGui::MenuItem("MonstersGoBoom C64")) { StyleC64(); imgui_style = 0; }
+				if (ImGui::MenuItem("Dark")) { ImGui::StyleColorsDark(); imgui_style = 1; }
+				if (ImGui::MenuItem("Light")) { ImGui::StyleColorsLight(); imgui_style = 2; }
+				if (ImGui::MenuItem("Classic")) { ImGui::StyleColorsClassic(); imgui_style = 3; }
+				if (ImGui::MenuItem("High Noon C64")) { StyleC64_Darker(); imgui_style = 4; }
+				if (ImGui::MenuItem("Regular C64")) { StyleC64_Mid(); imgui_style = 5; }
 				ImGui::EndMenu();
 			}
 

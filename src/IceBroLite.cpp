@@ -36,12 +36,14 @@
 #endif
 #include <GLFW/glfw3native.h>
 #include "struse/struse.h"
+#include "Config.h"
 #include "Files.h"
 #include "FileDialog.h"
 #include "Breakpoints.h"
 #include "Traces.h"
 #include "Sym.h"
 #include "StartVice.h"
+#include "SaveState.h"
 #include "views/FilesView.h"
 
 #include "C64Colors.h"
@@ -53,10 +55,52 @@
 #include "WindowIcon.inc"
 
 void StyleC64();
-void LoadState();
-void SaveState();
-void UserSaveLayoutUpdate();
+static GLFWwindow* sWindow;
 
+void SaveStateWindow(UserData& conf) {
+	if (sWindow) {
+		conf.BeginStruct("Window");
+		int width, height;
+		glfwGetWindowSize(sWindow, &width, &height);
+
+		conf.AddValue("width", width);
+		conf.AddValue("height", height);
+
+		conf.AddValue("maximized", glfwGetWindowAttrib(sWindow, GLFW_MAXIMIZED));
+		conf.EndStruct();
+	}
+}
+
+struct WindowPreset { int w, h, m; };
+
+WindowPreset ReadStateWindow(SaveStateFile file) {
+	WindowPreset ret = { 1700, 960, 0 };
+	if (file.data && file.size) {
+		ConfigParse config(file.data, file.size);
+		while (!config.Empty()) {
+			strref name, value;
+			ConfigParseType type = config.Next(&name, &value);
+			if (name.same_str("Window") && type == ConfigParseType::CPT_Struct) {
+				ConfigParse win_config(value);
+				while (!win_config.Empty()) {
+					strref win_name, win_value;
+					ConfigParseType win_type = win_config.Next(&win_name, &win_value);
+					if (win_type == ConfigParseType::CPT_Value) {
+						if (win_name.same_str("width")) {
+							ret.w = (int)win_value.atoi(); if (ret.w < 320) { ret.w = 320; }
+						} else if (win_name.same_str("height")) {
+							ret.h = (int)win_value.atoi(); if (ret.h < 200) { ret.h = 200; }
+						} else if (win_name.same_str("maximized")) {
+							ret.m = (int)win_value.atoi()!=0;
+						}
+					}
+				}
+				break;
+			}
+		}
+	}
+	return ret;
+}
 
 // [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to maximize ease of testing and compatibility with old VS compilers.
 // To link with VS2010-era libraries, VS2015+ requires linking with legacy_stdio_definitions.lib, which we do using this pragma.
@@ -109,14 +153,21 @@ int main(int argc, char* argv[])
 
 	GetStartFolder();
 
+	SaveStateFile state = ReadState();
+
 	// Setup window
 	glfwSetErrorCallback(glfw_error_callback);
 	if (!glfwInit())
 		return 1;
-	GLFWwindow* window = glfwCreateWindow(1700, 960, "IceBro Lite", NULL, NULL);
+
+	WindowPreset winset = ReadStateWindow(state);
+	if(winset.m) { glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE); }
+
+	GLFWwindow* window = glfwCreateWindow(winset.w, winset.h, "IceBro Lite", NULL, NULL);
 	if (window == NULL)
 		return 1;
 	glfwMakeContextCurrent(window);
+	sWindow = window;
 	GLFWimage image;
 	image.height = 42;
 	image.width = 42;
@@ -162,7 +213,7 @@ int main(int argc, char* argv[])
 	io.Fonts->AddFontDefault();
 	InitViews();
 	InitSourceDebug();
-	LoadState();
+	ParseState(state); ReleaseState(state);
 
 	for (int i = 1; i < argc; ++i) {
 		strref line = argv[i];
@@ -313,6 +364,7 @@ int main(int argc, char* argv[])
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 
+	sWindow = nullptr;
 	glfwDestroyWindow(window);
 	glfwTerminate();
 

@@ -701,8 +701,8 @@ void GfxView::CreateC64SpritesBitmap(CPU6510* cpu, uint32_t* d, int linesHigh, u
 	uint16_t a = addrGfxValue;
 	int sx = w / 24;
 	int sy = linesHigh / 21;
-	for (size_t y = 0; y < sy; y++) {
-		for (size_t x = 0; x < sx; x++) {
+	for (size_t y = 0; y < (size_t)sy; y++) {
+		for (size_t x = 0; x < (size_t)sx; x++) {
 			for (int l = 0; l < 21; l++) {
 				uint32_t *ds = d + (y * 21 + l)*w + x * 24;
 				for (int s = 0; s < 3; s++) {
