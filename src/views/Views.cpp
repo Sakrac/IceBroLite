@@ -196,7 +196,7 @@ void ViewContext::LoadState(strref config)
 				int fontSize = (int)value.atoi();
 				SelectFont(fontSize);
 			} else if(name.same_str("Style")) {
-				imgui_style = value.atoi();
+				imgui_style = (int)value.atoi();
 				switch (imgui_style) {
 					case 0: break;// default
 					case 1: ImGui::StyleColorsDark(); break;
