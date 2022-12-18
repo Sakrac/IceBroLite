@@ -18,6 +18,8 @@ void ForceKeyboardCanvas(const char* label)
 	}
 }
 
+static ImGuiID sCanvasID = 0;
+
 bool KeyboardCanvas( const char* label )
 {
 	ImGuiWindow* window = ImGui::GetCurrentWindow();
@@ -30,12 +32,20 @@ bool KeyboardCanvas( const char* label )
 	const ImGuiID id = window->GetID( label );
 
 	const bool hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
-//	const bool focus_requested = ImGui::FocusableItemRegister( window, id );    // Using completion callback disable keyboard tabbing
+	const bool clicked = io.MouseClicked[0];
+	if (clicked) {
+		if (hovered) {
+			sCanvasID = id;
+		} else if (sCanvasID == id) {
+			sCanvasID = 0;
+		}
+	}
 
-	const bool user_clicked = hovered && io.MouseClicked[ 0 ];
+	const bool user_focused = sCanvasID == id;
+	const bool user_clicked = hovered && clicked;
 	const bool user_nav_input_start = (g.ActiveId != id) && ((g.NavActivateInputId == id) || (g.NavActivateId == id && g.NavInputSource == ImGuiInputSource_Keyboard));
 
-	if( /*focus_requested ||*/ user_clicked || user_nav_input_start)
+	if(user_focused || user_clicked || user_nav_input_start)
 	{
 		if( g.ActiveId != id )
 		{
