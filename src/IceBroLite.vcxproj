@@ -112,7 +112,6 @@
     <ClCompile Include="views\WatchView.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="imgui\misc\natvis\imgui.natvis" />
     <Natvis Include="struse\struse.natvis" />
   </ItemGroup>
   <ItemGroup>

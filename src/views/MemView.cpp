@@ -178,12 +178,12 @@ void MemView::Draw(int index)
 			int curX = cursor[0], curY = cursor[1];
 			int dX = 0, dY = 0;
 
-			if (ImGui::IsKeyPressed(GLFW_KEY_UP)) { dY--; }
-			if (ImGui::IsKeyPressed(GLFW_KEY_DOWN)) { dY++; }
-			if (ImGui::IsKeyPressed(GLFW_KEY_LEFT)) { dX--; }
-			if (ImGui::IsKeyPressed(GLFW_KEY_RIGHT)) { dX++; }
-			if (ImGui::IsKeyPressed(GLFW_KEY_PAGE_UP)) { addrValue -= spanWin * (lines/2); }
-			if (ImGui::IsKeyPressed(GLFW_KEY_PAGE_DOWN)) { addrValue += spanWin * (lines/2); }
+			if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_UP)) { dY--; }
+			if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_DOWN)) { dY++; }
+			if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_LEFT)) { dX--; }
+			if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_RIGHT)) { dX++; }
+			if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_PAGE_UP)) { addrValue -= spanWin * (lines/2); }
+			if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_PAGE_DOWN)) { addrValue += spanWin * (lines/2); }
 
 			if (showHex) {
 				curX += dX; curY += dY;

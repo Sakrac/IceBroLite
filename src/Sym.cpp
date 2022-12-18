@@ -576,6 +576,13 @@ bool ReadSymbols(const char *filename)
 	return false;
 }
 
+void ReadSymbolsFile(const char* symbols) {
+	strref ext = strref(symbols).after_last('.');
+	if (ext.same_str("dbg")) ReadC64DbgSrc(symbols);
+	if (ext.same_str("sym")) ReadSymbols(symbols);
+	if (ext.same_str("vs")) ReadViceCommandFile(symbols);
+}
+
 void ReadSymbolsForBinary(const char *binname)
 {
 	strref origname = strref(binname).before_last('.');

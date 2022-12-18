@@ -208,9 +208,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="imgui\misc\natvis\imgui.natvis">
-      <Filter>ImGUI</Filter>
-    </Natvis>
     <Natvis Include="struse\struse.natvis">
       <Filter>struse</Filter>
     </Natvis>

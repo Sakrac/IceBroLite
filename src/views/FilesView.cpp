@@ -61,8 +61,8 @@ void FVFileView::Draw(const char *title)
 			ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersH |
 			ImGuiTableFlags_ScrollY;
 		if (ImGui::BeginTable("##directory", 2, flags)) {
-			ImGui::TableSetupColumn("Size", ImGuiTableColumnFlags_WidthAuto);
-			ImGui::TableSetupColumn("Filename", ImGuiTableColumnFlags_WidthAuto);
+			ImGui::TableSetupColumn("Size", ImGuiTableColumnFlags_None);
+			ImGui::TableSetupColumn("Filename", ImGuiTableColumnFlags_None);
 
 			for (size_t i = 0, n = files.size(); i < n; ++i) {
 				ImGui::TableNextRow();
@@ -114,7 +114,7 @@ void FVFileView::Draw(const char *title)
 			}
 			ImGui::EndTable();
 		}
-		if (ImGui::IsKeyPressed(GLFW_KEY_ESCAPE)) {
+		if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_ESCAPE)) {
 			open = false;
 		}
 

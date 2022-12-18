@@ -170,13 +170,13 @@ void CodeView::Draw(int index)
 
 	// Handle keyboard input
 	if (active) {
-		if (ImGui::IsKeyPressed(GLFW_KEY_UP)) { dY--; }
-		if (ImGui::IsKeyPressed(GLFW_KEY_DOWN)) { dY++; }
-		if (ImGui::IsKeyPressed(GLFW_KEY_TAB)) {
-			if (ImGui::IsKeyDown(GLFW_KEY_LEFT_SHIFT) || ImGui::IsKeyDown(GLFW_KEY_RIGHT_SHIFT)) { setPCAtCursor = true; } else { goToPC = true; addrCursor = pc; }
+		if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_UP)) { dY--; }
+		if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_DOWN)) { dY++; }
+		if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_TAB)) {
+			if (ImGui::IsKeyDown((ImGuiKey)GLFW_KEY_LEFT_SHIFT) || ImGui::IsKeyDown((ImGuiKey)GLFW_KEY_RIGHT_SHIFT)) { setPCAtCursor = true; } else { goToPC = true; addrCursor = pc; }
 		}
-		if (ImGui::IsKeyPressed(GLFW_KEY_PAGE_UP)) { sY = -lines / 3; }
-		if (ImGui::IsKeyPressed(GLFW_KEY_PAGE_DOWN)) { sY = lines / 3; }
+		if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_PAGE_UP)) { sY = -lines / 3; }
+		if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_PAGE_DOWN)) { sY = lines / 3; }
 		if (ImGui::IsMouseClicked(0)) {
 			ImVec2 mousePos = ImGui::GetMousePos();
 			ImVec2 winPos = ImGui::GetWindowPos();
@@ -224,7 +224,7 @@ void CodeView::Draw(int index)
 		ImVec2 linePos = ImGui::GetCursorPos();
 		int chars = 0;
 		if (lineNum==cursorLine) { addrCursor = read; }
-		if (addrCursor==read && active && !editAsmDone && ImGui::IsKeyPressed(GLFW_KEY_ENTER)) {
+		if (addrCursor==read && active && !editAsmDone && ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_ENTER)) {
 			editAsmStr[0] = 0;
 			editAsmAddr = read;
 			editAsmFocusRequested = true;
@@ -282,7 +282,7 @@ void CodeView::Draw(int index)
 			line.pad_to(' ', 14);
 			ImGui::TextUnformatted(line.get(), line.end());
 			ImGui::SameLine();
-			if (ImGui::IsKeyPressed(GLFW_KEY_ESCAPE)) {
+			if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_ESCAPE)) {
 				editAsmAddr = -1;
 				ForceKeyboardCanvas("DisAsmView");
 			}
@@ -316,7 +316,7 @@ void CodeView::Draw(int index)
 			}
 			if (srcLine && line.get_len() > srcCol) { line.set_len(srcCol); }
 			if (addrCursor>=read && addrCursor<(read+bytes)) {
-				if (ImGui::IsKeyPressed(GLFW_KEY_F6)) {
+				if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_F6)) {
 					ViceRunTo(addrCursor);
 				}
 				ImVec2 ps = ImGui::GetCursorScreenPos();
@@ -358,11 +358,11 @@ void CodeView::Draw(int index)
 				ImGui::SetCursorPos(linePos);
 				DrawTexturedIcon((bp.flags & Breakpoint::Enabled) ? ViceMonIcons::VMI_BreakPoint : ViceMonIcons::VMI_DisabledBreakPoint, false, fontCharWidth);
 				ImGui::SetCursorPos(savePos);
-				if (active && addrCursor == read && ImGui::IsKeyPressed(GLFW_KEY_F9, false)) {
+				if (active && addrCursor == read && ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_F9, false)) {
 					// remove breakpoint
 					ViceRemoveBreakpoint(bp.number);
 				}
-			} else if (active && addrCursor == read && ImGui::IsKeyPressed(GLFW_KEY_F9, false)) {
+			} else if (active && addrCursor == read && ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_F9, false)) {
 				// add exec breakpoint
 				ViceAddBreakpoint(read);
 			}

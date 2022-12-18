@@ -75,7 +75,7 @@ void RegisterView::Draw()
 		}
 	}
 
-	if (editing && (!active || ImGui::IsKeyPressed(GLFW_KEY_ESCAPE))) { editing = false; }
+	if (editing && (!active || ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_ESCAPE))) { editing = false; }
 
 	CPU6510* cpu = GetCurrCPU();
 
@@ -141,8 +141,8 @@ void RegisterView::Draw()
 			}
 		}
 
-		if (cursor && ImGui::IsKeyPressed(GLFW_KEY_LEFT)) { cursor--; }
-		if (ImGui::IsKeyPressed(GLFW_KEY_RIGHT)) { cursor++; }
+		if (cursor && ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_LEFT)) { cursor--; }
+		if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_RIGHT)) { cursor++; }
 	}
 
 	if (active && editing && cursor >= 0 && cursorTime > (0.5f * CursorFlashPeriod)) {

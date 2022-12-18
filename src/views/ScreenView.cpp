@@ -39,6 +39,8 @@ void ScreenView::ReadConfig(strref config)
 
 void ScreenView::Draw()
 {
+	if (!open) { return; }
+
 	ImGui::SetNextWindowPos(ImVec2(400, 150), ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize(ImVec2(520, 400), ImGuiCond_FirstUseEver);
 	if (!ImGui::Begin("Screen", &open)) {
@@ -60,8 +62,8 @@ void ScreenView::Draw()
 
 	ImGuiContext* g = ImGui::GetCurrentContext();
 	if (g->CurrentWindow == g->NavWindow) {
-		if (ImGui::IsKeyPressed(GLFW_KEY_C) &&
-			(ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL) || ImGui::IsKeyDown(GLFW_KEY_RIGHT_CONTROL))) {
+		if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_C) &&
+			(ImGui::IsKeyDown((ImGuiKey)GLFW_KEY_LEFT_CONTROL) || ImGui::IsKeyDown((ImGuiKey)GLFW_KEY_RIGHT_CONTROL))) {
 			CopyBitmapToClipboard(bitmap, width, height);
 		}
 	}

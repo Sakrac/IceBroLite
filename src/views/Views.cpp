@@ -86,27 +86,32 @@ void ResetWindowLayout()
 	ImGui::DockBuilderSetNodeSize(dockspace_id, ImVec2(ImGui::GetWindowWidth(), ImGui::GetWindowHeight()));
 
 	ImGuiID dock_main_id = dockspace_id; // This variable will track the document node, however we are not using it here as we aren't docking anything into it.
-	ImGuiID dock_id_toolbar = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.10f, NULL, &dock_main_id);
-	ImGuiID dock_id_code = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.33f, NULL, &dock_main_id);
-	ImGuiID dock_id_code2 = ImGui::DockBuilderSplitNode(dock_id_code, ImGuiDir_Down, 0.25f, NULL, &dock_id_code);
-	ImGuiID dock_id_code3 = ImGui::DockBuilderSplitNode(dock_id_code, ImGuiDir_Down, 0.33f, NULL, &dock_id_code);
-	ImGuiID dock_id_code4 = ImGui::DockBuilderSplitNode(dock_id_code, ImGuiDir_Down, 0.5f, NULL, &dock_id_code);
-	ImGuiID dock_id_regs = ImGui::DockBuilderSplitNode(dock_id_code, ImGuiDir_Up, 0.1f, NULL, &dock_id_code);
-	ImGuiID dock_id_mem = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.5f, NULL, &dock_main_id);
-	ImGuiID dock_id_watch = ImGui::DockBuilderSplitNode(dock_id_mem, ImGuiDir_Up, 0.33f, NULL, &dock_id_mem);
-	ImGuiID dock_id_screen = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.2f, NULL, &dock_main_id);
-	ImGuiID dock_id_breaks = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.2f, NULL, &dock_main_id);
-	ImGuiID dock_id_symbols = ImGui::DockBuilderSplitNode(dock_id_code, ImGuiDir_Down, 0.25f, NULL, &dock_id_code);
 
+
+	ImGuiID dock_id_toolbar = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.10f, NULL, &dock_main_id);
+	ImGuiID dock_id_memory = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.667f, NULL, &dock_main_id);
+	ImGuiID dock_id_screen = ImGui::DockBuilderSplitNode(dock_id_memory, ImGuiDir_Right, 0.5f, NULL, &dock_id_memory);
+
+	ImGuiID dock_id_breaks = ImGui::DockBuilderSplitNode(dock_id_screen, ImGuiDir_Down, 0.5f, NULL, &dock_id_screen);
+	ImGuiID dock_id_vicemon = ImGui::DockBuilderSplitNode(dock_id_breaks, ImGuiDir_Down, 0.75f, NULL, &dock_id_breaks);
+	ImGuiID dock_id_graphics = ImGui::DockBuilderSplitNode(dock_id_screen, ImGuiDir_Down, 0.5f, NULL, &dock_id_screen);
+
+	ImGuiID dock_id_regs = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.1f, NULL, &dock_main_id);
+	ImGuiID dock_id_symbols = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.25f, NULL, &dock_main_id);
+
+	ImGuiID dock_id_watch = ImGui::DockBuilderSplitNode(dock_id_memory, ImGuiDir_Up, 0.33f, NULL, &dock_id_memory);
+	ImGuiID dock_id_watch2 = ImGui::DockBuilderSplitNode(dock_id_watch, ImGuiDir_Down, 0.5f, NULL, &dock_id_watch);
+
+	ImGui::DockBuilderDockWindow("###Code1", dock_main_id);
 	ImGui::DockBuilderDockWindow("Toolbar", dock_id_toolbar);
-	ImGui::DockBuilderDockWindow("Vice Monitor", dock_main_id);
-	ImGui::DockBuilderDockWindow("###Code1", dock_id_code);
-	ImGui::DockBuilderDockWindow("###Code2", dock_id_code2);
-	ImGui::DockBuilderDockWindow("###Code3", dock_id_code3);
-	ImGui::DockBuilderDockWindow("###Code4", dock_id_code4);
-	ImGui::DockBuilderDockWindow("Mem1", dock_id_mem);
-	ImGui::DockBuilderDockWindow("Graphics1", dock_id_mem);
+	ImGui::DockBuilderDockWindow("Vice Monitor", dock_id_vicemon);
+	ImGui::DockBuilderDockWindow("Mem1", dock_id_memory);
+	ImGui::DockBuilderDockWindow("###Code2", dock_main_id);
+	ImGui::DockBuilderDockWindow("###Code3", dock_main_id);
+	ImGui::DockBuilderDockWindow("###Code4", dock_main_id);
+	ImGui::DockBuilderDockWindow("Graphics1", dock_id_graphics);
 	ImGui::DockBuilderDockWindow("Watch1", dock_id_watch);
+	ImGui::DockBuilderDockWindow("Watch2", dock_id_watch2);
 	ImGui::DockBuilderDockWindow("Registers", dock_id_regs);
 	ImGui::DockBuilderDockWindow("Screen", dock_id_screen);
 	ImGui::DockBuilderDockWindow("Trace", dock_id_screen);
@@ -115,6 +120,7 @@ void ResetWindowLayout()
 	ImGui::DockBuilderDockWindow("Sections", dock_id_symbols);
 	ImGui::DockBuilderFinish(dockspace_id);
 }
+
 ViewContext::ViewContext() : currFont(3), setupDocking(true), saveSettingsOnExit(true)
 {
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -299,6 +305,7 @@ void ViewContext::Draw()
 				}
 				if (ImGui::MenuItem("Registers", NULL, regView.open)) { regView.open = !regView.open; }
 				if (ImGui::MenuItem("Breakpoints", NULL, breakView.open)) { breakView.open = !breakView.open; }
+				if (ImGui::MenuItem("Screen", NULL, screenView.open)) { screenView.open = !screenView.open; }
 				if (ImGui::MenuItem("Trace", NULL, traceView.open)) { traceView.open = !traceView.open; }
 				if (ImGui::MenuItem("Symbols", NULL, symbolView.open)) { symbolView.open = !symbolView.open; }
 				if (ImGui::MenuItem("Sections", NULL, sectionView.open)) { sectionView.open = !sectionView.open; }
@@ -350,7 +357,7 @@ void ViewContext::Draw()
 		watchView[0].open = true;
 		for (size_t i = 1; i < MaxWatchViews; ++i) { watchView[i].open = false; }
 		gfxView[0].open = true;
-		for (size_t i = 0; i < kMaxGfxViews; ++i) { gfxView[i].open = false; }
+		for (size_t i = 1; i < kMaxGfxViews; ++i) { gfxView[i].open = false; }
 		breakView.open = true;
 		symbolView.open = true;
 		sectionView.open = true;
@@ -393,25 +400,25 @@ void ViewContext::GlobalKeyCheck()
 {
 //	CheckRegChange();
 
-	bool shift = ImGui::IsKeyDown(GLFW_KEY_LEFT_SHIFT) || ImGui::IsKeyDown(GLFW_KEY_RIGHT_SHIFT);
-	bool ctrl = ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL) || ImGui::IsKeyDown(GLFW_KEY_RIGHT_CONTROL);
-	bool alt = ImGui::IsKeyDown(GLFW_KEY_LEFT_ALT) || ImGui::IsKeyDown(GLFW_KEY_RIGHT_ALT);
+	bool shift = ImGui::IsKeyDown((ImGuiKey)GLFW_KEY_LEFT_SHIFT) || ImGui::IsKeyDown((ImGuiKey)GLFW_KEY_RIGHT_SHIFT);
+	bool ctrl = ImGui::IsKeyDown((ImGuiKey)GLFW_KEY_LEFT_CONTROL) || ImGui::IsKeyDown((ImGuiKey)GLFW_KEY_RIGHT_CONTROL);
+	bool alt = ImGui::IsKeyDown((ImGuiKey)GLFW_KEY_LEFT_ALT) || ImGui::IsKeyDown((ImGuiKey)GLFW_KEY_RIGHT_ALT);
 
 	// mimic vice monitor key combo
-	if (alt && ImGui::IsKeyPressed(GLFW_KEY_H)) {
+	if (alt && ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_H)) {
 		ViceBreak();
 	}
 
-	if (ImGui::IsKeyPressed(GLFW_KEY_F5, false)) {
+	if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_F5, false)) {
 		if (shift) { ViceBreak(); }
 		else { ViceGo(); }
 //		if (ctrl) {} else if (shift) { CPUReverse(); } else { CPUGo(); }
 	}
-	if (ImGui::IsKeyPressed(GLFW_KEY_F10, false)) {
+	if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_F10, false)) {
 		ViceStepOver();
 //		if (ctrl) { StepOverVice(); } else if (shift) { StepOverBack(); } else { StepOver(); }
 	}
-	if (ImGui::IsKeyPressed(GLFW_KEY_F11, false)) {
+	if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_F11, false)) {
 		if (ctrl) { /*StepInstructionVice();*/ } else if (shift) { ViceStepOut(); } else { ViceStep(); }
 	}
 }
@@ -467,8 +474,8 @@ void SetMemoryViewAddr(uint16_t addr, int index)
 
 uint8_t InputHex()
 {
-	for (int num = 0; num < 10; ++num) { if (ImGui::IsKeyPressed(num + '0')) return num; }
-	for (int num = 10; num < 16; ++num) { if (ImGui::IsKeyPressed(num + 'A' - 10)) return num; }
+	for (int num = 0; num < 10; ++num) { if (ImGui::IsKeyPressed((ImGuiKey)(num + '0'))) return num; }
+	for (int num = 10; num < 16; ++num) { if (ImGui::IsKeyPressed((ImGuiKey)(num + 'A' - 10))) return num; }
 	return 0xff;
 }
 

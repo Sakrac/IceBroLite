@@ -165,15 +165,15 @@ void WatchView::Draw(int index)
 	}
 
 	if (activeIndex >= 0 && GImGui->NavWindow == ImGui::GetCurrentWindow()) {
-		if (ImGui::IsKeyPressed(GLFW_KEY_UP) && activeIndex > 0) {
+		if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_UP) && activeIndex > 0) {
 			--activeIndex;
 			editExpression = -1;
 		}
-		else if (ImGui::IsKeyPressed(GLFW_KEY_DOWN) && activeIndex < numExpressions) {
+		else if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_DOWN) && activeIndex < numExpressions) {
 			++activeIndex;
 			editExpression = -1;
 		}
-		else if (ImGui::IsKeyPressed(GLFW_KEY_DELETE) && activeIndex < numExpressions) {
+		else if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_DELETE) && activeIndex < numExpressions) {
 			for (int i = activeIndex, n = numExpressions - 1; i < n; ++i) {
 				expressions[i] = expressions[i + 1];
 				rpnExp[i] = rpnExp[i + 1];
@@ -185,7 +185,7 @@ void WatchView::Draw(int index)
 			results[numExpressions].clear();
 			editExpression = -1;
 		}
-		else if (ImGui::IsKeyPressed(GLFW_KEY_INSERT) && numExpressions < MaxExp) {
+		else if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_INSERT) && numExpressions < MaxExp) {
 			for (int i = numExpressions; i > activeIndex; --i) {
 				expressions[i] = expressions[i - 1];
 				rpnExp[i] = rpnExp[i - 1];
@@ -197,7 +197,7 @@ void WatchView::Draw(int index)
 			results[activeIndex].clear();
 			editExpression = -1;
 		}
-		else if (ImGui::IsKeyPressed(GLFW_KEY_ENTER)) {
+		else if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_ENTER)) {
 			editExpression = activeIndex;
 			forceEdit = true;
 		}
@@ -282,7 +282,7 @@ void WatchView::Draw(int index)
 				activeRowPos.y - ImGui::GetScrollY() + ImGui::GetTextLineHeightWithSpacing() - 1.0f),
 			ImColor(C64_LGREEN), 0.0f, 0, 1.0f);
 
-		if (editExpression >= 0 && ImGui::IsKeyPressed(GLFW_KEY_ESCAPE)) {
+		if (editExpression >= 0 && ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_ESCAPE)) {
 			editExpression = -1;
 		}
 	}

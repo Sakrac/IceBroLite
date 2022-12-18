@@ -30,12 +30,12 @@ bool KeyboardCanvas( const char* label )
 	const ImGuiID id = window->GetID( label );
 
 	const bool hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
-	const bool focus_requested = ImGui::FocusableItemRegister( window, id );    // Using completion callback disable keyboard tabbing
+//	const bool focus_requested = ImGui::FocusableItemRegister( window, id );    // Using completion callback disable keyboard tabbing
 
 	const bool user_clicked = hovered && io.MouseClicked[ 0 ];
-	const bool user_nav_input_start = (g.ActiveId != id) && ((g.NavInputId == id) || (g.NavActivateId == id && g.NavInputSource == ImGuiInputSource_NavKeyboard));
+	const bool user_nav_input_start = (g.ActiveId != id) && ((g.NavActivateInputId == id) || (g.NavActivateId == id && g.NavInputSource == ImGuiInputSource_Keyboard));
 
-	if( focus_requested || user_clicked || user_nav_input_start )
+	if( /*focus_requested ||*/ user_clicked || user_nav_input_start)
 	{
 		if( g.ActiveId != id )
 		{
@@ -44,7 +44,7 @@ bool KeyboardCanvas( const char* label )
 			ImGui::FocusWindow( window );
 		}
 	} else if (g.ActiveId == id) {
-		if ((!hovered && io.MouseClicked[0]) || ImGui::IsKeyPressed(GLFW_KEY_ESCAPE))
+		if ((!hovered && io.MouseClicked[0]) || ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_ESCAPE))
 			ImGui::ClearActiveID();
 	}
 

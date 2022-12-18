@@ -56,15 +56,14 @@
 
 void StyleC64();
 static GLFWwindow* sWindow;
+static int sWindow_width = 1700, sWindow_height = 900;
 
 void SaveStateWindow(UserData& conf) {
 	if (sWindow) {
 		conf.BeginStruct("Window");
-		int width, height;
-		glfwGetWindowSize(sWindow, &width, &height);
 
-		conf.AddValue("width", width);
-		conf.AddValue("height", height);
+		conf.AddValue("width", sWindow_width);
+		conf.AddValue("height", sWindow_height);
 
 		conf.AddValue("maximized", glfwGetWindowAttrib(sWindow, GLFW_MAXIMIZED));
 		conf.EndStruct();
@@ -74,7 +73,7 @@ void SaveStateWindow(UserData& conf) {
 struct WindowPreset { int w, h, m; };
 
 WindowPreset ReadStateWindow(SaveStateFile file) {
-	WindowPreset ret = { 1700, 960, 0 };
+	WindowPreset ret = { sWindow_width, sWindow_height, 0 };
 	if (file.data && file.size) {
 		ConfigParse config(file.data, file.size);
 		while (!config.Empty()) {
@@ -88,8 +87,10 @@ WindowPreset ReadStateWindow(SaveStateFile file) {
 					if (win_type == ConfigParseType::CPT_Value) {
 						if (win_name.same_str("width")) {
 							ret.w = (int)win_value.atoi(); if (ret.w < 320) { ret.w = 320; }
+							sWindow_width = ret.w;
 						} else if (win_name.same_str("height")) {
 							ret.h = (int)win_value.atoi(); if (ret.h < 200) { ret.h = 200; }
+							sWindow_height = ret.h;
 						} else if (win_name.same_str("maximized")) {
 							ret.m = (int)win_value.atoi()!=0;
 						}
@@ -108,6 +109,14 @@ WindowPreset ReadStateWindow(SaveStateFile file) {
 #if defined(_MSC_VER) && (_MSC_VER >= 1900) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
 #pragma comment(lib, "legacy_stdio_definitions")
 #endif
+
+void window_size_callback(GLFWwindow* window, int width, int height)
+{
+	if (!glfwGetWindowAttrib(window, GLFW_MAXIMIZED)) {
+		sWindow_width = width;
+		sWindow_height = height;
+	}
+}
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -167,6 +176,7 @@ int main(int argc, char* argv[])
 	if (window == NULL)
 		return 1;
 	glfwMakeContextCurrent(window);
+	glfwSetWindowSizeCallback(window, window_size_callback);
 	sWindow = window;
 	GLFWimage image;
 	image.height = 42;
@@ -229,6 +239,14 @@ int main(int argc, char* argv[])
 		}
 	}
 
+	// if only symbols provided just read those in immediately
+	if (forceLoadProgram[0] == 0 && forceLoadSymbols[0] != 0) {
+		ReadSymbolsFile(forceLoadSymbols);
+		forceLoadSymbols[0] = 0;
+	}
+
+
+
 #ifdef _WIN32
 	// release win32 command line
 	for (int i = 1; i < argc; ++i) {
@@ -263,8 +281,8 @@ int main(int argc, char* argv[])
 		// because it would be confusing to have two docking targets within each others.
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 		ImGuiViewport* viewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(viewport->GetWorkPos());
-		ImGui::SetNextWindowSize(viewport->GetWorkSize());
+		ImGui::SetNextWindowPos(viewport->Pos);
+		ImGui::SetNextWindowSize(viewport->Size);
 		ImGui::SetNextWindowViewport(viewport->ID);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -318,10 +336,7 @@ int main(int argc, char* argv[])
 		if (forceLoadProgram[0] != 0 && ViceConnected()) {
 			ViceStartProgram(forceLoadProgram);
 			if (forceLoadSymbols[0] != 0) {
-				strref ext = strref(forceLoadSymbols).after_last('.');
-				if (ext.same_str("dbg")) ReadC64DbgSrc(forceLoadSymbols);
-				if (ext.same_str("sym")) ReadSymbols(forceLoadSymbols);
-				if (ext.same_str("vs")) ReadViceCommandFile(forceLoadSymbols);
+				ReadSymbolsFile(forceLoadSymbols);
 			} else {
 				ReadSymbolsForBinary(forceLoadProgram);
 			}
