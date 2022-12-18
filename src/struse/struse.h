@@ -938,6 +938,18 @@ public:
 		return *this;
 	}
 
+	strmod& append_bin(uint32_t num) {
+		if (!num) { return append('0'); }
+		uint32_t m = 1 << 31;
+		while (!(m & num)) { m >>= 1; }
+		while (m) {
+			append((m & num) ? '1' : '0');
+			m >>= 1;
+		}
+		return *this;
+	}
+
+
 	// c style sprintf (work around windows _s preference)
 #ifdef WIN32
 	int sprintf(const char *format, ...) { va_list args; va_start(args, format);

@@ -10,6 +10,12 @@ struct WatchView {
 		WT_DISASM
 	};
 
+	enum class WatchShow : uint8_t {
+		WS_HEX,
+		WS_DEC,
+		WS_BIN
+	};
+
 	enum {
 		MaxExp = 128
 	};
@@ -21,12 +27,15 @@ struct WatchView {
 	int editExpression;
 	int prevWidth;
 	int activeIndex;
+	int contextIndex;
 	int values[MaxExp];
 	WatchType types[MaxExp];
+	WatchShow show[MaxExp];
 	bool open;
 	bool rebuildAll;
 	bool recalcAll;
 	bool forceEdit;
+
 
 	WatchView();
 

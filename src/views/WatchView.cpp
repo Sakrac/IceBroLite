@@ -25,6 +25,7 @@ WatchView::WatchView() : open(false), rebuildAll(false), recalcAll(false), force
 		types[t] = WatchType::WT_NORMAL;
 	}
 	memset(values, 0, sizeof(values));
+	memset(show, 0, sizeof(show));
 }
 
 static void DrawBlueTextLine() {
@@ -69,14 +70,25 @@ void WatchView::EvaluateItem(int index) {
 				buf.append('-');
 				result = -result;
 			}
-			buf.append('$');
-			if (result > 256) {
-				if (result > 65536)
-					buf.append_num(result, 6, 16);
-				else
-					buf.append_num(result, 4, 16);
-			} else
-				buf.append_num(result, 2, 16);
+			switch (show[index]) {
+				case WatchShow::WS_HEX:
+					buf.append('$');
+					if (result >= 256) {
+						if (result >= 65536)
+							buf.append_num(result, 6, 16);
+						else
+							buf.append_num(result, 4, 16);
+					}
+					else
+						buf.append_num(result, 2, 16);
+					break;
+				case WatchShow::WS_DEC:
+					buf.append_num(result, 0, 10);
+					break;
+				case WatchShow::WS_BIN:
+					buf.append("%%").append_bin(result);
+					break;
+			}
 		} else if (types[index] == WatchType::WT_BYTES) {
 			int addr = EvalExpression(rpn);
 			buf.append('$').append_num(addr, 4, 16);
@@ -84,7 +96,17 @@ void WatchView::EvaluateItem(int index) {
 			int num_bytes = int(((ImGui::GetWindowWidth() - ImGui::GetColumnWidth()) - 6 * CurrFontSize()) / (3 * CurrFontSize()));
 			for (int b = 0; b < num_bytes && buf.left() > 3; b++) {
 				buf.append(' ');
-				buf.append_num(cpu->GetByte(addr++), 2, 16);
+				switch (show[index]) {
+					case WatchShow::WS_HEX:
+						buf.append_num(cpu->GetByte(addr++), 2, 16);
+						break;
+					case WatchShow::WS_DEC:
+						buf.append_num(cpu->GetByte(addr++), 0, 10);
+						break;
+					case WatchShow::WS_BIN:
+						buf.append_bin(cpu->GetByte(addr++));
+						break;
+				}
 			}
 		} else {
 			int addr = EvalExpression(rpn);
@@ -98,14 +120,19 @@ void WatchView::EvaluateItem(int index) {
 	results[index].copy(buf.get_strref());
 }
 
+static const char* aShowName[] = { "hex", "dec", "bin" };
+
 void WatchView::WriteConfig(UserData& config)
 {
 	config.AddValue(strref("open"), config.OnOff(open));
 	config.BeginArray("Expressions");
 	for (int e = 0; e < numExpressions; e++) {
+		config.BeginStruct(strref());
 		strown<128> arg;
 		arg.append('"').append(expressions[e].get_strref()).append('"');
-		config.AddValue(strref(), arg.get_strref());
+		config.AddValue("Exp", arg.get_strref());
+		config.AddValue("Show", aShowName[(uint8_t)show[e]%3]);
+		config.EndStruct();
 	}
 	config.EndArray();
 }
@@ -125,9 +152,25 @@ void WatchView::ReadConfig(strref config)
 			while (!exp.Empty() && numExpressions < 64) {
 				strref quote = exp.ArrayElement();
 				quote.trim_whitespace();
-				if (quote[0] == '"') { quote += 1; }
-				if (quote.get_last() == '"') { quote.clip(1); }
-				expressions[numExpressions++].copy(quote);
+				if (quote[0] == '"') {
+					quote += 1; quote.clip(1);
+					expressions[numExpressions++].copy(quote);
+				} else {
+					quote.trim_whitespace();
+					ConfigParse conf_exp(quote);
+					while (!conf_exp.Empty()) {
+						strref name_exp, value_exp;
+						ConfigParseType type_exp = conf_exp.Next(&name_exp, &value_exp);
+						if (name_exp.same_str("Exp")) {
+							value_exp += 1; value_exp.clip(1);
+							expressions[numExpressions].copy(value_exp);
+						} else if(name_exp.same_str("Show")) {
+							show[numExpressions] = value_exp.same_str("bin") ? WatchShow::WS_BIN :
+								(value_exp.same_str("dec") ? WatchShow::WS_DEC : WatchShow::WS_HEX);
+						}
+					}
+					numExpressions++;
+				}
 			}
 		}
 	}
@@ -212,6 +255,9 @@ void WatchView::Draw(int index)
 	int numLines = numExpressions < MaxExp ? (numExpressions + 1) : MaxExp;
 	ImGui::Columns(2, "expressionDivider", true);
 	ImVec2 activeRowPos(0, 0);
+
+//	ImVec2 
+
 	for (int i = 0; i < numLines; ++i) {
 		ImVec2 cursorPos = ImGui::GetCursorPos();
 		ImVec2 winPos = ImGui::GetWindowPos();
@@ -238,7 +284,8 @@ void WatchView::Draw(int index)
 				ImGui::SetKeyboardFocusHere();
 				forceEdit = false;
 			}
-			if (ImGui::InputTextEx("##WatchExpression", "Watch Expression", expressions[i].charstr(), expressions[i].cap(),
+			char expr_id[32]; sprintf_s(expr_id, "##WatchExpr%d_%d", index, i);
+			if (ImGui::InputTextEx(expr_id, "Watch Expression", expressions[i].charstr(), expressions[i].cap(),
 				ImVec2(ImGui::GetColumnWidth(), CurrFontSize()), ImGuiInputTextFlags_EnterReturnsTrue)) {
 				expressions[i].set_len((strl_t)strlen(expressions[i].get()));
 				Evaluate(i);
@@ -250,6 +297,17 @@ void WatchView::Draw(int index)
 		if (currWidth < 0) { currWidth = (int)ImGui::GetColumnWidth(); }
 		if ((i & 1) != 0) { DrawBlueTextLine(); }
 		ImGui::Text(results[i].c_str());
+
+		if (ImGui::IsMouseReleased(ImGuiMouseButton_Right)) {
+			ImVec2 mousePos = ImGui::GetMousePos();
+			float dx = mousePos.x - winPos.x - cursorPos.x;
+			float dy = mousePos.y - winPos.y - cursorPos.y;
+			if (dx >= 0 && dy >= 0 && dy < (ImGui::GetCursorPosY() - cursorPos.y) && dx < ImGui::GetWindowSize().x) {
+				char ctx[32]; sprintf_s(ctx, "watch%d_ctx", index);
+				ImGui::OpenPopupEx(ImGui::GetCurrentWindow()->GetID(ctx));
+				contextIndex = i;
+			}
+		}
 
 		if (activeIndex == i /*&& GImGui->ActiveId == id*/) {
 			activeRowPos = ImVec2(cursorPos.x + winPos.x, cursorPos.y + winPos.y);
@@ -273,6 +331,20 @@ void WatchView::Draw(int index)
 		recalcAll = true;
 	}
 	ImGui::Columns(1);
+
+	{
+		char ctx[32]; sprintf_s(ctx, "watch%d_ctx", index);
+		bool eval = false;
+		if(ImGui::BeginPopupEx(ImGui::GetCurrentWindow()->GetID(ctx),
+			ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings)) { 
+			if (ImGui::Selectable("Hex", show[contextIndex] == WatchShow::WS_HEX)) { show[contextIndex] = WatchShow::WS_HEX; eval=true; }
+			if (ImGui::Selectable("Decimal", show[contextIndex] == WatchShow::WS_DEC)) { show[contextIndex] = WatchShow::WS_DEC; eval=true; }
+			if (ImGui::Selectable("Binary", show[contextIndex] == WatchShow::WS_BIN)) { show[contextIndex] = WatchShow::WS_BIN; eval=true; }
+			ImGui::EndPopup();
+		}
+		if (eval) { recalcAll = true; }
+	}
+
 
 	if (activeIndex >= 0 && GImGui->NavWindow == ImGui::GetCurrentWindow()) {
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
