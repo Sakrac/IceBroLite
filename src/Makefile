@@ -41,9 +41,9 @@ LIBS =
 
 ifeq ($(UNAME_S), Linux) #LINUX
 	ECHO_MESSAGE = "Linux"
-	LIBS += -lGL `pkg-config --static --libs glfw3` -pthread
+	LIBS += ../../glfw/libglfw3.a -lGL `pkg-config --static --libs ../../glfw/libglfw3` -pthread
 
-	CXXFLAGS += `pkg-config --cflags glfw3`
+	CXXFLAGS += -I../../glfw/include `pkg-config --cflags glfw3`
 	CFLAGS = $(CXXFLAGS)
 endif
 

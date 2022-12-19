@@ -11,6 +11,7 @@
 #include "../Mnemonics.h"
 #include "../Sym.h"
 #include "../C64Colors.h"
+#include "../Files.h"
 #include "GLFW/glfw3.h"
 #include "Views.h"
 #include "WatchView.h"
