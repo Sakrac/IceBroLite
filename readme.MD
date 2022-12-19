@@ -1,6 +1,8 @@
 # IceBro Lite
 
 I've started writing a [manual](manual.MD)!
+Also here are the [linux build instructions](linux.MD).
+It should also build fine on Mac using the makefile but I don't have anything to test it with at home.
 
 Most information below might be outdated, I haven't updated this as I've updated the code.
 
