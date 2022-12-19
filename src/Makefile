@@ -10,6 +10,8 @@
 # MSYS2:
 #   pacman -S --noconfirm --needed mingw-w64-x86_64-toolchain mingw-w64-x86_64-glfw
 #
+# also required: pkg-config
+#	apt-get install pkg-config
 
 CXX = g++
 #CXX = clang++
