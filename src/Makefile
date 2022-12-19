@@ -14,7 +14,7 @@
 CXX = g++
 #CXX = clang++
 
-EXE = ../IceBroLite.exe
+EXE = ../IceBroLite
 SOURCES = 6510.cpp Breakpoints.cpp C64Colors.cpp Config.cpp Expressions.cpp FileDialog.cpp Files.cpp
 SOURCES += IceBroLite.cpp Icons.cpp Image.cpp ImGui_Helper.cpp Mnemonics.cpp
 SOURCES += Platform.cpp SaveState.coo SourceDebug.cpp StartVice.cpp struse.cpp Sym.cpp
@@ -41,9 +41,9 @@ LIBS =
 
 ifeq ($(UNAME_S), Linux) #LINUX
 	ECHO_MESSAGE = "Linux"
-	LIBS += ../../glfw/libglfw3.a -lGL `pkg-config --static --libs ../../glfw/libglfw3` -pthread
+	LIBS += -lGL `pkg-config --static --libs glfw3` -pthread
 
-	CXXFLAGS += -I../../glfw/include `pkg-config --cflags glfw3`
+	CXXFLAGS += `pkg-config --cflags glfw3`
 	CFLAGS = $(CXXFLAGS)
 endif
 
@@ -64,6 +64,7 @@ ifeq ($(findstring MINGW,$(UNAME_S)),MINGW)
 
 	CXXFLAGS += `pkg-config --cflags glfw3`
 	CFLAGS = $(CXXFLAGS)
+	EXESUFFIX = .exe
 endif
 
 ##---------------------------------------------------------------------
@@ -88,12 +89,12 @@ endif
 %.o:struse/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-all: $(EXE)
+all: $(EXE)$(EXESUFFIX)
 	@echo Build complete for $(ECHO_MESSAGE)
 
-$(EXE): $(OBJS)
+$(EXE)$(EXESUFFIX): $(OBJS)
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LIBS)
 
 clean:
-	rm -f $(EXE) $(OBJS)
+	rm -f $(EXE)$(EXESUFFIX) $(OBJS)
 
