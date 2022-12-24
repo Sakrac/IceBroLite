@@ -606,6 +606,63 @@ int InstructionBytes(CPU6510* cpu, uint16_t addr, bool illegals)
 	return arg_size + 1;
 }
 
+uint16_t InstrRefAddr(CPU6510* cpu, uint16_t addr) {
+	const dismnm* opcodes = a6502_ops;
+	uint8_t m = opcodes[cpu->GetByte(addr)].addrMode;
+	switch (m) {
+		case AM_ZP_REL_X:
+		{	// 0 ($12:x)
+			uint8_t z = cpu->GetByte(addr + 1) + cpu->regs.X;
+			return cpu->GetByte(z) + ((uint16_t)cpu->GetByte((z + 1) & 0xff) << 8);
+		}
+		case AM_ZP:
+		{	// 1 $12
+			uint8_t z = cpu->GetByte(addr + 1);
+			return z;
+		}
+		case AM_ABS:
+		{	// 3 $1234
+			return cpu->GetByte(addr + 1) + ((uint16_t)cpu->GetByte((addr + 2)) << 8);
+		}
+		case AM_ZP_Y_REL:
+		{	// 4 ($12):y
+			uint8_t z = cpu->GetByte(addr + 1);
+			return cpu->GetByte(z) + cpu->regs.Y + ((uint16_t)cpu->GetByte((z + 1) & 0xff) << 8);
+		}
+		case AM_ZP_X:
+		{	// 5 $12:x
+			return cpu->GetByte(addr + 1) + cpu->regs.X;
+		}
+		case AM_ABS_Y:
+		{	// 6 $1234:y
+			return cpu->GetByte(addr + 1) + ((uint16_t)cpu->GetByte((addr + 2)) << 8) + cpu->regs.Y;
+		}
+		case AM_ABS_X:
+		{	// 7 $1234:x
+			return cpu->GetByte(addr + 1) + ((uint16_t)cpu->GetByte((addr + 2)) << 8) + cpu->regs.X;
+		}
+		case AM_REL:
+		{	// 8 ($1234)
+			uint16_t arg = cpu->GetByte(addr + 1) + ((uint16_t)cpu->GetByte((addr + 2)) << 8);
+			return cpu->GetByte(arg) + ((uint16_t)cpu->GetByte(((arg + 1) & 0xff) | (arg & 0xff00)) << 8);
+		}
+		case AM_ACC:
+		{	// 9 AS
+			break;
+		}
+		case AM_ZP_REL_Y:
+		{	// c ($12:y)
+			uint8_t z = cpu->GetByte(addr + 1) + cpu->regs.Y;
+			return cpu->GetByte(z) + ((uint16_t)cpu->GetByte((z + 1) & 0xff) << 8);
+		}
+		case AM_ZP_Y:
+		{	// d $12:x
+			return cpu->GetByte(addr + 1) + cpu->regs.Y;
+		}
+	}
+	return 0;
+}
+
 int InstrRef(CPU6510* cpu, uint16_t pc, char* buf, size_t bufSize)
 {
 	const dismnm* opcodes = a6502_ops;

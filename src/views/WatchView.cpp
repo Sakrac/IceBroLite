@@ -222,6 +222,7 @@ void WatchView::Draw(int index)
 				expressions[i] = expressions[i + 1];
 				rpnExp[i] = rpnExp[i + 1];
 				results[i] = results[i + 1];
+				show[i] = show[i + 1];
 			}
 			--numExpressions;
 			expressions[numExpressions].clear();
@@ -234,11 +235,13 @@ void WatchView::Draw(int index)
 				expressions[i] = expressions[i - 1];
 				rpnExp[i] = rpnExp[i - 1];
 				results[i] = results[i - 1];
+				show[i] = show[i - 1];
 			}
 			++numExpressions;
 			expressions[activeIndex].clear();
 			rpnExp[activeIndex].clear();
 			results[activeIndex].clear();
+			show[activeIndex] = WatchShow::WS_HEX;
 			editExpression = -1;
 		}
 		else if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_ENTER)) {

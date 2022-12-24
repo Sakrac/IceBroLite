@@ -230,9 +230,33 @@ void CodeView::Draw(int index)
 			editAsmFocusRequested = true;
 		}
 
+		int srcSpaces = 0;
+		strl_t srcCol = 0;
+		strref srcLine = {};
+		if (showSrc) {
+			srcLine = GetSourceAt(read, srcSpaces);
+			srcCol = (showAddress ? 6 : 0) + (showBytes ? 9 : 0) + (showRefs ? 11 : 0) + (showLabels ? 6 : 0) + (showDisAsm ? 12 : 0) + (srcSpaces + 3) / 4;
+		}
+
 		// mouse hover
 		if (mousePos.y >= (winPos.y + linePos.y) && mousePos.y <= (winPos.y + linePos.y + lineHeight) &&
 			mousePos.x > linePos.x && mousePos.x < (winPos.x + winSize.x - 8)) {
+			// check for drag and drop of reference
+			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+				if (uint16_t refAddr = InstrRefAddr(cpu, read)) {
+					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceExtern)) {
+						SymbolDragDrop drag;
+						drag.address = refAddr;
+						strovl lblStr(drag.symbol, sizeof(drag.symbol));
+						lblStr.sprintf("$%04x", refAddr); lblStr.c_str();
+						ImGui::SetDragDropPayload("AddressDragDrop", &drag, sizeof(drag));
+						strown<8> refStr; refStr.append_num(refAddr, 4, 16);
+						ImGui::Text(refStr.c_str());
+						ImGui::EndDragDropSource();
+					}
+				}
+			}
+
 			// check for custom tooltip
 			uint8_t opcode = cpu->GetByte(read);
 			bool disasm = false;
@@ -263,15 +287,6 @@ void CodeView::Draw(int index)
 				ImGui::EndTooltip();
 			}
 		}
-
-		int srcSpaces = 0;
-		strl_t srcCol = 0;
-		strref srcLine = {};
-		if (showSrc) {
-			srcLine = GetSourceAt(read, srcSpaces);
-			srcCol = (showAddress ? 6 : 0) + (showBytes ? 9 : 0) + (showRefs ? 11 : 0) + (showLabels ? 6 : 0) + (showDisAsm ? 12 : 0) + (srcSpaces + 3) / 4;
-		}
-
 
 		line.clear();
 		line.append(regs.PC==read ? '>' : ' ');
@@ -368,8 +383,6 @@ void CodeView::Draw(int index)
 			}
 			// very cunningly draw code line AFTER breakpoint
 			ImGui::Text(line.c_str());
-
-				
 			if (showSrc && srcLine) {
 				ImGui::SameLine();
 				ImVec2 srcPos(linePos.x + srcCol * fontCharWidth, linePos.y);

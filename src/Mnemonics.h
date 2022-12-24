@@ -26,5 +26,6 @@ enum AddressModes {
 
 int Disassemble(CPU6510* cpu, uint16_t addr, char* dest, int left, int& chars, int& branchTrg, bool showBytes, bool illegals, bool showLabels, bool showDis);
 int Assemble(CPU6510* cpu, char* cmd, uint16_t addr);
+uint16_t InstrRefAddr(CPU6510* cpu, uint16_t addr);
 int InstrRef(CPU6510* cpu, uint16_t pc, char* buf, size_t bufSize);
 int InstructionBytes(CPU6510* cpu, uint16_t addr, bool illegals = true);
