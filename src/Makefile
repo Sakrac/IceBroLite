@@ -4,14 +4,13 @@
 #
 # You will need GLFW (http://www.glfw.org):
 # Linux:
-#   apt-get install libglfw-dev
+#   apt-get install libglfw3-dev
+#	apt-get install pkg-config
 # Mac OS X:
 #   brew install glfw
 # MSYS2:
 #   pacman -S --noconfirm --needed mingw-w64-x86_64-toolchain mingw-w64-x86_64-glfw
 #
-# also required: pkg-config
-#	apt-get install pkg-config
 
 CXX = g++
 #CXX = clang++
