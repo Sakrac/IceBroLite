@@ -220,7 +220,7 @@ void CodeView::Draw(int index)
 		if (uint16_t refAddr = InstrRefAddr(cpu, contextAddr)) {
 			strown<16> refAddrStr; refAddrStr.append('$').append_num(refAddr, 4, 16);
 			InstrRefType refType = GetRefType(cpu, contextAddr);
-			if (refType == InstrRefType::DataArray) {
+			if (refType == InstrRefType::DataArray || refType ==InstrRefType::DataValue) {
 				for (int w = 0; w < 2; ++w) {
 					strown<12> watch_name; watch_name.append("Watch ").append_num(w + 1, 1, 10);
 					if (ImGui::BeginMenu(watch_name.c_str())) {
