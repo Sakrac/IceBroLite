@@ -11,6 +11,10 @@ void SetMemoryViewAddr(uint16_t addr, int view = -1);
 bool SaveLayoutOnExit();
 void ReviewListing();
 
+void AddWatch(int watch, const char* expr);
+
+void SetCodeAddr(int code, uint16_t addr);
+
 float CurrFontSize();
 uint8_t InputHex();
 void SelectFont(int size);

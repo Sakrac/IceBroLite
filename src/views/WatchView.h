@@ -41,6 +41,8 @@ struct WatchView {
 
 	void Evaluate(int index);
 
+	void AddWatch(const char* expression);
+
 	void EvaluateItem(int index);
 
 	void WriteConfig(UserData& config);

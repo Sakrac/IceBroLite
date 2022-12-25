@@ -10,6 +10,7 @@
 #include "../Breakpoints.h"
 #include "../ViceInterface.h"
 #include "../ImGui_Helper.h"
+#include "../imgui/imgui_internal.h"
 #include "GLFW/glfw3.h"
 #include "../Image.h"
 #include "../Config.h"
@@ -213,6 +214,39 @@ void CodeView::Draw(int index)
 		SetAddr(addr);
 	}
 
+	strown<32> ctxId; ctxId.append("code").append_num(index, 1, 10).append("_ctx").c_str();
+	if (ImGui::BeginPopupEx(ImGui::GetCurrentWindow()->GetID(ctxId.get()),
+		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings)) {
+		if (uint16_t refAddr = InstrRefAddr(cpu, contextAddr)) {
+			strown<16> refAddrStr; refAddrStr.append('$').append_num(refAddr, 4, 16);
+			InstrRefType refType = GetRefType(cpu, contextAddr);
+			if (refType == InstrRefType::DataArray) {
+				for (int w = 0; w < 2; ++w) {
+					strown<12> watch_name; watch_name.append("Watch ").append_num(w + 1, 1, 10);
+					if (ImGui::BeginMenu(watch_name.c_str())) {
+						char watchStr[32];
+						for (int s = 0; s <= 17; ++s) {
+							if (GetWatchRef(cpu, contextAddr, s, watchStr, sizeof(watchStr))) {
+								if (ImGui::MenuItem(watchStr)) {
+									AddWatch(w, watchStr);
+								}
+							}
+						}
+						ImGui::EndMenu();
+					}
+				}
+			} else if (refType == InstrRefType::Code) {
+				for (int c = 0; c < 4; ++c) {
+					strown<16> code_name; code_name.append("Code ").append_num(c+1, 1, 10).append("=$").append_num(refAddr, 4, 16);
+					if (ImGui::MenuItem(code_name.c_str())) {
+						SetCodeAddr(c, refAddr);
+					}
+				}
+			}
+		}
+		ImGui::EndPopup();
+	}
+
 	uint16_t prevLineAddr = read;
 	int nextLineAddr = -1;
 	bool editAsmDone = false;
@@ -255,6 +289,11 @@ void CodeView::Draw(int index)
 						ImGui::EndDragDropSource();
 					}
 				}
+			}
+
+			if (ImGui::IsMouseReleased(ImGuiMouseButton_Right)) {
+				ImGui::OpenPopupEx(ImGui::GetCurrentWindow()->GetID(ctxId.get()));
+				contextAddr = read;
 			}
 
 			// check for custom tooltip

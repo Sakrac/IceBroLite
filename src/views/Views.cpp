@@ -78,6 +78,7 @@ static const ImWchar C64CharRanges[] =
 	//	0xA640, 0xA69F, // Cyrillic Extended-B
 	//	0,
 };
+
 void ResetWindowLayout()
 {
 	ImGuiID dockspace_id = ImGui::GetID("IceBroLiteDockSpace");
@@ -556,5 +557,24 @@ void ReviewListing()
 {
 	if (viewContext && GetListingFile()) {
 		viewContext->preView.ShowListing(GetListingFile());
+	}
+}
+
+void AddWatch(int watch, const char* expr) {
+	if (viewContext && watch < ViewContext::MaxWatchViews) {
+		viewContext->watchView[watch].AddWatch(expr);
+		viewContext->watchView[watch].open = true;
+	}
+}
+
+void SetCodeAddr(int code, uint16_t addr) {
+	if (viewContext && code < ViewContext::MaxCodeViews) {
+		viewContext->codeView[code].addrValue = addr;
+		viewContext->codeView[code].addrCursor = addr;
+		viewContext->codeView[code].lastShownPC = addr;
+		viewContext->codeView[code].open = true;
+		viewContext->codeView[code].showPCAddress = false;
+		strovl addrOvl(viewContext->codeView[code].address, sizeof(viewContext->codeView[code].address));
+		addrOvl.append('$').append_num(addr, 4, 16).c_str();
 	}
 }

@@ -55,6 +55,22 @@ void WatchView::Evaluate(int index) {
 	EvaluateItem(index);
 }
 
+void WatchView::AddWatch(const char* expression) {
+	for (int i = 0; i < numExpressions; ++i) {
+		if (expressions[i].same_str(expression)) {
+			activeIndex = i;
+			return;
+		}
+	}
+	if (numExpressions < MaxExp) {
+		expressions[numExpressions].copy(expression);
+		activeIndex = numExpressions;
+		++numExpressions;
+		rebuildAll = true;
+		recalcAll = true;
+	}
+}
+
 void WatchView::EvaluateItem(int index) {
 	if (index < 0 || index >= MaxExp) {
 		return;

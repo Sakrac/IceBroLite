@@ -23,6 +23,7 @@ struct CodeView
 
 	int editAsmAddr;
 	int cursor[ 2 ];
+	int contextAddr;
 	float cursorTime;
 	float mouseWheelDiff;
 	bool showAddress;
