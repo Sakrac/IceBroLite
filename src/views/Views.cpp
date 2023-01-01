@@ -575,7 +575,7 @@ bool LoadUserFont(const char* file, int size) {
 }
 
 void CheckUserFont() {
-	if (!sUserFont) {
+	if (!sUserFont && sUserFontName.valid()) {
 		sUserFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(
 			sUserFontName.c_str(), (float)sUserFontSize, NULL, UserCharRanges);
 	}
