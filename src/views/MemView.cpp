@@ -160,6 +160,37 @@ void MemView::Draw(int index)
 		ImVec2 winPos = ImGui::GetWindowPos();
 		ImVec2 winSize = ImGui::GetWindowSize();
 
+		if (ImGui::IsMouseDown(ImGuiMouseButton_Middle) && !fixedAddress) {
+			float dy = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle, 4.0f).y;
+			if (!dragging) {
+				if (mousePos.x >= curPos.x && mousePos.x < (winPos.x + winSize.x) && mousePos.y >= curPos.y && mousePos.y < (winPos.y + winSize.y) && address[0] != '=') {
+					if (dy > 3.0f || dy < -3.0f) {
+						dragging = true;
+						mouseDragY = 0;
+						dragDiff = 0;
+					}
+				}
+			} else {
+				ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+				dragDiff += dy - mouseDragY;
+				mouseDragY = dy;
+				while (dragDiff < -fontHgt) {
+					dragDiff += fontHgt;
+					addrValue += spanWin;
+				}
+				while (dragDiff > fontHgt) {
+					dragDiff -= fontHgt;
+					addrValue -= spanWin;
+				}
+			}
+		} else if (dragging) {
+			mouseDragY = 0.0f;
+			dragging = false;
+			ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
+		}
+
+
+
 		// handle scroll wheel
 		if (mousePos.x >= curPos.x && mousePos.x < (winPos.x + winSize.x) && mousePos.y >= curPos.y && mousePos.y < (winPos.y + winSize.y) && address[0] != '=') {
 			mouseWheelDiff += ImGui::GetIO().MouseWheel;

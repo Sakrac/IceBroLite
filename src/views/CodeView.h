@@ -26,6 +26,8 @@ struct CodeView
 	int contextAddr;
 	float cursorTime;
 	float mouseWheelDiff;
+	float mouseDragY, dragDiff;
+
 	bool showAddress;
 	bool showBytes;
 	bool showDisAsm;
@@ -38,6 +40,7 @@ struct CodeView
 	bool showPCAddress;
 	bool focusPC;
 	bool editAsmFocusRequested;
+	bool dragging;
 
 	void Draw( int index );
 };

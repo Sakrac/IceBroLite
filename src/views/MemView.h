@@ -16,6 +16,9 @@ struct MemView {
 
 	float cursorTime;
 	float mouseWheelDiff;
+
+	float mouseDragY, dragDiff;
+
 	bool showAddress;
 	bool showHex;
 	bool showText;
@@ -27,6 +30,8 @@ struct MemView {
 	bool open;
 	bool evalAddress;
 	bool textLowercase;
+
+	bool dragging;
 
 	void SetAddr(uint16_t addr);
 	void Draw(int index);

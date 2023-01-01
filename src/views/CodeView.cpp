@@ -160,8 +160,29 @@ void CodeView::Draw(int index)
 	int dY = 0;
 	int sY = 0;
 
+	if (ImGui::IsMouseDown(ImGuiMouseButton_Middle) && !fixedAddress) {
+		float dy = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle, 4.0f).y;
+		if (!dragging && (dy > 3.0f || dy < -3.0f)) {
+			if (mousePos.x >= curPos.x && mousePos.x < (winPos.x + winSize.x) && mousePos.y >= curPos.y && mousePos.y < (winPos.y + winSize.y) && address[0] != '=') {
+				dragging = true;
+				mouseDragY = 0;
+				dragDiff = 0;
+			}
+		} else {
+			float fontHgt = ImGui::GetTextLineHeightWithSpacing()-2;
+			dragDiff += dy - mouseDragY;
+			mouseDragY = dy;
+			sY = -(int)(dragDiff / fontHgt);
+			dragDiff += sY * fontHgt;
+			ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+		}
+	} else {
+		mouseDragY = 0.0f;
+		dragging = false;
+	}
+
 	// handle scroll wheel
-	if (mousePos.x >= curPos.x && mousePos.x < (winPos.x + winSize.x) && mousePos.y >= curPos.y && mousePos.y < (winPos.y + winSize.y) && address[0]!='=') {
+	if (!dragging && mousePos.x >= curPos.x && mousePos.x < (winPos.x + winSize.x) && mousePos.y >= curPos.y && mousePos.y < (winPos.y + winSize.y) && address[0]!='=') {
 		mouseWheelDiff += ImGui::GetIO().MouseWheel;
 		if (mouseWheelDiff < -0.5f) { sY = 1; mouseWheelDiff += 1.0f; }
 		else if (mouseWheelDiff > 0.5) { sY = -1; mouseWheelDiff -= 1.0f; }
