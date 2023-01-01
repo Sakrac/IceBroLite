@@ -67,6 +67,9 @@ void StyleC64_Green();
 
 static int imgui_style = 0;
 static ViewContext* viewContext = nullptr;
+static strown<MAX_PATH> sUserFontName;
+static int sUserFontSize = 0;
+static ImFont* sUserFont = nullptr;
 static float sFontSizes[ViewContext::sNumFontSizes] = { 8.0f, 10.0f, 12.0, 14.0f, 16.0f, 20.0f, 24.0f };
 static const ImWchar C64CharRanges[] =
 {
@@ -77,6 +80,11 @@ static const ImWchar C64CharRanges[] =
 	//	0x2DE0, 0x2DFF, // Cyrillic Extended-A
 	//	0xA640, 0xA69F, // Cyrillic Extended-B
 	//	0,
+};
+static const ImWchar UserCharRanges[] =
+{
+	0x0020, 0x00FF, // Basic Latin + Latin Supplement
+	0
 };
 
 void ResetWindowLayout()
@@ -183,8 +191,10 @@ void ViewContext::SaveState(UserData& conf)
 	conf.BeginStruct("Screen"); screenView.WriteConfig(conf); conf.EndStruct();
 	conf.BeginStruct("Trace"); traceView.WriteConfig(conf); conf.EndStruct();
 	conf.AddValue("FontSize", currFont);
-
-	conf.AddValue("Style", imgui_style);
+	if (sUserFont && sUserFontSize && sUserFontName.valid()) {
+		conf.AddValue("UserFont", sUserFontName.get_strref());
+		conf.AddValue("UserFontSize", sUserFontSize);
+	}
 }
 
 void ViewContext::LoadState(strref config)
@@ -197,6 +207,10 @@ void ViewContext::LoadState(strref config)
 			if (name.same_str("FontSize")) {
 				int fontSize = (int)value.atoi();
 				SelectFont(fontSize);
+			} else if (name.same_str("UserFont")) {
+				sUserFontName.copy(value);
+			} else if (name.same_str("UserFontSize")) {
+				sUserFontSize = (int)value.atoi();
 			} else if(name.same_str("Style")) {
 				imgui_style = (int)value.atoi();
 				switch (imgui_style) {
@@ -335,6 +349,9 @@ void ViewContext::Draw()
 					if (ImGui::MenuItem(sz.c_str())) { SelectFont(i); }
 				}
 				if (ImGui::MenuItem("ImGui default")) { UseDefaultFont(); }
+				if (sUserFont) {
+					if (ImGui::MenuItem("Custom Font")) { UseCustomFont(); }
+				}
 				ImGui::EndMenu();
 			}
 
@@ -501,6 +518,33 @@ void SelectFont(int size)
 	}
 }
 
+void ViewPushFont(int size) {
+	if (size < 0 || size >= ViewContext::sNumFontSizes) { size = 1; }
+	ImGui::PushFont(viewContext->aFonts[size]);
+}
+
+void ViewPopFont() {
+	ImGui::PopFont();
+}
+
+int PetsciiFont() {
+	if (viewContext->currFont < ViewContext::sNumFontSizes) {
+		return -1; // already a petscii font
+	}
+
+	if (viewContext->currFont == (ViewContext::sNumFontSizes + 1) && sUserFontSize) {
+		int best = 1;
+		int diff = 1000;
+		for (int s = 0; s < (int)(sizeof(sFontSizes) / sizeof(sFontSizes[0])); ++s) {
+			int d = abs((int)sFontSizes[s] - sUserFontSize);
+			if (d < diff) { best = s; diff = d; }
+		}
+		return best;
+	}
+	return 1;
+}
+
+
 void UseDefaultFont()
 {
 	if (viewContext) {
@@ -508,6 +552,42 @@ void UseDefaultFont()
 		GImGui->IO.FontDefault = nullptr;
 	}
 }
+
+bool UseCustomFont() {
+	if (viewContext && sUserFont) {
+		viewContext->currFontSize = (float)sUserFontSize;
+		GImGui->IO.FontDefault = sUserFont;
+		viewContext->nextFont = viewContext->currFont = 8;
+		return true;
+	}
+	return false;
+}
+
+bool LoadUserFont(const char* file, int size) {
+	sUserFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(
+		file, (float)size, NULL, UserCharRanges);
+	if (sUserFont) {
+		sUserFontName.copy(file);
+		sUserFontSize = size;
+		return true;
+	}
+	return false;
+}
+
+void CheckUserFont() {
+	if (!sUserFont) {
+		sUserFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(
+			sUserFontName.c_str(), (float)sUserFontSize, NULL, UserCharRanges);
+	}
+	if (sUserFont) {
+		UseCustomFont();
+	} else {
+		sUserFontName.clear();
+		sUserFontSize = 0;
+	}
+}
+
+
 
 void RefreshScreen(uint8_t* img, uint16_t w, uint16_t h,
 	uint16_t sx, uint16_t sy, uint16_t sw, uint16_t sh)

@@ -236,8 +236,16 @@ int main(int argc, char* argv[])
 			else if (cmd.same_str("symbols")) { strovl ovl(forceLoadSymbols, sizeof(forceLoadSymbols)); ovl.copy(line); ovl.c_str(); }
 			else if (cmd.same_str("connect")) { ViceConnect("127.0.0.1", 6502); }
 			else if (cmd.same_str("start")) { if (line) { SetViceEXEPath(line); } LoadViceEXE(); }
+			else if (cmd.same_str("font")) {
+				if (line) {
+					strref file = line.split_token(',');
+					LoadUserFont(strown<MAX_PATH>(file).c_str(), line.atoi() ? (int)line.atoi() : 13);
+				}
+			}
 		}
 	}
+
+	CheckUserFont();
 
 	// if only symbols provided just read those in immediately
 	if (forceLoadProgram[0] == 0 && forceLoadSymbols[0] != 0) {
@@ -294,7 +302,7 @@ int main(int argc, char* argv[])
 		ImGui::PopStyleVar(2);
 
 		if (firstFrame) {
-			SelectFont(2);
+			if (!UseCustomFont()) { SelectFont(2); }
 		}
 
 		ImGuiID dockspace_id = ImGui::GetID("IceBroLiteDockSpace");

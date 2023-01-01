@@ -192,7 +192,7 @@ void CodeView::Draw(int index)
 	strown<128> line;
 	uint16_t read = addrValue;
 	int lineNum = 0;
-	float fontCharWidth = CurrFontSize();
+	float fontCharWidth = ImGui::GetFont()->GetCharAdvance('W');// CurrFontSize();
 	float lineHeight = ImGui::GetTextLineHeightWithSpacing()-2;
 
 	if (sY<0) {

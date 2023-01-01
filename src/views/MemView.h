@@ -26,6 +26,7 @@ struct MemView {
 
 	bool open;
 	bool evalAddress;
+	bool textLowercase;
 
 	void SetAddr(uint16_t addr);
 	void Draw(int index);

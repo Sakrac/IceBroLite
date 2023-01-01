@@ -8,6 +8,7 @@
 //#include "ViceConnect.h"
 #include "../Config.h"
 #include "../ImGui_Helper.h"
+#include "../imgui/imgui_internal.h"
 #include "../Sym.h"
 #include "GLFW/glfw3.h"
 
@@ -111,6 +112,17 @@ void MemView::Draw(int index)
 		evalAddress = false;
 	}
 
+	strown<32> ctxId; ctxId.append("code").append_num(index, 1, 10).append("_ctx").c_str();
+	if (ImGui::BeginPopupEx(ImGui::GetCurrentWindow()->GetID(ctxId.get()),
+		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings)) {
+		if (ImGui::MenuItem("Lowercase", NULL, textLowercase)) {
+			textLowercase = !textLowercase;
+		}
+		ImGui::EndPopup();
+	}
+
+	int petsciiFont = PetsciiFont();
+
 	ImGui::Columns(1);
 	{
 		strown<16> addrStr;
@@ -122,6 +134,8 @@ void MemView::Draw(int index)
 		ImGui::Checkbox("hex", &showHex);
 		ImGui::SameLine();
 		ImGui::Checkbox("text", &showText);
+		ImGui::SameLine();
+		ImGui::Checkbox("case", &textLowercase);
 	}
 	ImGui::BeginChild(ImGui::GetID("hexEdit"));
 
@@ -133,7 +147,7 @@ void MemView::Draw(int index)
 		wasActive = active;
 
 		// force font spacing
-		float fontWidth = ImGui::GetFont()->GetCharAdvance('W');
+		float fontWidth = ImGui::GetFont()->GetCharAdvance('D');
 		float fontHgt = ImGui::GetFont()->FontSize;
 		uint32_t charWid = (uint32_t)(ImGui::GetWindowWidth()/fontWidth);
 
@@ -205,13 +219,29 @@ void MemView::Draw(int index)
 					line.append_num(cpu->GetByte(bytes++), 2, 16).append(' ');
 				}
 			}
-			if (showText) {
+			if (showText && petsciiFont<0) {
 				uint16_t chars = read;
 				for (uint32_t c = 0; c<spanWin; ++c) {
-					line.push_utf8(0xee00+cpu->GetByte(chars++));
+					line.push_utf8((textLowercase ? 0xee00 : 0xef00 )+cpu->GetByte(chars++));
 				}
 			}
 			ImGui::Text(line.c_str());
+			if (showText && petsciiFont >= 0) {
+				float yPos = ImGui::GetCursorPosY();
+				ImGui::SameLine();
+				ImGui::SetCursorPosX(line.len()* fontWidth);
+				ViewPushFont(petsciiFont);
+				line.clear();
+				uint16_t chars = read;
+				for (uint32_t c = 0; c < spanWin; ++c) {
+					line.push_utf8((textLowercase ? 0xee00 : 0xef00) + cpu->GetByte(chars++));
+				}
+				ImGui::Text(line.c_str());
+				ImGui::PopFont();
+				ImGui::SetCursorPosY(yPos);
+			}
+
+
 			read += spanWin;
 		}
 

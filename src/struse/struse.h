@@ -3767,7 +3767,7 @@ strref strref::find_wildcard(const strref wild, strl_t start, bool case_sensitiv
 					break;
 
 				case WCST_NEXT_SUBSTR:
-					valid = same_substr_case_esc(segs[seg], pos);
+					valid = case_sensitive ? same_substr_case_esc(segs[seg], pos) : same_substr_esc(segs[seg], pos);
 					if (!valid)
 						break;
 					pos += (int)segs[seg++].length;
