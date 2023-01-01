@@ -548,6 +548,7 @@ int PetsciiFont() {
 void UseDefaultFont()
 {
 	if (viewContext) {
+		viewContext->nextFont = viewContext->currFont = ViewContext::sNumFontSizes;
 		viewContext->currFontSize = 7;
 		GImGui->IO.FontDefault = nullptr;
 	}
@@ -557,7 +558,7 @@ bool UseCustomFont() {
 	if (viewContext && sUserFont) {
 		viewContext->currFontSize = (float)sUserFontSize;
 		GImGui->IO.FontDefault = sUserFont;
-		viewContext->nextFont = viewContext->currFont = 8;
+		viewContext->nextFont = viewContext->currFont = ViewContext::sNumFontSizes + 1;
 		return true;
 	}
 	return false;
