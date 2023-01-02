@@ -74,7 +74,7 @@ static float sFontSizes[ViewContext::sNumFontSizes] = { 8.0f, 10.0f, 12.0, 14.0f
 static const ImWchar C64CharRanges[] =
 {
 	0x0020, 0x00FF, // Basic Latin + Latin Supplement
-	0xee00, 0xeeff,
+	0xee00, 0xefff,
 	0
 	//	0x0400, 0x052F, // Cyrillic + Cyrillic Supplement
 	//	0x2DE0, 0x2DFF, // Cyrillic Extended-A

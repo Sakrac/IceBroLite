@@ -252,8 +252,10 @@ void MemView::Draw(int index)
 			}
 			if (showText && petsciiFont<0) {
 				uint16_t chars = read;
+				uint32_t base = textLowercase ? (uint32_t)0xee00 : (uint32_t)0xef00;
 				for (uint32_t c = 0; c<spanWin; ++c) {
-					line.push_utf8((textLowercase ? 0xee00 : 0xef00 )+cpu->GetByte(chars++));
+					uint32_t code = base + cpu->GetByte(chars++);
+					line.push_utf8(code);
 				}
 			}
 			ImGui::Text(line.c_str());
