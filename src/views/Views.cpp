@@ -190,6 +190,7 @@ void ViewContext::SaveState(UserData& conf)
 	// ScreenView screenView;
 	conf.BeginStruct("Screen"); screenView.WriteConfig(conf); conf.EndStruct();
 	conf.BeginStruct("Trace"); traceView.WriteConfig(conf); conf.EndStruct();
+	conf.AddValue("Style", imgui_style);
 	conf.AddValue("FontSize", currFont);
 	if (sUserFont && sUserFontSize && sUserFontName.valid()) {
 		conf.AddValue("UserFont", sUserFontName.get_strref());
