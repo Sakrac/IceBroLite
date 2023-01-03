@@ -157,7 +157,7 @@ ExpOp ParseOp(ExpStr &str, uint32_t &v)
 				} else if (C=='S' && *str=='1' && str[1]=='6' && !IsAlphaNumeric(str[1])) {
 					str += 2;
 					return EO_SGN16;
-				} else if (!IsAlphaNumeric(*str)) {
+				} else if (!IsAlphaNumeric(*str) && *str != '_') {
 					switch (C) {
 						case 'A': return EO_A;
 						case 'X': return EO_X;
