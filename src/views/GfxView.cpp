@@ -250,9 +250,7 @@ void GfxView::Draw(int index)
 		}
 		if (prevMode != displayMode) { redraw = true; }
 		ImGui::NextColumn();
-		name.copy("zoom##");
-		name.append_num(index + 1, 1, 10);
-		ImGui::Combo(name.c_str(), &zoom, "Pixel\0Double\0Quad\0Fit X\0Fit Y\0Fit Window\0\0");
+		// multicolor check?
 
 		if (displayMode != C64_Current) {
 			ImGui::NextColumn();
@@ -300,6 +298,15 @@ void GfxView::Draw(int index)
 		reeval = false;
 	}
 
+	if (ImGui::BeginPopupContextWindow()) {
+		if (ImGui::Selectable("Pixel", zoom == Zoom_1x1)) { zoom = Zoom_1x1; }
+		if (ImGui::Selectable("Double", zoom == Zoom_2x2)) { zoom = Zoom_2x2; }
+		if (ImGui::Selectable("Quad", zoom == Zoom_4x4)) { zoom = Zoom_4x4; }
+		if (ImGui::Selectable("Fit X", zoom == Zoom_FitX)) { zoom = Zoom_FitX; }
+		if (ImGui::Selectable("Fit Y", zoom == Zoom_FitY)) { zoom = Zoom_FitY; }
+		if (ImGui::Selectable("Fit Window", zoom == Zoom_FitWindow)) { zoom = Zoom_FitWindow; }
+		ImGui::EndPopup();
+	}
 
 	ImVec2 size = ImVec2(float(bitmapWidth), float(bitmapHeight));
 	switch (zoom) {
