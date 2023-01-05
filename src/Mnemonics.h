@@ -41,3 +41,4 @@ InstrRefType GetRefType(CPU6510* cpu, uint16_t addr);
 uint16_t InstrRefAddr(CPU6510* cpu, uint16_t addr);
 int InstrRef(CPU6510* cpu, uint16_t pc, char* buf, size_t bufSize);
 int InstructionBytes(CPU6510* cpu, uint16_t addr, bool illegals = true);
+int ValidInstructionBytes(CPU6510* cpu, uint16_t addr, bool illegals = true);

@@ -28,6 +28,7 @@ CodeView::CodeView() : open(false), evalAddress(false)
 	showSrc = false;
 	showRefs = false;
 	showLabels = true;
+	trackPC = false;
 	editAsmFocusRequested = false;
 	editAsmAddr = -1;
 	mouseWheelDiff = 0.0f;
@@ -54,6 +55,7 @@ void CodeView::WriteConfig(UserData& config)
 	config.AddValue(strref("fixedAddress"), config.OnOff(fixedAddress));
 	config.AddValue(strref("showLabels"), config.OnOff(showLabels));
 	config.AddValue(strref("showSrc"), config.OnOff(showSrc));
+	config.AddValue(strref("trackPC"), config.OnOff(trackPC));
 }
 
 void CodeView::ReadConfig(strref config)
@@ -79,7 +81,98 @@ void CodeView::ReadConfig(strref config)
 			showLabels = !value.same_str("Off");
 		} else if (name.same_str("showSrc") && type == ConfigParseType::CPT_Value) {
 			showSrc = !value.same_str("Off");
+		} else if (name.same_str("trackPC") && type == ConfigParseType::CPT_Value) {
+			trackPC = !value.same_str("Off");
 		}
+	}
+}
+
+bool CodeView::EditAssembly() {
+	if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_ESCAPE)) {
+		editAsmAddr = -1;
+		ForceKeyboardCanvas("DisAsmView");
+	}
+	if (editAsmFocusRequested) {
+		ImGui::SetKeyboardFocusHere();
+		editAsmFocusRequested = false;
+	}
+	strown<32> editID("Edit Asm##");
+	editID.append_num(editAsmAddr, 4, 16);
+	if (ImGui::InputText(editID.c_str(), editAsmStr, sizeof(editAsmStr), ImGuiInputTextFlags_EnterReturnsTrue)) {
+		int size = Assemble(GetCurrCPU(), editAsmStr, editAsmAddr);
+		if (!size) {
+			editAsmAddr = -1;
+			ForceKeyboardCanvas("DisAsmView");
+		}
+		else {
+			editAsmStr[0] = 0;
+			editAsmFocusRequested = true;
+			editAsmAddr += size;
+		}
+		return true;
+	}
+	return false;
+}
+
+void CodeView::CodeContextMenu(CPU6510 *cpu, int index)
+{
+	strown<32> ctxId; ctxId.append("code").append_num(index, 1, 10).append("_ctx").c_str();
+	if (ImGui::BeginPopupEx(ImGui::GetCurrentWindow()->GetID(ctxId.get()),
+		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings)) {
+		if (uint16_t refAddr = InstrRefAddr(cpu, contextAddr)) {
+			strown<16> refAddrStr; refAddrStr.append('$').append_num(refAddr, 4, 16);
+			InstrRefType refType = GetRefType(cpu, contextAddr);
+			if (refType == InstrRefType::DataArray || refType == InstrRefType::DataValue) {
+				for (int w = 0; w < 2; ++w) {
+					strown<12> watch_name; watch_name.append("Watch ").append_num(w + 1, 1, 10);
+					if (ImGui::BeginMenu(watch_name.c_str())) {
+						char watchStr[32];
+						for (int s = 0; s <= 17; ++s) {
+							if (GetWatchRef(cpu, contextAddr, s, watchStr, sizeof(watchStr))) {
+								if (ImGui::MenuItem(watchStr)) {
+									AddWatch(w, watchStr);
+								}
+							}
+						}
+						ImGui::EndMenu();
+					}
+				}
+			}
+			else if (refType == InstrRefType::Code) {
+				for (int c = 0; c < 4; ++c) {
+					strown<16> code_name; code_name.append("Code ").append_num(c + 1, 1, 10).append("=$").append_num(refAddr, 4, 16);
+					if (ImGui::MenuItem(code_name.c_str())) {
+						SetCodeAddr(c, refAddr);
+					}
+				}
+			}
+		}
+		ImGui::EndPopup();
+	}
+}
+
+void CodeView::UpdateTrackPC(CPU6510 *cpu, int& dY, int lines)
+{
+	uint16_t pc = cpu->regs.PC;
+	if (lastShownPC != pc || dY) {
+		uint16_t a = pc;
+		lastShownPCRow += dY;
+		dY = 0;
+		if (lastShownPCRow < 0) { lastShownPCRow = 0; }
+		else if (lastShownPCRow >= lines) { lastShownPCRow = lines - 1; }
+
+		int rows = lastShownPCRow > 0 ? lastShownPCRow : (lines / 3);
+		while (rows) {
+			if (const char* label = GetSymbol(a)) { --rows; }
+			if (rows) {
+				uint16_t an = a--;
+				while (((ValidInstructionBytes(cpu, a) + a) & 0xffff) != an && (an - a) < 3) {
+					--a;
+				}
+				--rows;
+			}
+		}
+		SetAddr(a);
 	}
 }
 
@@ -140,6 +233,8 @@ void CodeView::Draw(int index)
 	ImGui::Checkbox("labels", &showLabels);
 	ImGui::SameLine();
 	ImGui::Checkbox("source", &showSrc);
+	ImGui::SameLine();
+	ImGui::Checkbox("track PC", &trackPC);
 	{	// don't overlap rightmost area
 		ImVec2 content_avail = ImGui::GetContentRegionAvail();
 		content_avail.x -= 8;
@@ -210,9 +305,6 @@ void CodeView::Draw(int index)
 		}
 	}
 
-	strown<128> line;
-	uint16_t read = addrValue;
-	int lineNum = 0;
 	float fontCharWidth = ImGui::GetFont()->GetCharAdvance('W');// CurrFontSize();
 	float lineHeight = ImGui::GetTextLineHeightWithSpacing()-2;
 
@@ -235,39 +327,13 @@ void CodeView::Draw(int index)
 		SetAddr(addr);
 	}
 
-	strown<32> ctxId; ctxId.append("code").append_num(index, 1, 10).append("_ctx").c_str();
-	if (ImGui::BeginPopupEx(ImGui::GetCurrentWindow()->GetID(ctxId.get()),
-		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings)) {
-		if (uint16_t refAddr = InstrRefAddr(cpu, contextAddr)) {
-			strown<16> refAddrStr; refAddrStr.append('$').append_num(refAddr, 4, 16);
-			InstrRefType refType = GetRefType(cpu, contextAddr);
-			if (refType == InstrRefType::DataArray || refType ==InstrRefType::DataValue) {
-				for (int w = 0; w < 2; ++w) {
-					strown<12> watch_name; watch_name.append("Watch ").append_num(w + 1, 1, 10);
-					if (ImGui::BeginMenu(watch_name.c_str())) {
-						char watchStr[32];
-						for (int s = 0; s <= 17; ++s) {
-							if (GetWatchRef(cpu, contextAddr, s, watchStr, sizeof(watchStr))) {
-								if (ImGui::MenuItem(watchStr)) {
-									AddWatch(w, watchStr);
-								}
-							}
-						}
-						ImGui::EndMenu();
-					}
-				}
-			} else if (refType == InstrRefType::Code) {
-				for (int c = 0; c < 4; ++c) {
-					strown<16> code_name; code_name.append("Code ").append_num(c+1, 1, 10).append("=$").append_num(refAddr, 4, 16);
-					if (ImGui::MenuItem(code_name.c_str())) {
-						SetCodeAddr(c, refAddr);
-					}
-				}
-			}
-		}
-		ImGui::EndPopup();
-	}
+	CodeContextMenu(cpu, index);
 
+	if (trackPC) { UpdateTrackPC(cpu, dY, lines); }
+
+	strown<128> line;
+	uint16_t read = addrValue;
+	int lineNum = 0;
 	uint16_t prevLineAddr = read;
 	int nextLineAddr = -1;
 	bool editAsmDone = false;
@@ -278,6 +344,7 @@ void CodeView::Draw(int index)
 		}
 		ImVec2 linePos = ImGui::GetCursorPos();
 		int chars = 0;
+		if (read == pc && !trackPC) { lastShownPCRow = lineNum; }
 		if (lineNum==cursorLine) { addrCursor = read; }
 		if (addrCursor==read && active && !editAsmDone && ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_ENTER)) {
 			editAsmStr[0] = 0;
@@ -313,6 +380,7 @@ void CodeView::Draw(int index)
 			}
 
 			if (ImGui::IsMouseReleased(ImGuiMouseButton_Right)) {
+				strown<32> ctxId; ctxId.append("code").append_num(index, 1, 10).append("_ctx").c_str();
 				ImGui::OpenPopupEx(ImGui::GetCurrentWindow()->GetID(ctxId.get()));
 				contextAddr = read;
 			}
@@ -349,7 +417,7 @@ void CodeView::Draw(int index)
 		}
 
 		line.clear();
-		line.append(regs.PC==read ? '>' : ' ');
+		line.append(pc==read ? '>' : ' ');
 		if (showAddress) { line.append_num(read, 4, 16); line.append(' '); }
 		int branchTrg = -1;
 		int bytes = Disassemble(cpu, read, line.end(), line.left(), chars, branchTrg, showBytes, true, showLabels, showDisAsm);
@@ -357,28 +425,7 @@ void CodeView::Draw(int index)
 			line.pad_to(' ', 14);
 			ImGui::TextUnformatted(line.get(), line.end());
 			ImGui::SameLine();
-			if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_ESCAPE)) {
-				editAsmAddr = -1;
-				ForceKeyboardCanvas("DisAsmView");
-			}
-			if (editAsmFocusRequested) {
-				ImGui::SetKeyboardFocusHere();
-				editAsmFocusRequested = false;
-			}
-			strown<32> editID("Edit Asm##");
-			editID.append_num(editAsmAddr, 4, 16);
-			if (ImGui::InputText(editID.c_str(), editAsmStr, sizeof(editAsmStr), ImGuiInputTextFlags_EnterReturnsTrue)) {
-				int size = Assemble(cpu, editAsmStr, editAsmAddr);
-				if (!size) {
-					editAsmAddr = -1;
-					ForceKeyboardCanvas("DisAsmView");
-				} else {
-					editAsmStr[0] = 0;
-					editAsmFocusRequested = true;
-					editAsmAddr += size;
-				}
-				editAsmDone = true;
-			}
+			editAsmDone = EditAssembly();
 		} else {
 			line.add_len(chars);
 			if (showRefs) {
@@ -396,13 +443,11 @@ void CodeView::Draw(int index)
 				}
 				ImVec2 ps = ImGui::GetCursorScreenPos();
 				if (dY<0) {
-					if (!lineNum) {
+					if (addrCursor == addrValue) {
 						if (!fixedAddress) {
-							int len = 1;
-							uint16_t addr = addrValue-len;
-							while (addr && InstructionBytes(cpu, addr)>len) {
+							uint16_t addr = addrValue-1;
+							while (addr && (ValidInstructionBytes(cpu, addr)+addr)!=addrValue && (addrValue-addr)<3) {
 								--addr;
-								++len;
 							}
 							addrValue = addr;
 							addrCursor = addr;
@@ -459,6 +504,7 @@ void CodeView::Draw(int index)
 		if (nextLineAddr<0) { nextLineAddr = read; }
 		++lineNum;
 	}
+	lastShownAddress = prevLineAddr;
 
 	if (showPCAddress&&(regs.PC<addrValue||regs.PC>=read)&&lastShownPC!=pc) {
 		goToPC = true;

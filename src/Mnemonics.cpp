@@ -602,11 +602,18 @@ int InstructionBytes(CPU6510* cpu, uint16_t addr, bool illegals)
 	const dismnm* opcodes = a6502_ops;
 	unsigned char op = cpu->GetByte(addr);
 	bool not_valid = opcodes[op].mnemonic == mnm_inv || (!illegals && opcodes[op].mnemonic >= mnm_wdc_and_illegal_instructions);
-	int arg_size = not_valid ? 0 : opcodes[op].arg_size;;
+	int arg_size = not_valid ? 0 : opcodes[op].arg_size;
 
 	return arg_size + 1;
 }
 
+int ValidInstructionBytes(CPU6510* cpu, uint16_t addr, bool illegals)
+{
+	const dismnm* opcodes = a6502_ops;
+	unsigned char op = cpu->GetByte(addr);
+	bool not_valid = opcodes[op].mnemonic == mnm_inv || (!illegals && opcodes[op].mnemonic >= mnm_wdc_and_illegal_instructions);
+	return not_valid ? 0 : (opcodes[op].arg_size + 1);
+}
 
 InstrRefType GetRefType(CPU6510* cpu, uint16_t addr) {
 	const dismnm* opcodes = a6502_ops;

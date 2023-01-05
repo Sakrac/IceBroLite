@@ -302,7 +302,7 @@ int main(int argc, char* argv[])
 		ImGui::PopStyleVar(2);
 
 		if (firstFrame) {
-			if (!UseCustomFont()) { SelectFont(2); }
+			SetInitialFont();
 		}
 
 		ImGuiID dockspace_id = ImGui::GetID("IceBroLiteDockSpace");

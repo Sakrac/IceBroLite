@@ -3,6 +3,7 @@
 #include "../struse/struse.h"
 
 struct UserData;
+struct CPU6510;
 
 struct CodeView
 {
@@ -12,6 +13,7 @@ struct CodeView
 	uint16_t addrValue;
 	uint16_t addrCursor;
 	uint16_t lastShownPC;
+	uint16_t lastShownAddress;
 
 	CodeView();
 
@@ -24,6 +26,7 @@ struct CodeView
 	int editAsmAddr;
 	int cursor[ 2 ];
 	int contextAddr;
+	int lastShownPCRow;
 	float cursorTime;
 	float mouseWheelDiff;
 	float mouseDragY, dragDiff;
@@ -35,6 +38,7 @@ struct CodeView
 	bool showSrc;
 	bool showLabels;
 	bool fixedAddress;
+	bool trackPC;
 	bool open;
 	bool evalAddress;
 	bool showPCAddress;
@@ -43,5 +47,10 @@ struct CodeView
 	bool dragging;
 
 	void Draw( int index );
+
+protected:
+	bool EditAssembly();
+	void CodeContextMenu(CPU6510* cpu, int index);
+	void UpdateTrackPC(CPU6510* cpu, int& dY, int lines);
 };
 

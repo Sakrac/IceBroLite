@@ -576,13 +576,27 @@ bool LoadUserFont(const char* file, int size) {
 	return false;
 }
 
+void SetInitialFont() {
+	if (viewContext) {
+		if (viewContext->currFont == (ViewContext::sNumFontSizes + 1) && sUserFont) {
+			UseCustomFont();
+		} else if (viewContext->currFont == ViewContext::sNumFontSizes) {
+			UseDefaultFont();
+		} else {
+			SelectFont(viewContext->currFont < ViewContext::sNumFontSizes ?
+				viewContext->currFont : 3);
+		}
+	}
+}
+
 void CheckUserFont() {
 	if (!sUserFont && sUserFontName.valid()) {
 		sUserFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(
 			sUserFontName.c_str(), (float)sUserFontSize, NULL, UserCharRanges);
 	}
 	if (sUserFont) {
-		UseCustomFont();
+		if(sUserFontSize == (ViewContext::sNumFontSizes+1))
+			UseCustomFont();
 	} else {
 		sUserFontName.clear();
 		sUserFontSize = 0;

@@ -23,6 +23,7 @@ void RefreshScreen(uint8_t* img, uint16_t w, uint16_t h,
 bool LoadUserFont(const char* file, int size);
 void CheckUserFont();
 bool UseCustomFont();
+void SetInitialFont();
 
 int PetsciiFont();
 void ViewPushFont(int font);
