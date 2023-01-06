@@ -3,8 +3,10 @@ description: > # this means to ignore newlines until "baseurl:"
   Extended manual for Ice Bro Lite
 baseurl: "" # the subpath of your site, e.g. /blog
 
-twitter_username: spacemoguls
+twitter_username: sakrac
 github_username:  sakrac
+
+theme: midnight
 
 # Build settings
 markdown: kramdown
