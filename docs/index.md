@@ -6,7 +6,7 @@ The latest version of VICE can be downloaded from [here](https://vice-emu.source
 
 # Manual
 1. [Updated Features](updates.MD)
-2. [Set up Ice Bro Lite](setup.MD)
+2. [Set up Ice Bro Lite](setup.md)
 3. [Customizing the debugger windows](customize.MD)
 4. [Start Debugging](start.MD)
 5. [Views](views.MD)
