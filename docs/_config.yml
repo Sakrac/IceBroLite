@@ -6,7 +6,7 @@ baseurl: "" # the subpath of your site, e.g. /blog
 twitter_username: sakrac
 github_username:  sakrac
 
-theme: midnight
+remote_theme: pages-themes/midnight@v0.2.0
 
 # Build settings
 markdown: kramdown
