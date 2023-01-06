@@ -36,5 +36,5 @@ defaults:
     values:
       layout: "season"
 
-gems:
+plugins:
   - octopress-paginate
