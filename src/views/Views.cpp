@@ -67,7 +67,7 @@ void StyleC64_Green();
 
 static int imgui_style = 0;
 static ViewContext* viewContext = nullptr;
-static strown<MAX_PATH> sUserFontName;
+static strown<PATH_MAX_LEN> sUserFontName;
 static int sUserFontSize = 0;
 static ImFont* sUserFont = nullptr;
 static float sFontSizes[ViewContext::sNumFontSizes] = { 8.0f, 10.0f, 12.0, 14.0f, 16.0f, 20.0f, 24.0f };
