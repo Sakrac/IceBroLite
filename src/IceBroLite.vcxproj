@@ -22,6 +22,7 @@
     <ClInclude Include="6510.h" />
     <ClInclude Include="Breakpoints.h" />
     <ClInclude Include="C64Colors.h" />
+    <ClInclude Include="Commands.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="data\C64_Pro_Mono-STYLE.ttf.h" />
     <ClInclude Include="Expressions.h" />
@@ -69,6 +70,7 @@
     <ClCompile Include="6510.cpp" />
     <ClCompile Include="Breakpoints.cpp" />
     <ClCompile Include="C64Colors.cpp" />
+    <ClCompile Include="Commands.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="data\C64_Pro_Mono-STYLE.ttf.cpp" />
     <ClCompile Include="Expressions.cpp" />

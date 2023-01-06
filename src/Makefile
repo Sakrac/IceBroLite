@@ -16,10 +16,10 @@ CXX = g++
 #CXX = clang++
 
 EXE = ../IceBroLite
-SOURCES = 6510.cpp Breakpoints.cpp C64Colors.cpp Config.cpp Expressions.cpp FileDialog.cpp Files.cpp
-SOURCES += IceBroLite.cpp Icons.cpp Image.cpp ImGui_Helper.cpp Mnemonics.cpp
-SOURCES += Platform.cpp SaveState.coo SourceDebug.cpp StartVice.cpp struse.cpp Sym.cpp
-SOURCES += Traces.cpp ViceInterface.cpp ViceMonitorInterface.cpp
+SOURCES = 6510.cpp Breakpoints.cpp C64Colors.cpp Commands.cpp Config.cpp Expressions.cpp
+SOURCES += FileDialog.cpp Files.cpp IceBroLite.cpp Icons.cpp Image.cpp ImGui_Helper.cpp
+SOURCES += Mnemonics.cpp Platform.cpp SaveState.coo SourceDebug.cpp StartVice.cpp
+SOURCES += struse.cpp Sym.cpp Traces.cpp ViceInterface.cpp ViceMonitorInterface.cpp
 SOURCES += imgui/backends/imgui_impl_glfw.cpp imgui/backends/imgui_impl_opengl2.cpp
 SOURCES += imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp
 SOURCES += imgui/imgui_widgets.cpp

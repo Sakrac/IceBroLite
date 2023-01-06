@@ -190,9 +190,9 @@ void BreakpointView::Draw()
 
 				ViceMonIcons bpIcon = (bp.flags & Breakpoint::Stop) ?
 					((bp.flags & Breakpoint::Exec) ?
-					 (bp.flags & Breakpoint::Enabled ? ViceMonIcons::VMI_BreakPoint : ViceMonIcons::VMI_DisabledBreakPoint) :
-					 (bp.flags & Breakpoint::Enabled ? ViceMonIcons::VMI_WatchPoint : ViceMonIcons::VMI_WatchPointOf)) :
-					(bp.flags & Breakpoint::Enabled ? ViceMonIcons::VMI_TracePoint : ViceMonIcons::VMI_TracePointOf);
+					 ((bp.flags & Breakpoint::Enabled) ? ViceMonIcons::VMI_BreakPoint : ViceMonIcons::VMI_DisabledBreakPoint) :
+					 ((bp.flags & Breakpoint::Enabled) ? ViceMonIcons::VMI_WatchPoint : ViceMonIcons::VMI_WatchPointOf)) :
+					 ((bp.flags & Breakpoint::Enabled) ? ViceMonIcons::VMI_TracePoint : ViceMonIcons::VMI_TracePointOf);
 				if (DrawTexturedIcon(bpIcon, false, ImGui::GetFont()->FontSize)) {
 					ViceToggleBreakpoint(bp.number, !(bp.flags & Breakpoint::Enabled));
 				}

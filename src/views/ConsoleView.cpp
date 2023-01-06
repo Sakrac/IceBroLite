@@ -8,6 +8,7 @@
 #include "../Expressions.h"
 #include "../6510.h"
 #include "../platform.h"
+#include "../Commands.h"
 
 static const strref command_separator(" $.");
 
@@ -476,18 +477,28 @@ void IceConsole::ExecCommand(const char* command_line)
 			AddLog("%3d: %s\n", i, History[i]);
 	} else if (cmd.same_str("clear")) {
 		ClearLog();
+	} else if (cmd.same_str("poke")) {
+		if (!ViceConnected()) { AddLog("VICE Not Connected Error"); }
+		else { CommandPoke(param); }
+	} else if (cmd.same_str("remember")) {
+		if (!ViceConnected()) { AddLog("VICE Not Connected Error"); }
+		else { CommandRemember(param); }
+	} else if (cmd.same_str("forget")) {
+		CommandForget();
+	} else if (cmd.same_str("match")) {
+		if (!ViceConnected()) { AddLog("VICE Not Connected Error"); }
+		else { CommandMatch(param, (int)ImGui::GetWindowSize().x / (int)ImGui::GetFont()->GetCharAdvance('D')); }
 	} else if (cmd.same_str("commands") || cmd.same_str("cmd")) {
 		AddLog("Vice Console IceBro Commands");
-		AddLog(" connect/cnct <ip>:<port> - connect to a remote host, default to 127.0.0.1:6510");
-		AddLog(" pause - pause VICE");
-		AddLog(" font <size> - set font size 0-4");
-		AddLog(" eval <exp> - evaluate an expression");
-		AddLog(" history/hist - show previous commands");
-		AddLog(" clear - clear the console");
+		AddLog(" connect/cnct [<ip>:<port>] - connect to a remote host, default to 127.0.0.1:6510;");
+		AddLog(" pause; font <size:0-6>; eval <exp>; history/hist;");
+		AddLog(" clear, poke addr,byte;");
+		AddLog(" remember <byte>[-<byte>] [<addr> <addr>] / forget;");
+		AddLog(" match <byte>[-<byte>] [<addr> <addr>] [T[RACE]] [W[ATCH]];");
 	}
 }
 
-int IceConsole::TextEditCallbackStub(ImGuiInputTextCallbackData* data) // In C++11 you are better off using lambdas for this sort of forwarding callbacks
+int IceConsole::TextEditCallbackStub(ImGuiInputTextCallbackData* data)
 {
 	IceConsole* console = (IceConsole*)data->UserData;
 	return console->TextEditCallback(data);
