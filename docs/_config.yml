@@ -11,30 +11,3 @@ remote_theme: pages-themes/midnight@v0.2.0
 # Build settings
 markdown: kramdown
 
-collections:
-  episodes:
-    output: true
-  seasons:
-    output: true
-  characters:
-    output: true
-
-defaults:
-  - scope:
-      path: ""
-      type: "episodes"
-    values:
-      layout: "episode"
-  - scope:
-      path: ""
-      type: "characters"
-    values:
-      layout: "character"
-  - scope:
-      path: ""
-      type: "seasons"
-    values:
-      layout: "season"
-
-plugins:
-  - octopress-paginate
