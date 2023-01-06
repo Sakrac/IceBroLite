@@ -1,6 +1,8 @@
 # IceBro Lite
 
-I've started writing a [manual](manual.MD)!
+New [manual](https://sakrac.github.io/IceBroLite/) using GitHub Pages! ([previous](manual.md))
+
+
 Also here are the [linux build instructions](linux.MD).
 It should also build fine on Mac using the makefile but I don't have anything to test it with at home.
 
