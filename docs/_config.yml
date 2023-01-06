@@ -1,0 +1,38 @@
+title: Ice Bro Lite
+description: > # this means to ignore newlines until "baseurl:"
+  Extended manual for Ice Bro Lite
+baseurl: "" # the subpath of your site, e.g. /blog
+
+twitter_username: spacemoguls
+github_username:  sakrac
+
+# Build settings
+markdown: kramdown
+
+collections:
+  episodes:
+    output: true
+  seasons:
+    output: true
+  characters:
+    output: true
+
+defaults:
+  - scope:
+      path: ""
+      type: "episodes"
+    values:
+      layout: "episode"
+  - scope:
+      path: ""
+      type: "characters"
+    values:
+      layout: "character"
+  - scope:
+      path: ""
+      type: "seasons"
+    values:
+      layout: "season"
+
+gems:
+  - octopress-paginate
