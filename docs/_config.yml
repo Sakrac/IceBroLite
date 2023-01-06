@@ -6,6 +6,10 @@ baseurl: "" # the subpath of your site, e.g. /blog
 twitter_username: sakrac
 github_username:  sakrac
 
+baseurl: "/IceBroLite" # the subpath of your site, e.g. /blog
+
+url: "http://sakrac.github.io" # the base hostname & protocol for your site
+
 remote_theme: pages-themes/midnight@v0.2.0
 
 # Build settings
