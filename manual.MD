@@ -55,11 +55,11 @@ Added a few commands to the console, pretty easy to extend in the future:
 new commands added for the console to add Action Replay like support:
 
 * poke addr,byte
-  * addr and byte can be expressions so can use 'POKE <symbol>,<symbol>' or a basic 'POKE 53280,0'. Vice does not need to be in break mode to use this command.
-* remember <byte>[-<byte>] [<addr> <addr>]
+  * addr and byte can be expressions so can use 'POKE \<symbol\>,\<symbol\>' or a basic 'POKE 53280,0'. Vice does not need to be in break mode to use this command.
+* remember \<byte\>[-\<byte\>] [\<addr\> \<addr\>]
   * 'remember $03-$04 $300 $8000', finds and remembers all memory locations matching the byte range within the address range. can also just type 'remember 3', Vice does not need to be in break mode to use this command.
-* match <byte>[-<byte>] [<addr> <addr>] [T[RACE]] [W[ATCH]]
-  * finds matching byte values in the remembered set of addresses, optionally within a sub-range of addresses. Add a T or W at the end to automatically assign TracePoints or WatchPoints to the matches/ , Vice does not need to be in break mode to use this command.
+* match \<byte\>[-\<byte\>] [\<addr\> \<addr\>] [T[RACE]] [W[ATCH]]
+  * finds matching byte values in the remembered set of addresses, optionally within a sub-range of addresses. Add a T or W at the end to automatically assign TracePoints or WatchPoints to the matches. Vice does not need to be in break mode to use this command.
 * forget
   * clears the remembered addresses
 
