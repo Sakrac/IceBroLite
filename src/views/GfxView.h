@@ -63,7 +63,7 @@ struct GfxView {
 
 	uint8_t bg;
 	uint8_t spr_col[3];
-	uint8_t txt_col[3];
+	uint8_t txt_col[4];
 
 	bool open;
 	bool reeval;
@@ -83,19 +83,21 @@ struct GfxView {
 
 	void Draw(int index);
 	void Create8bppBitmap(CPU6510* cpu);
+	bool HandleContextMenu();
+	uint8_t DrawPaletteMenu(uint8_t col);
 
 	void CreatePlanarBitmap(CPU6510* cpu, uint32_t* dst, int lines, uint32_t width, const uint32_t* palette);
 	void CreateColumnsBitmap(CPU6510* cpu, uint32_t* dst, int lines, uint32_t width, const uint32_t* palette);
 
-	void PrintCurrentInfo(CPU6510* cpu);
-	void PrintHoverInfo(CPU6510* cpu, int* hoverPos);
+	void PrintCurrentInfo(CPU6510* cpu, int* hoverPos);
+	void PrintHoverInfo(CPU6510* cpu, int* hoverPos, int mode, int row = 1);
 
 	void CreateC64BitmapBitmap(CPU6510* cpu, uint32_t* dst, const uint32_t* palette, uint16_t bitmap, size_t cl, uint32_t rw);
 	void CreateC64ColorBitmapBitmap(CPU6510* cpu, uint32_t* dst, const uint32_t* palette, uint16_t bitmap, uint16_t screen, size_t cl, uint32_t rw);
-	void CreateC64ExtBkgTextBitmap(CPU6510* cpu, uint32_t* dst, const uint32_t* palette, uint16_t bitmap, uint16_t screen, uint16_t cm, size_t cl, uint32_t rw);
+	void CreateC64ExtBkgTextBitmap(CPU6510* cpu, uint32_t* dst, const uint32_t* palette, uint16_t bitmap, uint16_t screen, uint16_t cm, size_t cl, uint32_t rw, bool useVicCol);
 	void CreateC64TextBitmap(CPU6510* cpu, uint32_t* dst, const uint32_t* palette, size_t cl, uint32_t rw);
 	void CreateC64ColorTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t bitmap, uint16_t screen, uint16_t cm, size_t cl, uint32_t rw);
-	void CreateC64MulticolorTextBitmap(CPU6510* cpu, uint32_t* dst, const uint32_t* palette, uint16_t bitmap, uint16_t screen, uint16_t cm, size_t cl, uint32_t rw);
+	void CreateC64MulticolorTextBitmap(CPU6510* cpu, uint32_t* dst, const uint32_t* palette, uint16_t bitmap, uint16_t screen, uint16_t cm, size_t cl, uint32_t rw, bool useVicCol);
 	void CreateC64MulticolorBitmapBitmap(CPU6510* cpu, uint32_t* dst, const uint32_t* palette, uint16_t bitmap, uint16_t screen, uint16_t cm, size_t cl, uint32_t rw);
 	void CreateC64SpritesBitmap(CPU6510* cpu, uint32_t* dst, int lines, uint32_t width, const uint32_t* palette);
 	void CreateC64SpritesMCBitmap(CPU6510* cpu, uint32_t* d, int linesHigh, uint32_t w, const uint32_t* pal);

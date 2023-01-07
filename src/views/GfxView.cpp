@@ -15,6 +15,7 @@
 #include "GfxView.h"
 #include "GLFW/glfw3.h"
 #include "../Image.h"
+#include "../C64Colors.h"
 
 #ifndef _MSC_VER
 #define sprintf_s sprintf
@@ -164,6 +165,92 @@ static bool AcceptDragDropAddress(uint32_t* addrValue, char* addrName, size_t ad
 		ImGui::EndDragDropTarget();
 	}
 	return false;
+}
+
+static const char* sColorName[] = {
+	"Black", "White", "Red", "Cyan", "Purple", "Green",
+	"Blue", "Yellow", "Orange", "Brown", "Pink", "Dark Grey",
+	"Mid Grey", "Light Green", "Light Blue", "Light Grey"
+};
+
+uint8_t GfxView::DrawPaletteMenu(uint8_t col) {
+	for (uint8_t c = 0; c < 16; ++c) {
+		strown<16> name;
+		name.append_num(c, 0, 10).append(' ').append(sColorName[c]);
+		if (ImGui::MenuItem(name.c_str(), nullptr, col == c)) { col = c; }
+	}
+	return col;
+}
+
+bool GfxView::HandleContextMenu()
+{
+	bool redraw = false;
+	if (ImGui::BeginPopupContextWindow()) {
+		if (ImGui::BeginMenu("Zoom")) {
+			if (ImGui::MenuItem("Pixel", nullptr, zoom == Zoom_1x1)) { zoom = Zoom_1x1; }
+			if (ImGui::MenuItem("Double", nullptr, zoom == Zoom_2x2)) { zoom = Zoom_2x2; }
+			if (ImGui::MenuItem("Quad", nullptr, zoom == Zoom_4x4)) { zoom = Zoom_4x4; }
+			if (ImGui::MenuItem("Fit X", nullptr, zoom == Zoom_FitX)) { zoom = Zoom_FitX; }
+			if (ImGui::MenuItem("Fit Y", nullptr, zoom == Zoom_FitY)) { zoom = Zoom_FitY; }
+			if (ImGui::MenuItem("Fit Window", nullptr, zoom == Zoom_FitWindow)) { zoom = Zoom_FitWindow; }
+			ImGui::EndMenu();
+		}
+		if (ImGui::Selectable("ROM Font", useRomFont)) {
+			useRomFont = !useRomFont; redraw = true;
+		}
+		if (multicolor || (displayMode==C64_Text && ecbm)) {
+			if (ImGui::Selectable("VIC colors", vicColors)) {
+				vicColors = !vicColors; redraw = true;
+			}
+		}
+		if (ImGui::BeginMenu("BG d021")) {
+			uint8_t new_bg = DrawPaletteMenu(bg); if (new_bg != bg) { bg = new_bg; redraw = true; }
+			ImGui::EndMenu();
+		}
+		if (displayMode == C64_Sprites) {
+			if (ImGui::BeginMenu("FG")) {
+				uint8_t new_col = DrawPaletteMenu(spr_col[0]);
+				if (new_col != spr_col[0]) { spr_col[0] = new_col; redraw = true; }
+				ImGui::EndMenu();
+			}
+			if (multicolor && !vicColors) {
+				if (ImGui::BeginMenu("d025")) {
+					uint8_t new_col = DrawPaletteMenu(spr_col[1]);
+					if (new_col != spr_col[1]) { spr_col[1] = new_col; redraw = true; }
+					ImGui::EndMenu();
+				}
+				if (ImGui::BeginMenu("d026")) {
+					uint8_t new_col = DrawPaletteMenu(spr_col[2]);
+					if (new_col != spr_col[2]) { spr_col[2] = new_col; redraw = true; }
+					ImGui::EndMenu();
+				}
+			}
+		} else if (displayMode == C64_Bitmap || displayMode == C64_Text) {
+			if (!ecbm && !color && !multicolor && ImGui::BeginMenu("FG")) {
+				uint8_t new_col = DrawPaletteMenu(txt_col[0]);
+				if (new_col != txt_col[0]) { txt_col[0] = new_col; redraw = true; }
+				ImGui::EndMenu();
+			} else if ((multicolor || ecbm) && displayMode == C64_Text) {
+				if (ImGui::BeginMenu("d022")) {
+					uint8_t new_col = DrawPaletteMenu(txt_col[1]);
+					if (new_col != txt_col[1]) { txt_col[1] = new_col; redraw = true; }
+					ImGui::EndMenu();
+				}
+				if (ImGui::BeginMenu("d023")) {
+					uint8_t new_col = DrawPaletteMenu(txt_col[2]);
+					if (new_col != txt_col[2]) { txt_col[2] = new_col; redraw = true; }
+					ImGui::EndMenu();
+				}
+				if (ecbm && ImGui::BeginMenu("d024")) {
+					uint8_t new_col = DrawPaletteMenu(txt_col[3]);
+					if (new_col != txt_col[3]) { txt_col[3] = new_col; redraw = true; }
+					ImGui::EndMenu();
+				}
+			}
+		}
+		ImGui::EndPopup();
+	}
+	return redraw;
 }
 
 
@@ -344,26 +431,7 @@ void GfxView::Draw(int index)
 		ImGui::Columns(1);
 	}
 
-	if (ImGui::BeginPopupContextWindow()) {
-		if (ImGui::BeginMenu("Zoom")) {
-			if (ImGui::MenuItem("Pixel", nullptr, zoom == Zoom_1x1)) { zoom = Zoom_1x1; }
-			if (ImGui::MenuItem("Double", nullptr, zoom == Zoom_2x2)) { zoom = Zoom_2x2; }
-			if (ImGui::MenuItem("Quad", nullptr, zoom == Zoom_4x4)) { zoom = Zoom_4x4; }
-			if (ImGui::MenuItem("Fit X", nullptr, zoom == Zoom_FitX)) { zoom = Zoom_FitX; }
-			if (ImGui::MenuItem("Fit Y", nullptr, zoom == Zoom_FitY)) { zoom = Zoom_FitY; }
-			if (ImGui::MenuItem("Fit Window", nullptr, zoom == Zoom_FitWindow)) { zoom = Zoom_FitWindow; }
-			ImGui::EndMenu();
-		}
-		if (ImGui::Selectable("ROM Font", useRomFont)) {
-			useRomFont = !useRomFont; redraw = true;
-		}
-		if (multicolor) {
-			if (ImGui::Selectable("VIC colors", vicColors)) {
-				vicColors = !vicColors; redraw = true;
-			}
-		}
-		ImGui::EndPopup();
-	}
+	if (HandleContextMenu()) { redraw = true; }
 
 	CPU6510* cpu = GetCurrCPU();
 	if (!bitmap || redraw || reeval || cpu->MemoryChange()) {
@@ -410,15 +478,15 @@ void GfxView::Draw(int index)
 
 	if (ImGui::GetCurrentWindow() == ImGui::GetCurrentContext()->HoveredWindow) {
 		if (displayMode == C64_Current) {
-			PrintCurrentInfo(cpu);
+			PrintCurrentInfo(cpu, hoverPos);
 		} else {
-			PrintHoverInfo(cpu, hoverPos);
+			PrintHoverInfo(cpu, hoverPos, displayMode);
 		}
 	}
 	ImGui::End();
 }
 
-void GfxView::PrintCurrentInfo(CPU6510* cpu) {
+void GfxView::PrintCurrentInfo(CPU6510* cpu, int* hoverPos) {
 	uint16_t vic = (3 ^ (cpu->GetByte(0xdd00) & 3)) * 0x4000;
 	uint8_t d018 = cpu->GetByte(0xd018);
 	uint8_t d011 = cpu->GetByte(0xd011);
@@ -428,19 +496,38 @@ void GfxView::PrintCurrentInfo(CPU6510* cpu) {
 	bool mc = (d016 & 0x10) ? true : false;
 
 	strown<128> line;
+	int mode = C64_Text;
 	if (d011 & 0x40) { line.append("ExtCol "); }
-	else if (d011 & 0x20) { line.append(mc ? "MultiColor Bitmap " : "Bitmap "); }
+	else if (d011 & 0x20) { line.append(mc ? "MultiColor Bitmap " : "Bitmap "); mode = C64_Bitmap; }
 	else { line.append(mc ? "MultiColor Text " : "Text "); }
 	line.append("Screen: $").append_num(screen, 4, 16).append((d011 & 0x20) ? " Bitmap: $" : " Font: $").append_num(chars, 4, 16);
 	ImGui::SetCursorPos(ImVec2(0, ImGui::GetWindowSize().y - ImGui::GetTextLineHeightWithSpacing()));
 	ImGui::Text(line.c_str());
+
+	PrintHoverInfo(cpu, hoverPos, mode, 2);
 }
 
-void GfxView::PrintHoverInfo(CPU6510* cpu, int *hoverPos) {
+void GfxView::PrintHoverInfo(CPU6510* cpu, int *hoverPos, int mode, int row) {
 	strown<128> line;
 	line.sprintf("x: %d, y: %d", hoverPos[0], hoverPos[1]);
-	ImGui::SetCursorPos(ImVec2(0, ImGui::GetWindowSize().y - ImGui::GetTextLineHeightWithSpacing()));
-	ImGui::SetCursorPos(ImVec2(0, ImGui::GetWindowSize().y - ImGui::GetTextLineHeightWithSpacing()));
+	if (mode == C64_Sprites) {
+		int s = (hoverPos[0] / 24) + (hoverPos[1] / 21) * columns_sprite;
+		int sa = addrGfxValue + s * 64;
+		line.append(" xs:").append_num(hoverPos[0] / 24, 0, 10).append(" ys:").append_num(hoverPos[1] / 24, 0, 10);
+		line.append(" spr:$").append_num((sa / 64) & 0xff, 2, 16).append(" addr:$").append_num(sa, 4, 16);
+	} else if (mode == C64_Text) {
+		int s = hoverPos[0] / 8 + (hoverPos[1] / 8) * columns;
+		int sa = addrScreenValue + s;
+		line.append(" xc:").append_num(hoverPos[0] / 8, 0, 10).append(" yc:").append_num(hoverPos[1] / 8, 0, 10);
+		line.append(" scr:$").append_num(sa, 4, 16).append(" chr:$").append_num(cpu->GetByte(sa), 2, 16);
+	} else if (mode == C64_Bitmap) {
+		int s = hoverPos[0] / 8 + (hoverPos[1] / 8) * columns;
+		int ss = addrScreenValue + s;
+		int sb = addrGfxValue + s * 8;
+		line.append(" xc:").append_num(hoverPos[0] / 8, 0, 10).append(" yc:").append_num(hoverPos[1] / 8, 0, 10);
+		line.append(" scr:$").append_num(ss, 4, 16).append(" bm:$").append_num(sb, 4, 16);
+	}
+	ImGui::SetCursorPos(ImVec2(0, ImGui::GetWindowSize().y - row * ImGui::GetTextLineHeightWithSpacing()));
 	ImGui::Text(line.c_str());
 }
 
@@ -494,11 +581,11 @@ void GfxView::Create8bppBitmap(CPU6510* cpu)
 
 		case C64_Text:
 			if (ecbm) {
-				CreateC64ExtBkgTextBitmap(cpu, d, c64pal, addrGfxValue, addrScreenValue, addrColValue, cl, rw);
+				CreateC64ExtBkgTextBitmap(cpu, d, c64pal, addrGfxValue, addrScreenValue, addrColValue, cl, rw, vicColors);
 			} else if (color) {
 				CreateC64ColorTextBitmap(cpu, d, c64pal, addrGfxValue, addrScreenValue, addrColValue, cl, rw);
 			} else if (multicolor) {
-				CreateC64MulticolorTextBitmap(cpu, d, c64pal, addrGfxValue, addrScreenValue, addrColValue, cl, rw); break;
+				CreateC64MulticolorTextBitmap(cpu, d, c64pal, addrGfxValue, addrScreenValue, addrColValue, cl, rw, vicColors);
 			} else {
 				CreateC64TextBitmap(cpu, d, c64pal, cl, rw); break;
 			}
@@ -567,7 +654,7 @@ void GfxView::CreateC64CurrentBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* 
 	bool mc = (d016 & 0x10) ? true : false;
 
 	if (d011 & 0x40) {
-		CreateC64ExtBkgTextBitmap(cpu, d, pal, chars, screen, 0xd800, 40, 25);
+		CreateC64ExtBkgTextBitmap(cpu, d, pal, chars, screen, 0xd800, 40, 25, true);
 	} else if (d011 & 0x20) {
 		if (mc) {
 			CreateC64MulticolorBitmapBitmap(cpu, d, pal, chars, screen, 0xd800, 40, 25);
@@ -576,7 +663,7 @@ void GfxView::CreateC64CurrentBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* 
 		}
 	} else {
 		if (mc) {
-			CreateC64MulticolorTextBitmap(cpu, d, pal, chars, screen, 0xd800, 40, 25);
+			CreateC64MulticolorTextBitmap(cpu, d, pal, chars, screen, 0xd800, 40, 25, true);
 		} else {
 			CreateC64ColorTextBitmap(cpu, d, pal, chars, screen, 0xd800, 40, 25);
 		}
@@ -671,12 +758,20 @@ void GfxView::CreateC64ColorBitmapBitmap(CPU6510* cpu, uint32_t* d, const uint32
 	}
 }
 
-void GfxView::CreateC64ExtBkgTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t cm, size_t cl, uint32_t rw)
+void GfxView::CreateC64ExtBkgTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t cm, size_t cl, uint32_t rw, bool useVicCol)
 {
+	uint32_t k[4] = { bg, txt_col[1], txt_col[2], txt_col[3] };
+	if (useVicCol) {
+		k[0] = cpu->GetByte(0xd021)&0xf;
+		k[1] = cpu->GetByte(0xd022)&0xf;
+		k[2] = cpu->GetByte(0xd023)&0xf;
+		k[3] = cpu->GetByte(0xd024)&0xf;
+	}
+
 	for (size_t y = 0; y < rw; y++) {
 		for (size_t x = 0; x < cl; x++) {
 			uint8_t chr = cpu->GetByte(a++);
-			uint32_t bg = pal[cpu->GetByte((chr >> 6) + 0xd021) & 0xf];
+			uint32_t bg = pal[k[chr >> 6]];
 			uint32_t fg = pal[cpu->GetByte(uint16_t(y * 40 + x + cm)) & 0xf];
 			chr &= 0x3f;
 			uint16_t cs = g + 8 * chr;
@@ -700,6 +795,7 @@ void GfxView::CreateC64ExtBkgTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_
 void GfxView::CreateC64TextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, size_t cl, uint32_t rw)
 {
 	uint16_t a = addrScreenValue;
+	uint8_t col0 = bg, col1 = txt_col[0];
 	for (size_t y = 0; y < rw; y++) {
 		for (size_t x = 0; x < cl; x++) {
 			uint8_t chr = cpu->GetByte(a++);
@@ -713,7 +809,7 @@ void GfxView::CreateC64TextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal
 				}
 				uint8_t m = 0x80;
 				for (int bit = 0; bit < 8; bit++) {
-					d[(y * 8 + h)*cl*8 + (x * 8 + bit)] = pal[(b&m) ? 14 : 6];
+					d[(y * 8 + h)*cl*8 + (x * 8 + bit)] = pal[(b&m) ? col1 : col0];
 					m >>= 1;
 				}
 			}
@@ -749,9 +845,16 @@ void GfxView::CreateC64ColorTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t
 
 }
 
-void GfxView::CreateC64MulticolorTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t cm, size_t cl, uint32_t rw)
+void GfxView::CreateC64MulticolorTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t cm, size_t cl, uint32_t rw, bool useVicCol)
 {
-	uint8_t k[4] = { uint8_t(cpu->GetByte(0xd021) & 0xf), uint8_t(cpu->GetByte(0xd022) & 0xf), uint8_t(cpu->GetByte(0xd023) & 0xf), 0 };
+	uint8_t k[4] = { bg, txt_col[0], txt_col[1], 0 };
+	if (useVicCol) {
+		k[0] = cpu->GetByte(0xd021) & 0xf;
+		k[1] = cpu->GetByte(0xd022) & 0xf;
+		k[2] = cpu->GetByte(0xd023) & 0xf;
+		k[3] = 0;
+	}
+
 	uint32_t *o = d;
 	for (size_t y = 0; y < rw; y++) {
 		for (size_t x = 0; x < cl; x++) {
