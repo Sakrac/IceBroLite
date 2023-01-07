@@ -258,6 +258,13 @@ bool GfxView::HandleContextMenu()
 					ImGui::EndMenu();
 				}
 			}
+			if (ImGui::BeginMenu(strown<16>().append("Spr $").append_num(hoverGfxAddr, 4, 16).c_str())) {
+				if (ImGui::MenuItem("->Memory 1")) { SetMemoryViewAddr(hoverGfxAddr, 0); }
+				if (ImGui::MenuItem("->Memory 2")) { SetMemoryViewAddr(hoverGfxAddr, 1); }
+				if (ImGui::MenuItem("->Memory 3")) { SetMemoryViewAddr(hoverGfxAddr, 2); }
+				if (ImGui::MenuItem("->Memory 4")) { SetMemoryViewAddr(hoverGfxAddr, 3); }
+				ImGui::EndMenu();
+			}
 		} else if (displayMode == C64_Bitmap || displayMode == C64_Text) {
 			if (!ecbm && !color && !multicolor && ImGui::BeginMenu("FG")) {
 				uint8_t new_col = DrawPaletteMenu(txt_col[0]);
@@ -279,6 +286,20 @@ bool GfxView::HandleContextMenu()
 					if (new_col != txt_col[3]) { txt_col[3] = new_col; redraw = true; }
 					ImGui::EndMenu();
 				}
+			}
+			if (ImGui::BeginMenu(strown<16>().append("Scrn $").append_num(hoverScreenAddr, 4, 16).c_str())) {
+				if (ImGui::MenuItem("->Memory 1")) { SetMemoryViewAddr(hoverScreenAddr, 0); }
+				if (ImGui::MenuItem("->Memory 2")) { SetMemoryViewAddr(hoverScreenAddr, 1); }
+				if (ImGui::MenuItem("->Memory 3")) { SetMemoryViewAddr(hoverScreenAddr, 2); }
+				if (ImGui::MenuItem("->Memory 4")) { SetMemoryViewAddr(hoverScreenAddr, 3); }
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu(strown<16>().append("Chr $").append_num(hoverGfxAddr, 4, 16).c_str())) {
+				if (ImGui::MenuItem("->Memory 1")) { SetMemoryViewAddr(hoverGfxAddr, 0); }
+				if (ImGui::MenuItem("->Memory 2")) { SetMemoryViewAddr(hoverGfxAddr, 1); }
+				if (ImGui::MenuItem("->Memory 3")) { SetMemoryViewAddr(hoverGfxAddr, 2); }
+				if (ImGui::MenuItem("->Memory 4")) { SetMemoryViewAddr(hoverGfxAddr, 3); }
+				ImGui::EndMenu();
 			}
 		}
 		ImGui::EndPopup();
@@ -509,11 +530,16 @@ void GfxView::Draw(int index)
 		(int)size.y ? ((int)(mousePos.y - textureScreen.y) * bitmapHeight) / (int)size.y : -1 };
 	ImGui::Image(texture, size);
 
-	if (ImGui::GetCurrentWindow() == ImGui::GetCurrentContext()->HoveredWindow) {
-		if (displayMode == C64_Current) {
-			PrintCurrentInfo(cpu, hoverPos);
-		} else {
-			PrintHoverInfo(cpu, hoverPos, displayMode);
+	hovering = false;
+	if(hoverPos[0]>=0 && hoverPos[0]<bitmapWidth && hoverPos[1]>=0 && hoverPos[1]<bitmapWidth) {
+		hovering = true;
+		if (ImGui::GetCurrentWindow() == ImGui::GetCurrentContext()->HoveredWindow) {
+			if (displayMode == C64_Current) {
+				PrintCurrentInfo(cpu, hoverPos);
+			} else {
+				PrintHoverInfo(cpu, hoverPos, displayMode, addrScreenValue, addrGfxValue,
+					addrGfxValue, ecbm);
+			}
 		}
 	}
 	ImGui::End();
@@ -537,26 +563,31 @@ void GfxView::PrintCurrentInfo(CPU6510* cpu, int* hoverPos) {
 	ImGui::SetCursorPos(ImVec2(0, ImGui::GetWindowSize().y - ImGui::GetTextLineHeightWithSpacing()));
 	ImGui::Text(line.c_str());
 
-	PrintHoverInfo(cpu, hoverPos, mode, 2);
+	PrintHoverInfo(cpu, hoverPos, mode, screen, chars, chars&0xe000, d011&0x40, 2);
 }
 
-void GfxView::PrintHoverInfo(CPU6510* cpu, int *hoverPos, int mode, int row) {
+void GfxView::PrintHoverInfo(CPU6510* cpu, int *hoverPos, int mode, uint16_t scrnAddr, uint16_t fontAddr, uint16_t bitmAddr, bool _ecbm, int row) {
 	strown<128> line;
 	line.sprintf("x: %d, y: %d", hoverPos[0], hoverPos[1]);
 	if (mode == C64_Sprites) {
 		int s = (hoverPos[0] / 24) + (hoverPos[1] / 21) * columns_sprite;
-		int sa = addrGfxValue + s * 64;
+		int sa = scrnAddr + s * 64;
 		line.append(" xs:").append_num(hoverPos[0] / 24, 0, 10).append(" ys:").append_num(hoverPos[1] / 24, 0, 10);
 		line.append(" spr:$").append_num((sa / 64) & 0xff, 2, 16).append(" addr:$").append_num(sa, 4, 16);
+		hoverGfxAddr = sa;
 	} else if (mode == C64_Text) {
 		int s = hoverPos[0] / 8 + (hoverPos[1] / 8) * columns;
-		int sa = addrScreenValue + s;
+		int sa = scrnAddr + s;
 		line.append(" xc:").append_num(hoverPos[0] / 8, 0, 10).append(" yc:").append_num(hoverPos[1] / 8, 0, 10);
 		line.append(" scr:$").append_num(sa, 4, 16).append(" chr:$").append_num(cpu->GetByte(sa), 2, 16);
+		hoverScreenAddr = sa;
+		hoverGfxAddr = fontAddr + (cpu->GetByte(sa) & (_ecbm ? 0x3f : 0xff)) * 8;
 	} else if (mode == C64_Bitmap) {
 		int s = hoverPos[0] / 8 + (hoverPos[1] / 8) * columns;
-		int ss = addrScreenValue + s;
-		int sb = addrGfxValue + s * 8;
+		int ss = scrnAddr + s;
+		int sb = bitmAddr + s * 8;
+		hoverScreenAddr = ss;
+		hoverGfxAddr = sb;
 		line.append(" xc:").append_num(hoverPos[0] / 8, 0, 10).append(" yc:").append_num(hoverPos[1] / 8, 0, 10);
 		line.append(" scr:$").append_num(ss, 4, 16).append(" bm:$").append_num(sb, 4, 16);
 	}
