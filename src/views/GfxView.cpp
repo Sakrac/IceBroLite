@@ -79,6 +79,17 @@ void GfxView::WriteConfig(UserData& config)
 	config.AddValue(strref("rows"), rows);
 	config.AddValue(strref("columns_sprite"), columns_sprite);
 	config.AddValue(strref("rows_sprite"), rows_sprite);
+	config.AddValue(strref("color"), config.OnOff(color));
+	config.AddValue(strref("multicolor"), config.OnOff(multicolor));
+	config.AddValue(strref("ecbm"), config.OnOff(ecbm));
+	config.AddValue(strref("bg_color"), bg);
+	config.AddValue(strref("fg_spr_color"), spr_col[0]);
+	config.AddValue(strref("mc1_spr_color"), spr_col[1]);
+	config.AddValue(strref("mc2_spr_color"), spr_col[2]);
+	config.AddValue(strref("fg_color"), txt_col[0]);
+	config.AddValue(strref("mc1_color"), txt_col[1]);
+	config.AddValue(strref("mc2_color"), txt_col[2]);
+	config.AddValue(strref("ext_color"), txt_col[3]);
 }
 
 void GfxView::ReadConfig(strref config)
@@ -145,6 +156,28 @@ void GfxView::ReadConfig(strref config)
 			rows_sprite = (int)value.atoi();
 			reeval = true;
 			strovl(rows_spr_str, sizeof(rows_spr_str)).append_num(rows_sprite, 0, 10).c_str();
+		} else if (name.same_str("color") && type == ConfigParseType::CPT_Value) {
+			color = !value.same_str("off");
+		} else if (name.same_str("multicolor") && type == ConfigParseType::CPT_Value) {
+			multicolor = !value.same_str("off");
+		} else if (name.same_str("ecbm") && type == ConfigParseType::CPT_Value) {
+			multicolor = !value.same_str("off");
+		} else if (name.same_str("bg_color") && type == ConfigParseType::CPT_Value) {
+			bg = (uint8_t)value.atoi() & 0xf;
+		} else if (name.same_str("fg_spr_color") && type == ConfigParseType::CPT_Value) {
+			spr_col[0] = (uint8_t)value.atoi() & 0xf;
+		} else if (name.same_str("mc1_spr_color") && type == ConfigParseType::CPT_Value) {
+			spr_col[1] = (uint8_t)value.atoi() & 0xf;
+		} else if (name.same_str("mc2_spr_color") && type == ConfigParseType::CPT_Value) {
+			spr_col[2] = (uint8_t)value.atoi() & 0xf;
+		} else if (name.same_str("fg_color") && type == ConfigParseType::CPT_Value) {
+			txt_col[0] = (uint8_t)value.atoi() & 0xf;
+		} else if (name.same_str("mc1_color") && type == ConfigParseType::CPT_Value) {
+			txt_col[1] = (uint8_t)value.atoi() & 0xf;
+		} else if (name.same_str("mc2_color") && type == ConfigParseType::CPT_Value) {
+			txt_col[2] = (uint8_t)value.atoi() & 0xf;
+		} else if (name.same_str("ext_color") && type == ConfigParseType::CPT_Value) {
+			txt_col[3] = (uint8_t)value.atoi() & 0xf;
 		}
 	}
 }
@@ -1020,7 +1053,7 @@ GfxView::GfxView() : open(false), reeval(false), color(false), multicolor(false)
 
 	bg = 6;
 	spr_col[0] = 14; spr_col[1] = 0; spr_col[2] = 1;
-	txt_col[0] = 14; txt_col[1] = 0; txt_col[2] = 1;
+	txt_col[0] = 14; txt_col[1] = 0; txt_col[2] = 1; txt_col[3] = 5;
 
 	sprintf_s(address_screen, "$%04x", addrScreenValue);
 	sprintf_s(address_gfx, "$%04x", addrGfxValue);
