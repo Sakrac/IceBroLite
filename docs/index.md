@@ -4,16 +4,21 @@ It works by connecting to the Binary Monitor in VICE, and for some features the 
 
 The latest version of VICE can be downloaded from [here](https://vice-emu.sourceforge.io/index.html#download).
 
+![IceBro Lite Window](img/IceBroLite_Timy.png)
+
 # Manual
 1. [Updated Features](updates.MD)
 2. [Set up Ice Bro Lite](setup.md)
 3. [Customizing the debugger windows](customize.MD)
 4. [Start Debugging](start.MD)
 5. [Views](views.MD)
+   * [Graphics View](view_gfx.MD)
 6. [Acknowledgements](acknowledgements.MD)
 7. [History](history.MD)
 
 **Feedback is always welcome**
 
 I'd love to hear thoughts about IceBro Lite and ways to improve it, for instance on twitter [@spacemoguls](https://twitter.com/spacemoguls).
+
+![Snow Bro](img/IceBroLite.png)
 
