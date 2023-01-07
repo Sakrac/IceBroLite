@@ -15,16 +15,12 @@ struct GfxView {
 		Generic_Modes = 0,
 		Planar = Generic_Modes,
 		Columns,
+		ColumnScreen_MC,
 		C64_Modes,
-		C64_Bitmap = C64_Modes,
-		C64_ColBitmap,
-		C64_Sprites,
+		C64_Current = C64_Modes,
 		C64_Text,
-		C64_ExtText,
-		C64_Text_MC,
-		C64_MCBM,
-		C64_ColumnScreen_MC,
-		C64_Current
+		C64_Bitmap,
+		C64_Sprites
 	};
 
 	enum Zoom {
@@ -74,6 +70,7 @@ struct GfxView {
 
 	bool color;
 	bool multicolor;
+	bool ecbm;
 	bool vicColors;
 
 	bool useRomFont;
@@ -91,6 +88,7 @@ struct GfxView {
 	void CreateColumnsBitmap(CPU6510* cpu, uint32_t* dst, int lines, uint32_t width, const uint32_t* palette);
 
 	void PrintCurrentInfo(CPU6510* cpu);
+	void PrintHoverInfo(CPU6510* cpu, int* hoverPos);
 
 	void CreateC64BitmapBitmap(CPU6510* cpu, uint32_t* dst, const uint32_t* palette, uint16_t bitmap, size_t cl, uint32_t rw);
 	void CreateC64ColorBitmapBitmap(CPU6510* cpu, uint32_t* dst, const uint32_t* palette, uint16_t bitmap, uint16_t screen, size_t cl, uint32_t rw);

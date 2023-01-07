@@ -192,14 +192,14 @@ void GfxView::Draw(int index)
 
 	bool redraw = false;
 	{
-		int numColumns = (displayMode == C64_Sprites) ? 4 : 5;
+		int numColumns = 4;// (displayMode == C64_Sprites) ? 4 : 5;
 
 		strown<32> name("gfxSetupColumns");
 		name.append_num(index + 1, 1, 10);
 		ImGui::Columns(numColumns, name.c_str(), true);  // 5-ways, no border
 		name.copy("system##");
 		name.append_num(index + 1, 1, 10);
-		ImGui::Combo(name.c_str(), &displaySystem, "Generic\0C64\0\0");
+		ImGui::Combo(name.c_str(), &displaySystem, "SPC\0C64\0\0");
 		ImGui::NextColumn();
 
 		int prevMode = displayMode;
@@ -256,17 +256,9 @@ void GfxView::Draw(int index)
 			}
 
 			ImGui::NextColumn();
-			if (ImGui::Checkbox("romFont", &useRomFont)) {
-				redraw = true;
-			}
-			ImGui::NextColumn();
 		} else {
 			ImGui::NextColumn();
 			ImGui::NextColumn();
-			ImGui::NextColumn();
-			if (ImGui::Checkbox("romFont", &useRomFont)) {
-				redraw = true;
-			}
 			ImGui::NextColumn();
 		}
 
@@ -277,11 +269,11 @@ void GfxView::Draw(int index)
 		name.append_num(index + 1, 1, 10);
 		switch (displaySystem) {
 			case Generic:
-				ImGui::Combo(name.c_str(), &genericMode, "Planar\0Columns\0\0");
+				ImGui::Combo(name.c_str(), &genericMode, "Planar\0Columns\0Colmun Text MC\0\0");
 				displayMode = genericMode + Generic_Modes;
 				break;
 			case C64:
-				ImGui::Combo(name.c_str(), &c64Mode, "Bitmap\0Col Bitmap\0Sprites\0Text\0ExtText\0Text MC\0MCBM\0Colmn Text MC\0Current\0\0");
+				ImGui::Combo(name.c_str(), &c64Mode, "Current\0Text\0Bitmap\0Sprites\0\0");
 				displayMode = c64Mode + C64_Modes;
 				break;
 		}
@@ -313,16 +305,26 @@ void GfxView::Draw(int index)
 			}
 
 		} else if (displayMode != C64_Current) {
-			ImGui::NextColumn();
+//			ImGui::NextColumn();
 
 			if (displayMode == C64_Bitmap || displayMode == C64_Text) {
-				int colMode = color ? 1 : (multicolor ? 2 : 0), prevMode = colMode;
+				int colMode = color ? 1 : (multicolor ? 2 : 0);
+				if (displayMode == C64_Text && ecbm) { colMode = 3; }
+				int prevMode = colMode;
 				name.copy("Color##");
 				name.append_num(index + 1, 1, 10);
-				ImGui::Combo(name.c_str(), &colMode, "Mono\0Color\0Multi\0\0");
-				color = colMode == 1;
-				multicolor = colMode == 2;
-				if (prevMode != colMode) { redraw = true; }
+				ImGui::Combo(name.c_str(), &colMode, 
+					displayMode == C64_Text ? "Mono\0Color\0Multi\0ECBM\0\0" : "Mono\0Color\0Multi\0\0");
+				if (prevMode != colMode) {
+					if (displayMode == C64_Text && colMode == 3) {
+						ecbm = true;
+					} else {
+						if (displayMode == C64_Text) { ecbm = false; }
+						color = colMode == 1;
+						multicolor = colMode == 2;
+					}
+					redraw = true;
+				}
 				ImGui::NextColumn();
 			}
 			name.copy("cols##");
@@ -351,6 +353,9 @@ void GfxView::Draw(int index)
 			if (ImGui::MenuItem("Fit Y", nullptr, zoom == Zoom_FitY)) { zoom = Zoom_FitY; }
 			if (ImGui::MenuItem("Fit Window", nullptr, zoom == Zoom_FitWindow)) { zoom = Zoom_FitWindow; }
 			ImGui::EndMenu();
+		}
+		if (ImGui::Selectable("ROM Font", useRomFont)) {
+			useRomFont = !useRomFont; redraw = true;
 		}
 		if (multicolor) {
 			if (ImGui::Selectable("VIC colors", vicColors)) {
@@ -396,10 +401,19 @@ void GfxView::Draw(int index)
 			break;
 		}
 	}
+	ImVec2 textureScreen = ImGui::GetCursorScreenPos();
+	ImVec2 mousePos = ImGui::GetMousePos();
+	int hoverPos[2] = { 
+		(int)size.x ? ((int)(mousePos.x - textureScreen.x) * bitmapWidth) / (int)size.x : -1,
+		(int)size.y ? ((int)(mousePos.y - textureScreen.y) * bitmapHeight) / (int)size.y : -1 };
 	ImGui::Image(texture, size);
 
-	if (ImGui::GetCurrentWindow() == ImGui::GetCurrentContext()->HoveredWindow && displayMode == C64_Current) {
-		PrintCurrentInfo(cpu);
+	if (ImGui::GetCurrentWindow() == ImGui::GetCurrentContext()->HoveredWindow) {
+		if (displayMode == C64_Current) {
+			PrintCurrentInfo(cpu);
+		} else {
+			PrintHoverInfo(cpu, hoverPos);
+		}
 	}
 	ImGui::End();
 }
@@ -418,6 +432,14 @@ void GfxView::PrintCurrentInfo(CPU6510* cpu) {
 	else if (d011 & 0x20) { line.append(mc ? "MultiColor Bitmap " : "Bitmap "); }
 	else { line.append(mc ? "MultiColor Text " : "Text "); }
 	line.append("Screen: $").append_num(screen, 4, 16).append((d011 & 0x20) ? " Bitmap: $" : " Font: $").append_num(chars, 4, 16);
+	ImGui::SetCursorPos(ImVec2(0, ImGui::GetWindowSize().y - ImGui::GetTextLineHeightWithSpacing()));
+	ImGui::Text(line.c_str());
+}
+
+void GfxView::PrintHoverInfo(CPU6510* cpu, int *hoverPos) {
+	strown<128> line;
+	line.sprintf("x: %d, y: %d", hoverPos[0], hoverPos[1]);
+	ImGui::SetCursorPos(ImVec2(0, ImGui::GetWindowSize().y - ImGui::GetTextLineHeightWithSpacing()));
 	ImGui::SetCursorPos(ImVec2(0, ImGui::GetWindowSize().y - ImGui::GetTextLineHeightWithSpacing()));
 	ImGui::Text(line.c_str());
 }
@@ -470,11 +492,10 @@ void GfxView::Create8bppBitmap(CPU6510* cpu)
 			}
 			break;
 
-		case C64_ColBitmap: CreateC64ColorBitmapBitmap(cpu, d, c64pal, addrGfxValue, addrScreenValue, cl, rw); break;
-		case C64_ExtText: CreateC64ExtBkgTextBitmap(cpu, d, c64pal, addrGfxValue, addrScreenValue, addrColValue, cl, rw); break;
-
 		case C64_Text:
-			if (color) {
+			if (ecbm) {
+				CreateC64ExtBkgTextBitmap(cpu, d, c64pal, addrGfxValue, addrScreenValue, addrColValue, cl, rw);
+			} else if (color) {
 				CreateC64ColorTextBitmap(cpu, d, c64pal, addrGfxValue, addrScreenValue, addrColValue, cl, rw);
 			} else if (multicolor) {
 				CreateC64MulticolorTextBitmap(cpu, d, c64pal, addrGfxValue, addrScreenValue, addrColValue, cl, rw); break;
@@ -482,15 +503,16 @@ void GfxView::Create8bppBitmap(CPU6510* cpu)
 				CreateC64TextBitmap(cpu, d, c64pal, cl, rw); break;
 			}
 			break;
-		case C64_Text_MC: CreateC64MulticolorTextBitmap(cpu, d, c64pal, addrGfxValue, addrScreenValue, addrColValue, cl, rw); break;
-		case C64_MCBM: CreateC64MulticolorBitmapBitmap(cpu, d, c64pal, addrGfxValue, addrScreenValue, addrColValue, cl, rw); break;
+
 		case C64_Sprites:
 			if (multicolor) {
 				CreateC64SpritesMCBitmap(cpu, d, linesHigh, w, c64pal); break;
 			} else {
 				CreateC64SpritesBitmap(cpu, d, linesHigh, w, c64pal); break;
 			}
-		case C64_ColumnScreen_MC: CreateC64ColorTextColumns(cpu, d, c64pal, addrGfxValue, addrScreenValue, addrColValue, cl, rw); break;
+
+		case ColumnScreen_MC: CreateC64ColorTextColumns(cpu, d, c64pal, addrGfxValue, addrScreenValue, addrColValue, cl, rw); break;
+
 		case C64_Current: CreateC64CurrentBitmap(cpu, d, c64pal); break;
 	}
 
