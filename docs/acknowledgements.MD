@@ -14,9 +14,9 @@ Palette and color assigments by MonstersGoBoom, used with permission
 
 ### Suggestions for improvements
 
-* *Paul Hocker* - Command line options for starting VICE, loading symbols and code and for setting custom fonts. Additional numeric formats for the watch view values (hex/decimal/binary). 
+* *Paul Hocker* - Command line options for starting VICE, loading symbols and code and for setting custom fonts. Additional numeric formats for the watch view values (hex/decimal/binary). Paul is also the creator of ["Kick Assembler 8-bit Retro studio"](https://marketplace.visualstudio.com/items?itemName=paulhocker.kick-assembler-vscode-ext), a Visual Studio Code extension built for using Kick Assembler
 * *Mr Dudz* - Linux build fixes.
-* *Bacchus/FLT* - Track PC option for Code Views, Action Replay-like cheat finder for the Ice Console, Cleanup/Improvements for the Graphics View.
+* *[Bacchus](https://csdb.dk/scener/?id=8372)/[FLT](http://www.fairlight.to/)* - Track PC option for Code Views, Action Replay-like cheat finder for the Ice Console, Cleanup/Improvements for the Graphics View.
 
 
 ### VICE C64
