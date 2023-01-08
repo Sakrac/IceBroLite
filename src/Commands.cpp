@@ -46,36 +46,41 @@ void CommandPoke(strref param) {
 	}
 }
 
-bool ParseRememberCompare(strref &param_in, uint8_t *pb0, uint8_t *pb1, uint32_t *pa0, uint32_t *pa1) {
+bool ParseRememberCompare(strref &param_in, uint8_t *pb0, uint8_t *pb1, uint32_t *pa0, uint32_t *pa1, bool *pinv) {
 	strref param = param_in;
 
-	strref bytes = param.split_token_trim(' ');
-	uint8_t b0 = (uint8_t)ValueFromExpression(strown<256>(bytes.split_token('-')).c_str()), b1 = b0;
-	if (bytes.valid()) {
-		b1 = (uint8_t)ValueFromExpression(strown<256>(bytes).c_str());
-	}
-
+	uint8_t b0 = 0, b1 = 0xff;
 	uint32_t a0 = 0, a1 = 0x10000;
+	bool inv = false;
+	param.trim_whitespace();
+	if (param.get_len()) {
+		if (param[0] == '!') { ++param; inv = true; param.skip_whitespace(); }
+		strref bytes = param.split_token_trim(' ');
+		b0 = (uint8_t)ValueFromExpression(strown<256>(bytes.split_token('-')).c_str()), b1 = b0;
+		if (bytes.valid()) {
+			b1 = (uint8_t)ValueFromExpression(strown<256>(bytes).c_str());
+		}
 
-	char p0 = param[0];
+		char p0 = strref::tolower(param[0]);
 
-	if (param.valid() && p0 != 't' && p0 != 'T' && p0 != 'w' && p0 != 'W') {
-		strref addr1 = param.split_token_trim(' ');
-		strref addr2 = param.split_token_trim(' ');
+		if (param.valid() && p0 != 't' && p0 != 'w' && p0 != 'c' && p0 != 'f') {
+			strref addr1 = param.split_token_any_trim(strref(" -"));
+			strref addr2 = param.split_token_trim(' ');
 
-		a0 = (uint32_t)ValueFromExpression(strown<256>(addr1).c_str());
-		a1 = (uint32_t)ValueFromExpression(strown<256>(addr2).c_str());
+			a0 = (uint32_t)ValueFromExpression(strown<256>(addr1).c_str());
+			a1 = (uint32_t)ValueFromExpression(strown<256>(addr2).c_str());
 
-		if (a1 <= a0) {
-			strown<128> errstr;
-			errstr.append("Error: not a valid address range ($").append_num(a0, 4, 16).append("-$")
-				.append_num(a1, 4, 16).append(")").c_str();
-			ViceLog(errstr.get_strref());
-			return false;
+			if (a1 <= a0) {
+				strown<128> errstr;
+				errstr.append("Error: not a valid address range ($").append_num(a0, 4, 16).append("-$")
+					.append_num(a1, 4, 16).append(")").c_str();
+				ViceLog(errstr.get_strref());
+				return false;
+			}
 		}
 	}
 
-	*pb0 = b0; *pb1 = b1; *pa0 = a0; *pa1 = a1;
+	*pb0 = b0; *pb1 = b1; *pa0 = a0; *pa1 = a1; *pinv = inv;
 
 	param_in = param;
 	return true;
@@ -85,7 +90,8 @@ bool ParseRememberCompare(strref &param_in, uint8_t *pb0, uint8_t *pb1, uint32_t
 void CommandRemember(strref param) {
 	uint8_t b0, b1;
 	uint32_t a0, a1;
-	if (!ParseRememberCompare(param, &b0, &b1, &a0, &a1)) { return; }
+	bool inv = false;
+	if (!ParseRememberCompare(param, &b0, &b1, &a0, &a1, &inv)) { return; }
 
 	if (CPU6510* cpu = GetCurrCPU()) {
 		bool wasRunning = HaltViceWait();
@@ -121,7 +127,8 @@ void  CommandForget() {
 void CommandMatch(strref param, int charSpace) {
 	uint8_t b0, b1;
 	uint32_t a0, a1;
-	if (!ParseRememberCompare(param, &b0, &b1, &a0, &a1)) { return; }
+	bool inv = false;
+	if (!ParseRememberCompare(param, &b0, &b1, &a0, &a1, &inv)) { return; }
 	if (CPU6510* cpu = GetCurrCPU()) {
 		bool wasRunning = HaltViceWait();
 
@@ -129,21 +136,52 @@ void CommandMatch(strref param, int charSpace) {
 		strown<128> result;
 		int found = 0;
 
-		char bp = strref::tolower(param[0]);
+		bool trc = false, wtc = false, clr = false, flt = false;
+		while (strref ctrl = param.split_token_trim(' ')) {
+			switch (strref::tolower(ctrl.get_first())) {
+				case 't': trc = true; break;
+				case 'w': wtc = true; break;
+				case 'c': clr = true; break;
+				case 'f': flt = true; break;
+			}
+		}
 
-		for (auto a : sRemembered) {
-			if (a >= a0 && a < a1) {
+		if (clr) { sRemembered.clear(); }
+
+		bool wasClr = sRemembered.size() == 0;
+
+		if (wasClr) {
+			for (uint32_t a = a0; a < a1; ++a) {
 				uint8_t b = cpu->GetByte(a);
-				if (b >= b0 && b <= b1) {
-					if (bp == 'w') { ViceAddCheckpoint(a, a, true, false, true, false); }
-					else if(bp == 't') { ViceAddCheckpoint(a, a, false, false, true, false); }
-					result.append_num(a, 4, 16).append(", ");
+				if ((b >= b0 && b <= b1)!=inv) {
+					sRemembered.push_back(a);
 					++found;
-					if ((int)(result.len()+6) >= charSpace) {
-						ViceLog(result.get_strref());
-						result.clear();
+				}
+			}
+		} else {
+			size_t i = 0;
+			while (i<sRemembered.size()) {
+				uint16_t a = sRemembered[i];
+				bool match = false;
+				if (a >= a0 && a < a1) {
+					uint8_t b = cpu->GetByte(a);
+					if ((b >= b0 && b <= b1)!=inv) {
+						if(wtc) { ViceAddCheckpoint(a, a, true, false, true, false); }
+						else if(trc) { ViceAddCheckpoint(a, a, false, false, true, false); }
+						result.append_num(a, 4, 16).append(", ");
+						++found;
+						match = true;
+						if ((int)(result.len()+6) >= charSpace) {
+							ViceLog(result.get_strref());
+							result.clear();
+						}
 					}
 				}
+				if (match || !flt) { ++i; }
+				else if (flt) { sRemembered.erase(sRemembered.begin() + i); }
+			}
+			if (result.get_len()) {
+				ViceLog(result.get_strref());
 			}
 		}
 
