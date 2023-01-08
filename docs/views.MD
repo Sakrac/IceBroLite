@@ -20,66 +20,13 @@ Connect will attach the debugger to an existing instance of VICE, Start VICE wil
 
 ## Code View
 
-Disassembly and Source Debugging lives here, but that is not all. There are a number of optional "columns" to customize this view
-
-![Toolbar View](img/CodeView.png)
-
-* Address
-* Bytes - the bytes that makes up each instruction
-* Disassembly - you can hide the disassembly to save some screen space for Source Debugging
-* References - looks at the address the instruction is referencing and shows what it currently contains
-* Labels - *not* a column, but expands addresses in instructions into labels if found
-* Source - show or hide source debugging (if available)
-
-Addresses can be selected in the disassembly by clicking on them.
-A purple cursor shows the current selected address. Addresses can be navigated with cursor up/down and page up/down.
-
-Keyboard shortcuts while the code view is selected:
-* Tab: jump to current PC
-* Shift+Tab: set PC to current selected address
-* Cursor up/down: move cursor to previous/next addresss
-* Page up/down: move cursor half a screen
-* F9: Toggle breakpoint at line
-* Enter: edit disassembly at address
-
-The address field can be any expression  that evaluates, either a hex value preceeded by $ or a decimal value. It can also be an expression, see the Watch View for expression details.
-
-If the address field expression is preceeded by = this means lock the view to the expression which can be handy to for example see the address of the jsr instruction that entered the code unless other data is on the stack:
-
-	={$101+s}-2
+[Code View](view_code.MD)
 
 ---
 
 ## Watch View
 
-A watch is a live expression, type in any expression here to monitor the result at any time.
-
-![Watch View](img/WatchView.png)
-
-Each watch expression will be saved to the .ini file at shutdown.
-
-Expression operators are:
-* '==': 1 if left is same as right side otherwise 0. Can also use '='
-* '<', '<=', '>', '>=": less than, less or equal, greater, greater or equal. 1 if true otherwise 0
-* '(', ')': parenthesis can be used to scope parts of expressions
-* '{', '}': 16 bit value at address within { and }, for example {$fffe} would be the current interrupt address
-* '[', ']': 8 bit value at address within [ and ], for example [1] would be current ROM bank value
-* '+': sum of left side and right side
-* '-': left side subtracted by right side
-* '*': product of left and right sides
-* '/': left side divided by right side
-* '&': bitwise and
-* '&&': conditional and, if left side and right side are both non-zero this is 1 otherwise 0
-* '|': bitwise or
-* '||': conditional or
-* '^': bitwise exclusive or
-* '!': "not", if right side is 0 then this is 1, otherwise 0
-* '$': prefix for hex values
-* '%': prefix for octal values
-* 'A', 'X', 'Y': value of register
-* 'S': stack pointer
-* 'C', 'Z', 'I', 'D', 'V', 'N': value of flag register, each is 0 or 1
-* 'P': all above flags in one byte
+[Watch View](view_watch.MD)
 
 ---
 
@@ -98,19 +45,7 @@ Expression operators are:
 
 ## Breakpoint View
 
-The Breakpoint View is a list of the current checkpoints which includes breakpoints (stop on execution of address), watchpoints (stop when reading or writing to an address or range), tracepoints (tracks loading/storing/execution but does not stop VICE).
-
-![Breakpoint View](img/BreakpointView.png)
-
-While debugging code it is usually easiest to toggle breakpoints from the code view, at the top of the Breakpoint View there is a drop down to create other types of checkpoints.
-
-Breakpoint addresses can be dragged from the breakpoint table into the Code tab to see the code at the breakpoint, or to the memory view along with anything you can drag a symbol to.
-
-In the table a checkpoint can be selected, conditions can be added, clicking on a checkpoint icon disables/enables the checkpoint.
-
-Keyboard shortcuts when a checkpoint is selected:
-* cursor up/down: move to previous/next checkpoint in table
-* Delete: delete the selected checkpoint
+[Breakpoint View Page](view_breakpoints.MD)
 
 ---
 
