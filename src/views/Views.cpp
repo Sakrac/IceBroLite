@@ -24,6 +24,7 @@
 #include "../StartVice.h"
 #include "Views.h"
 #include "GLFW/glfw3.h"
+#include "../Image.h"
 
 struct ViewContext {
 	enum { sNumFontSizes = 7 };
@@ -69,6 +70,8 @@ static int imgui_style = 0;
 static ViewContext* viewContext = nullptr;
 static strown<PATH_MAX_LEN> sUserFontName;
 static int sUserFontSize = 0;
+static uint8_t sCodePCHighlight = 1;
+static uint8_t sCodePCColor = 13;
 static ImFont* sUserFont = nullptr;
 static float sFontSizes[ViewContext::sNumFontSizes] = { 8.0f, 10.0f, 12.0, 14.0f, 16.0f, 20.0f, 24.0f };
 static const ImWchar C64CharRanges[] =
@@ -196,6 +199,8 @@ void ViewContext::SaveState(UserData& conf)
 		conf.AddValue("UserFont", sUserFontName.get_strref());
 		conf.AddValue("UserFontSize", sUserFontSize);
 	}
+	conf.AddValue("CodePCHighlight", sCodePCHighlight);
+	conf.AddValue("CodePCHighlightColor", sCodePCColor);
 }
 
 void ViewContext::LoadState(strref config)
@@ -224,6 +229,10 @@ void ViewContext::LoadState(strref config)
 					case 6: StyleC64_Green(); break;
 					default: imgui_style = 0; break;
 				}
+			} else if(name.same_str("CodePCHighlight")) {
+				sCodePCHighlight = (uint8_t)value.atoi();
+			} else if(name.same_str("CodePCHighlightColor")) {
+				sCodePCColor = (uint8_t)value.atoi() & 0xf;
 			}
 		}
 		if (type == ConfigParseType::CPT_Struct) {
@@ -360,6 +369,16 @@ void ViewContext::Draw()
 				if (ImGui::MenuItem("Reset Layout")) { setupDocking = true; }
 				if (ImGui::MenuItem("Save Layout")) { UserSaveLayout(); }
 				if (ImGui::MenuItem("Save Layout on Exit", nullptr, &saveSettingsOnExit)) { saveSettingsOnExit = !saveSettingsOnExit; }
+				if (ImGui::BeginMenu("Code PC Highlight")) {
+					if (ImGui::MenuItem("None", nullptr, sCodePCHighlight == 0)) { sCodePCHighlight = 0; }
+					if (ImGui::MenuItem("Outline", nullptr, sCodePCHighlight == 1)) { sCodePCHighlight = 1; }
+					if (ImGui::MenuItem("Highlight", nullptr, sCodePCHighlight == 2)) { sCodePCHighlight = 2; }
+					if (ImGui::BeginMenu("Code PC Highlight Color")) {
+						sCodePCColor = DrawPaletteMenu(sCodePCColor);
+						ImGui::EndMenu();
+					}
+					ImGui::EndMenu();
+				}
 				ImGui::EndMenu();
 			}
 
@@ -674,3 +693,22 @@ void SetCodeAddr(int code, uint16_t addr) {
 		addrOvl.append('$').append_num(addr, 4, 16).c_str();
 	}
 }
+
+
+static const char* sColorName[] = {
+	"Black", "White", "Red", "Cyan", "Purple", "Green",
+	"Blue", "Yellow", "Orange", "Brown", "Pink", "Dark Grey",
+	"Mid Grey", "Light Green", "Light Blue", "Light Grey"
+};
+
+uint8_t DrawPaletteMenu(uint8_t col) {
+	for (uint8_t c = 0; c < 16; ++c) {
+		strown<16> name;
+		name.append_num(c, 0, 10).append(' ').append(sColorName[c]);
+		if (ImGui::MenuItem(name.c_str(), nullptr, col == c)) { col = c; }
+	}
+	return col;
+}
+
+int GetPCHighlightStyle() { return sCodePCHighlight; }
+uint32_t GetPCHighlightColor() { return c64pal[sCodePCColor]; }

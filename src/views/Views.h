@@ -30,3 +30,6 @@ void ViewPushFont(int font);
 void ViewPopFont();
 
 FVFileView* GetFileView();
+uint8_t DrawPaletteMenu(uint8_t col);
+int GetPCHighlightStyle();
+uint32_t GetPCHighlightColor();

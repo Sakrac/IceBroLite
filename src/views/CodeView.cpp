@@ -486,6 +486,23 @@ void CodeView::Draw(int index)
 				// add exec breakpoint
 				ViceAddBreakpoint(read);
 			}
+
+			// draw a highlight of the current PC line
+			if (GetPCHighlightStyle() && pc == read) {
+				ImDrawList* draw_list = ImGui::GetWindowDrawList();
+				if (GetPCHighlightStyle() == 1) {
+					draw_list->AddRect(ImVec2(linePos.x + winPos.x, linePos.y + winPos.y - ImGui::GetScrollY()),
+						ImVec2(linePos.x + winPos.x + ImGui::CalcTextSize(line.c_str()).x - 2.0f,
+							linePos.y + winPos.y - ImGui::GetScrollY() + ImGui::GetTextLineHeightWithSpacing() - 1.0f),
+						GetPCHighlightColor(), 0.0f, 0, 1.0f);
+				} else {
+					draw_list->AddRectFilled(ImVec2(linePos.x + winPos.x, linePos.y + winPos.y - ImGui::GetScrollY()),
+						ImVec2(linePos.x + winPos.x + ImGui::CalcTextSize(line.c_str()).x - 2.0f,
+							linePos.y + winPos.y - ImGui::GetScrollY() + ImGui::GetTextLineHeightWithSpacing() - 1.0f),
+						GetPCHighlightColor(), 0.0f, 0);
+				}
+			}
+
 			// very cunningly draw code line AFTER breakpoint
 			ImGui::Text(line.c_str());
 			if (showSrc && srcLine) {

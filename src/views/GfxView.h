@@ -88,7 +88,6 @@ struct GfxView {
 	void Draw(int index);
 	void Create8bppBitmap(CPU6510* cpu);
 	bool HandleContextMenu();
-	uint8_t DrawPaletteMenu(uint8_t col);
 
 	void CreatePlanarBitmap(CPU6510* cpu, uint32_t* dst, int lines, uint32_t width, const uint32_t* palette);
 	void CreateColumnsBitmap(CPU6510* cpu, uint32_t* dst, int lines, uint32_t width, const uint32_t* palette);

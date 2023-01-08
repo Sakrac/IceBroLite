@@ -200,21 +200,6 @@ static bool AcceptDragDropAddress(uint32_t* addrValue, char* addrName, size_t ad
 	return false;
 }
 
-static const char* sColorName[] = {
-	"Black", "White", "Red", "Cyan", "Purple", "Green",
-	"Blue", "Yellow", "Orange", "Brown", "Pink", "Dark Grey",
-	"Mid Grey", "Light Green", "Light Blue", "Light Grey"
-};
-
-uint8_t GfxView::DrawPaletteMenu(uint8_t col) {
-	for (uint8_t c = 0; c < 16; ++c) {
-		strown<16> name;
-		name.append_num(c, 0, 10).append(' ').append(sColorName[c]);
-		if (ImGui::MenuItem(name.c_str(), nullptr, col == c)) { col = c; }
-	}
-	return col;
-}
-
 bool GfxView::HandleContextMenu()
 {
 	bool redraw = false;
