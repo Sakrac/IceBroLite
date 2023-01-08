@@ -11,7 +11,10 @@ Each watch expression will be saved to the .ini file at shutdown.
 
 Natural [expressions](expressions.MD) can be used in the watch fields, common expressions include:
 
-    *{addr} => show bytes starting at (addr)
-    *{<zp>}+y => what (<zp>),y currently points to
-    {$101+s}-2 => address of jsr to this code
-    {{$101+1}-1} => first address of this subroutine (jsr)
+*\{addr\} => show bytes starting at (addr)
+
+*\{\<zp>\}+y => what (\<zp>),y currently points to
+
+\{\$101+s\}-2 => address of jsr to this code
+
+\{\{\$101+1\}-1\} => first address of this subroutine (jsr)
