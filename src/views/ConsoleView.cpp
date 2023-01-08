@@ -489,12 +489,44 @@ void IceConsole::ExecCommand(const char* command_line)
 		if (!ViceConnected()) { AddLog("VICE Not Connected Error"); }
 		else { CommandMatch(param, (int)ImGui::GetWindowSize().x / (int)ImGui::GetFont()->GetCharAdvance('D')); }
 	} else if (cmd.same_str("commands") || cmd.same_str("cmd")) {
-		AddLog("Vice Console IceBro Commands");
-		AddLog(" connect/cnct [<ip>:<port>] - connect to a remote host, default to 127.0.0.1:6510;");
-		AddLog(" pause; font <size:0-6>; eval <exp>; history/hist;");
-		AddLog(" clear, poke addr,byte;");
-		AddLog(" remember <byte>[-<byte>] [<addr> <addr>] / forget;");
-		AddLog(" match <byte>[-<byte>] [<addr> <addr>] [T[RACE]] [W[ATCH]];");
+		if (param.same_str("remember")) {
+			AddLog("remember command:");
+			AddLog("  remember <byte>[-<byte>] [<addr> <addr>]");
+			AddLog(" Clears the matches and stores a new set");
+			AddLog(" of matches in the memory range.");
+			AddLog(" Identical to match <byte> <addr> C[lear]");
+		} else if(param.same_str("forget")) {
+			AddLog("forget command:");
+			AddLog("  forget");
+			AddLog(" Clears the match buffer, same as match C[lear]");
+		} else if(param.same_str("match")) {
+			AddLog("match command:");
+			AddLog("  match <byte>[-<byte>] [<addr> <addr>] C[lear] F[ilter] T[race] W[atch]");
+			AddLog(" Match will compare the byte range within");
+			AddLog(" the address range to a stored list of");
+			AddLog(" previous matched addresses.");
+			AddLog(" byte range can be prefixed with '!' for inverted range.");
+			AddLog("  If the list had previous matches it will");
+			AddLog(" print out the addresses that current match.");
+			AddLog(" Controls: (must be after byte/address range)");
+			AddLog("  * C[lear]: clear any current results first");
+			AddLog("  * F[ilter]: remove all non-matching results for another run");
+			AddLog("  * T[race]: add a Trace store for the matching results");
+			AddLog("  * W[atch]: add a Watch store for the matching results");
+		} else if(param.same_str("poke")) {
+			AddLog("poke command:");
+			AddLog("  poke <addr>,<byte>");
+			AddLog(" Store a byte in a specific memory location, VICE");
+			AddLog(" does not need to be in a break state for this command.");
+			AddLog(" addr and byte can expressions so if you have loaded");
+			AddLog(" relevant symbols you can f.e. poke VICREGS+32, 3+2");
+		} else {
+			AddLog("Vice Console IceBro Commands");
+			AddLog(" connect/cnct [<ip>:<port>] - connect to a remote host, default to 127.0.0.1:6510;");
+			AddLog(" pause; font <size:0-6>; eval <exp>; history/hist;");
+			AddLog(" clear, poke; remember; forget; match");
+			AddLog(" type cmd <command> for more information on some commands.");
+		}
 	}
 }
 
