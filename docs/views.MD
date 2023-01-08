@@ -85,13 +85,8 @@ Expression operators are:
 
 ## Console View
 
-This is a combination of the VICE text monitor, if enabled in VICE, and some extra commands for IceBro Lite.
+[Ice Console Manual Page](ice_console.MD)
 
-![VICE text monitor](img/ViceMonitor.png)
-
-To use the console view the remote monitor must be enabled in VICE in addition to the remote binary monitor. This enables a few more features not available in the binary protocol. Tracepoint output will be filtered into the Trace View instead.
-
-Type help or ? for a list of VICE commands when connected to VICE, or type CMD for a list of IceBro Lite commands. VICE text monitor output will be shown in this view.
 
 ---
 

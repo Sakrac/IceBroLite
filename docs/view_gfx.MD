@@ -1,7 +1,5 @@
 # Graphics View
 
-![Graphics View](img/GraphicsView.png)
-
 The Graphics View is a viewer for graphics anywhere in RAM in a
 variety of modes and you can have two graphics views up simultaneously.
 
@@ -15,6 +13,15 @@ This view has a lot of fields where addresses and numbers can be edited. It is a
 * Rows: number of rows (chars or sprites)
 
 If the Graphics View is selected press CTRL+C to copy the graphics to the clipboard (Windows only at the moment).
+
+* [back to manual](index.md)
+* [back to views](views.md)
+
+---
+
+![Graphics View](img/GraphicsView.png)
+
+---
 
 ## Context Menu
 

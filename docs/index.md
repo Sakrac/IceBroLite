@@ -12,9 +12,11 @@ The latest version of VICE can be downloaded from [here](https://vice-emu.source
 3. [Customizing the debugger windows](customize.MD)
 4. [Start Debugging](start.MD)
 5. [Views](views.MD)
-   * [Graphics View](view_gfx.MD)
-6. [Acknowledgements](acknowledgements.MD)
-7. [History](history.MD)
+   * [Graphics View Manual Page](view_gfx.MD)
+   * [Ice Console Manual Page](ice_console.MD)
+6. [Numeric Expressions](expressions.MD)
+7. [Acknowledgements](acknowledgements.MD)
+8. [History](history.MD)
 
 **Feedback is always welcome**
 
