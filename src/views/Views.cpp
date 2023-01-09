@@ -373,7 +373,7 @@ void ViewContext::Draw()
 					if (ImGui::MenuItem("None", nullptr, sCodePCHighlight == 0)) { sCodePCHighlight = 0; }
 					if (ImGui::MenuItem("Outline", nullptr, sCodePCHighlight == 1)) { sCodePCHighlight = 1; }
 					if (ImGui::MenuItem("Highlight", nullptr, sCodePCHighlight == 2)) { sCodePCHighlight = 2; }
-					if (ImGui::BeginMenu("Code PC Highlight Color")) {
+					if (ImGui::BeginMenu("Color")) {
 						sCodePCColor = DrawPaletteMenu(sCodePCColor);
 						ImGui::EndMenu();
 					}

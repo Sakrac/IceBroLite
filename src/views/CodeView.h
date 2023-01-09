@@ -27,6 +27,8 @@ struct CodeView
 	int cursor[ 2 ];
 	int contextAddr;
 	int lastShownPCRow;
+	int srcColDif, srcColDif0;
+	float srcColDrag;
 	float cursorTime;
 	float mouseWheelDiff;
 	float mouseDragY, dragDiff;

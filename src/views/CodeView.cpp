@@ -20,6 +20,7 @@
 
 CodeView::CodeView() : open(false), evalAddress(false)
 {
+	srcColDif = 0;
 	showAddress = true;
 	showDisAsm = true;
 	showBytes = true;
@@ -295,9 +296,9 @@ void CodeView::Draw(int index)
 		if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_PAGE_UP)) { sY = -lines / 3; }
 		if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_PAGE_DOWN)) { sY = lines / 3; }
 		if (ImGui::IsMouseClicked(0)) {
-			ImVec2 mousePos = ImGui::GetMousePos();
-			ImVec2 winPos = ImGui::GetWindowPos();
-			ImVec2 winSize = ImGui::GetWindowSize();
+//			ImVec2 mousePos = ImGui::GetMousePos();
+//			ImVec2 winPos = ImGui::GetWindowPos();
+//			ImVec2 winSize = ImGui::GetWindowSize();
 			if (mousePos.x >= winPos.x && mousePos.y >= winPos.y &&
 				mousePos.x < (winPos.x + winSize.x) && mousePos.y < (winPos.y + winSize.y)) {
 				cursorLine = int((mousePos.y - winPos.y) / ImGui::GetTextLineHeightWithSpacing());
@@ -331,6 +332,27 @@ void CodeView::Draw(int index)
 
 	if (trackPC) { UpdateTrackPC(cpu, dY, lines); }
 
+	// drag the horizontal location of the source code
+	strl_t srcColBase = (showAddress ? 6 : 0) + (showBytes ? 9 : 0) + (showRefs ? 11 : 0) + (showLabels ? 6 : 0) + (showDisAsm ? 12 : 0) + srcColDif;
+	if (srcColBase < 4) { srcColBase = 4; }
+	if (ImGui::GetCurrentWindow() == ImGui::GetCurrentContext()->HoveredWindow &&
+		mousePos.y >(winPos.y + ImGui::GetCursorPosY())) {
+		if (srcColDrag > 0 && ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
+			ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
+			srcColDif = (int)(float(srcColDif0) + (mousePos.x-srcColDrag + 0.5f*fontCharWidth) / fontCharWidth);
+		} else {
+			float mx = mousePos.x - (winPos.x + (srcColBase+1) * fontCharWidth);
+			srcColDrag = -1;
+			if (mx > -6.0f && mx < 6.0f) {
+				ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
+				if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+					srcColDrag = mousePos.x;
+					srcColDif0 = srcColDif;
+				}
+			}
+		}
+	} else { srcColDrag = -1.0f; }
+
 	strown<128> line;
 	uint16_t read = addrValue;
 	int lineNum = 0;
@@ -352,12 +374,12 @@ void CodeView::Draw(int index)
 			editAsmFocusRequested = true;
 		}
 
-		int srcSpaces = 0;
-		strl_t srcCol = 0;
+		strl_t srcCol = srcColBase;
 		strref srcLine = {};
 		if (showSrc) {
+			int srcSpaces = 0;
 			srcLine = GetSourceAt(read, srcSpaces);
-			srcCol = (showAddress ? 6 : 0) + (showBytes ? 9 : 0) + (showRefs ? 11 : 0) + (showLabels ? 6 : 0) + (showDisAsm ? 12 : 0) + (srcSpaces + 3) / 4;
+			srcCol += (srcSpaces + 3) / 4;
 		}
 
 		// mouse hover
