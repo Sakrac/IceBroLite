@@ -1,6 +1,6 @@
 Ice Bro Lite is a visual GUI debugger that connects to the VICE C64 emulator (version 3.5 and higher).
 
-It works by connecting to the Binary Monitor in VICE, and for some features the Remote Text Monitor. This tool can be downloaded for [Windows](https://github.com/Sakrac/IceBroLite/releases) and compiled for [Linux](../linux.MD) and [Mac](../mac.MD).
+It works by connecting to the Binary Monitor in VICE, and for some features the Remote Text Monitor. This tool can be downloaded for [Windows](https://github.com/Sakrac/IceBroLite/releases) and compiled for [Linux](linux.MD) and [Mac](mac.MD).
 
 The latest version of VICE can be downloaded from [here](https://vice-emu.sourceforge.io/index.html#download).
 
