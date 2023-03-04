@@ -70,6 +70,7 @@ static int imgui_style = 0;
 static ViewContext* viewContext = nullptr;
 static strown<PATH_MAX_LEN> sUserFontName;
 static int sUserFontSize = 0;
+static bool sForceFont = false;
 static uint8_t sCodePCHighlight = 1;
 static uint8_t sCodePCColor = 13;
 static ImFont* sUserFont = nullptr;
@@ -213,9 +214,9 @@ void ViewContext::LoadState(strref config)
 			if (name.same_str("FontSize")) {
 				int fontSize = (int)value.atoi();
 				SelectFont(fontSize);
-			} else if (name.same_str("UserFont")) {
+			} else if (name.same_str("UserFont") && !sForceFont) {
 				sUserFontName.copy(value);
-			} else if (name.same_str("UserFontSize")) {
+			} else if (name.same_str("UserFontSize") && !sForceFont) {
 				sUserFontSize = (int)value.atoi();
 			} else if(name.same_str("Style")) {
 				imgui_style = (int)value.atoi();
@@ -608,18 +609,25 @@ void SetInitialFont() {
 	}
 }
 
+void ForceUserFont(strref file, int size) {
+	sUserFontName.copy(file);
+	sUserFontSize = size;
+	sForceFont = true;
+}
+
 void CheckUserFont() {
 	if (!sUserFont && sUserFontName.valid()) {
 		sUserFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(
 			sUserFontName.c_str(), (float)sUserFontSize, NULL, UserCharRanges);
 	}
 	if (sUserFont) {
-		if(sUserFontSize == (ViewContext::sNumFontSizes+1))
+		if(sUserFontSize == (ViewContext::sNumFontSizes+1) || sForceFont)
 			UseCustomFont();
 	} else {
 		sUserFontName.clear();
 		sUserFontSize = 0;
 	}
+	sForceFont = false;
 }
 
 

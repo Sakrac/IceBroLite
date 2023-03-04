@@ -239,7 +239,7 @@ int main(int argc, char* argv[])
 			else if (cmd.same_str("font")) {
 				if (line) {
 					strref file = line.split_token(',');
-					LoadUserFont(strown<PATH_MAX_LEN>(file).c_str(), line.atoi() ? (int)line.atoi() : 13);
+					ForceUserFont(file, line.atoi() ? (int)line.atoi() : 13);
 				}
 			}
 		}

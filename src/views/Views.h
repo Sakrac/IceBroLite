@@ -25,6 +25,8 @@ void CheckUserFont();
 bool UseCustomFont();
 void SetInitialFont();
 
+void ForceUserFont(strref file, int size);
+
 int PetsciiFont();
 void ViewPushFont(int font);
 void ViewPopFont();
