@@ -76,6 +76,8 @@ void WatchView::EvaluateItem(int index) {
 		return;
 	}
 
+	int fw = (int)(ImGui::GetFont()->GetCharAdvance('D') + 0.45f);
+
 	uint8_t* rpn = (uint8_t*)rpnExp[index].charstr();
 	strown<64> buf;
 	if (rpn && rpn[0]) {
@@ -110,7 +112,7 @@ void WatchView::EvaluateItem(int index) {
 			int addr = EvalExpression(rpn);
 			buf.append('$').append_num(addr, 4, 16);
 			values[index] = addr;
-			int num_bytes = int(((ImGui::GetWindowWidth() - ImGui::GetColumnWidth()) - 6 * CurrFontSize()) / (3 * CurrFontSize()));
+			int num_bytes = int(((ImGui::GetWindowWidth() - ImGui::GetColumnWidth()) - 6 * fw) / (3 * fw));
 			for (int b = 0; b < num_bytes && buf.left() > 3; b++) {
 				buf.append(' ');
 				switch (show[index]) {
