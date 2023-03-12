@@ -80,6 +80,7 @@ void TraceView::Draw()
 //		ImGui::SameLine();
 		if (ImGui::SmallButton("Clear")) {
 			ClearTrace(tracePointNum);
+			if (tracePointNum) { --tracePointNum; }
 		}
 
 		size_t numHits = NumTraceHits(tracePointNum);

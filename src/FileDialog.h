@@ -1,6 +1,7 @@
 #pragma once
 
 void InitStartFolder();
+bool GetCWD(char* dir, uint32_t dir_size);
 const char* GetStartFolder();
 void ResetStartFolder();
 bool IsFileDialogOpen();

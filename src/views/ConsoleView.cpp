@@ -9,6 +9,7 @@
 #include "../6510.h"
 #include "../platform.h"
 #include "../Commands.h"
+#include "../FileDialog.h"
 
 static const strref command_separator(" $.");
 
@@ -477,6 +478,11 @@ void IceConsole::ExecCommand(const char* command_line)
 			AddLog("%3d: %s\n", i, History[i]);
 	} else if (cmd.same_str("clear")) {
 		ClearLog();
+	} else if (cmd.same_str("cwd")) {
+		char dir[512];
+		if (GetCWD(dir, sizeof(dir))) {
+			AddLog("\"%s\"\n", dir);
+		}
 	} else if (cmd.same_str("poke")) {
 		if (!ViceConnected()) { AddLog("VICE Not Connected Error"); }
 		else { CommandPoke(param); }
@@ -524,7 +530,7 @@ void IceConsole::ExecCommand(const char* command_line)
 			AddLog("Vice Console IceBro Commands");
 			AddLog(" connect/cnct [<ip>:<port>] - connect to a remote host, default to 127.0.0.1:6510;");
 			AddLog(" pause; font <size:0-6>; eval <exp>; history/hist;");
-			AddLog(" clear, poke; remember; forget; match");
+			AddLog(" clear, cwd, poke; remember; forget; match");
 			AddLog(" type cmd <command> for more information on some commands.");
 		}
 	}

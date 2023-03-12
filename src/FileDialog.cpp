@@ -82,6 +82,10 @@ void InitStartFolder()
 #endif
 }
 
+bool GetCWD(char* dir, uint32_t dir_size) {
+	return GetCurrentDirectory(dir_size, dir) != 0;
+}
+
 const char* GetStartFolder() { return sCurrentDir; }
 
 void ResetStartFolder()

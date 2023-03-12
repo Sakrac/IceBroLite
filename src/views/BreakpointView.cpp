@@ -52,6 +52,12 @@ void BreakpointView::ReadConfig(strref config)
 	}
 }
 
+
+static const char* azsBreakTypes[] = {
+	"Break", "Watch Store", "Watch Load", "Trace Store", "Trace Load", "Trace Exec"
+};
+static const uint32_t snBreakTypes = sizeof(azsBreakTypes) / sizeof(azsBreakTypes[0]);
+
 void BreakpointView::Draw()
 {
 	ImGui::SetNextWindowPos(ImVec2(400, 150), ImGuiCond_FirstUseEver);
@@ -76,23 +82,27 @@ void BreakpointView::Draw()
 
 	ImGuiContext* g = ImGui::GetCurrentContext();
 
-	const ImGuiTableFlags addFlags = ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp;
+	const ImGuiTableFlags addFlags = ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchSame;
 	ImGui::BeginTable("##addBkTable", 4, addFlags);
-	ImGui::TableSetupColumn("CheckpointType", ImGuiTableColumnFlags_WidthStretch);
-	ImGui::TableSetupColumn("StartAddr", ImGuiTableColumnFlags_WidthStretch);
-	ImGui::TableSetupColumn("EndAddr", ImGuiTableColumnFlags_WidthStretch);
-	ImGui::TableSetupColumn("Add", ImGuiTableColumnFlags_WidthStretch);
 	ImGui::TableNextRow();
 	ImGui::TableSetColumnIndex(0);
-	if (ImGui::Combo("##cktype", &addCheckpointType, "Break\0Watch Store\0Watch Load\0Trace Store\0Trace Load\0Trace Exec\0")) {
 
+	if (ImGui::BeginCombo("Type", azsBreakTypes[addCheckpointType], ImGuiComboFlags_NoArrowButton)) {
+		for (int n = 0; n < snBreakTypes; n++) {
+			if (ImGui::Selectable(azsBreakTypes[n], n == addCheckpointType)) {
+				addCheckpointType = n;
+			}
+			if (n == addCheckpointType) { ImGui::SetItemDefaultFocus(); }
+		}
+		ImGui::EndCombo();
 	}
+
 	ImGui::TableSetColumnIndex(1);
-	if (ImGui::InputText("start", checkStartEdit, sizeof(checkStartEdit), ImGuiInputTextFlags_EnterReturnsTrue)) {
+	if (ImGui::InputText("Addr", checkStartEdit, sizeof(checkStartEdit), ImGuiInputTextFlags_EnterReturnsTrue)) {
 
 	}
 	ImGui::TableSetColumnIndex(2);
-	if (ImGui::InputText("end", checkEndEdit, sizeof(checkStartEdit), ImGuiInputTextFlags_EnterReturnsTrue)) {
+	if (ImGui::InputText("End", checkEndEdit, sizeof(checkStartEdit), ImGuiInputTextFlags_EnterReturnsTrue)) {
 
 	}
 	ImGui::TableSetColumnIndex(3);

@@ -83,6 +83,8 @@ void ClearTrace(size_t id)
 	IBMutexLock(&sTraceMutex);
 	if (id < (int)sTraceArrays.size()) {
 		sTraceArrays[id].traceHits->clear();
+		sTraceArrays.erase(sTraceArrays.begin() + id);
+
 	}
 	IBMutexRelease(&sTraceMutex);
 }
