@@ -17,6 +17,61 @@
 #include "../Sym.h"
 //#include "Listing.h"
 #include "../SourceDebug.h"
+#include "../HashTable.h"
+
+// remember branch targets for this session
+typedef HashTable<uint32_t, ImVec4> BranchTargetColor;
+
+static BranchTargetColor sBranchTargets;
+uint32_t sBranchTargetColorSeed = 0;
+
+void InvalidateBranchTargets() {
+	sBranchTargets.Clear();
+	sBranchTargetColorSeed = 0;
+}
+
+ImVec4* GetBranchTargetColor(uint16_t addr) {
+	return sBranchTargets.Value(addr);
+}
+
+ImVec4 MakeBranchTargetColor(uint16_t addr) {
+	ImVec4* color = GetBranchTargetColor(addr);
+	if (color) { return *color; }
+	// 0-2: r, g, b
+	// 3-5: +.5, +.5, +.5
+	// frac = (int)seed / 3
+
+	// 0, 0.5, 0.25, 0.75, 0.125, 0.375, 
+	int num = 1, index = 0, c = sBranchTargetColorSeed;
+	while (c >= 3) {
+		index++;
+		if (index >= (num/2)) {
+			index = 0;
+			num *= 2;
+		}
+		c -= 3;
+	}
+	// 0/1, 1/2, (0*2+1)/4, (1*2+1)/4, (0*2+1)/8, (1*2+1)/8, (2*2+1)/8, (3*2+1)/8
+	float hue = (float)(index * 2 + 1) / (float)num;
+
+	ImVec4 col = C64_WHITE;
+	switch (c) {
+		case 0:
+			col.x = (hue) * 0.5f + 0.5f;
+			col.z = (1.0f - hue) * 0.5f + 0.5f;
+			break;
+		case 1:
+			col.y = (hue) * 0.5f + 0.5f;
+			col.x = (1.0f - hue) * 0.5f + 0.5f;
+			break;
+		case 2:
+			col.z = (hue) * 0.5f + 0.5f;
+			col.y = (1.0f - hue) * 0.5f + 0.5f;
+			break;
+	}
+	return *sBranchTargets.Insert(addr, col);
+}
+
 
 CodeView::CodeView() : open(false), evalAddress(false)
 {
@@ -443,6 +498,9 @@ void CodeView::Draw(int index)
 		if (showAddress) { line.append_num(read, 4, 16); line.append(' '); }
 		int branchTrg = -1;
 		int bytes = Disassemble(cpu, read, line.end(), line.left(), chars, branchTrg, showBytes, true, showLabels, showDisAsm);
+
+		ImVec4 trgCol = branchTrg >= 1 ? MakeBranchTargetColor(branchTrg) : ImGui::GetStyleColorVec4(ImGuiCol_Text);
+
 		if (editAsmAddr==read&&!editAsmDone) {
 			line.pad_to(' ', 14);
 			ImGui::TextUnformatted(line.get(), line.end());
