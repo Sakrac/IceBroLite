@@ -33,8 +33,7 @@ enum class InstrRefType : uint8_t {
 	Code,
 };
 
-
-int Disassemble(CPU6510* cpu, uint16_t addr, char* dest, int left, int& chars, int& branchTrg, bool showBytes, bool illegals, bool showLabels, bool showDis);
+int Disassemble(CPU6510* cpu, uint16_t addr, char* dest, int left, int& argOffs, int& branchTrg, bool showBytes, bool illegals, bool showLabels, bool showDis);
 int Assemble(CPU6510* cpu, char* cmd, uint16_t addr);
 bool GetWatchRef(CPU6510* cpu, uint16_t addr, int style, char* buf, size_t bufCap);
 InstrRefType GetRefType(CPU6510* cpu, uint16_t addr);
