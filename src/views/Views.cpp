@@ -25,6 +25,7 @@
 #include "Views.h"
 #include "GLFW/glfw3.h"
 #include "../Image.h"
+#include "../CodeColoring.h"
 
 struct ViewContext {
 	enum { sNumFontSizes = 7 };
@@ -222,14 +223,15 @@ void ViewContext::LoadState(strref config)
 				imgui_style = (int)value.atoi();
 				switch (imgui_style) {
 					case 0: break;// default
-					case 1: ImGui::StyleColorsDark(); break;
-					case 2: ImGui::StyleColorsLight(); break;
-					case 3: ImGui::StyleColorsClassic(); break;
+					case 1: ImGui::StyleColorsDark(); ResetCodeColoring(); break;
+					case 2: ImGui::StyleColorsLight(); ResetCodeColoring(); break;
+					case 3: ImGui::StyleColorsClassic(); ResetCodeColoring(); break;
 					case 4: StyleC64_Darker(); break;
 					case 5: StyleC64_Mid(); break;
 					case 6: StyleC64_Green(); break;
 					default: imgui_style = 0; break;
 				}
+				ResetCodeColoring();
 			} else if(name.same_str("CodePCHighlight")) {
 				sCodePCHighlight = (uint8_t)value.atoi();
 			} else if(name.same_str("CodePCHighlightColor")) {
@@ -344,9 +346,9 @@ void ViewContext::Draw()
 
 			if (ImGui::BeginMenu("Style")) {
 				if (ImGui::MenuItem("MonstersGoBoom C64")) { StyleC64(); imgui_style = 0; }
-				if (ImGui::MenuItem("Dark")) { ImGui::StyleColorsDark(); imgui_style = 1; }
-				if (ImGui::MenuItem("Light")) { ImGui::StyleColorsLight(); imgui_style = 2; }
-				if (ImGui::MenuItem("Classic")) { ImGui::StyleColorsClassic(); imgui_style = 3; }
+				if (ImGui::MenuItem("Dark")) { ImGui::StyleColorsDark(); ResetCodeColoring(); imgui_style = 1; }
+				if (ImGui::MenuItem("Light")) { ImGui::StyleColorsLight(); ResetCodeColoring(); imgui_style = 2; }
+				if (ImGui::MenuItem("Classic")) { ImGui::StyleColorsClassic(); ResetCodeColoring(); imgui_style = 3; }
 				if (ImGui::MenuItem("High Noon C64")) { StyleC64_Darker(); imgui_style = 4; }
 				if (ImGui::MenuItem("Regular C64")) { StyleC64_Mid(); imgui_style = 5; }
 				if (ImGui::MenuItem("Matrix C64")) { StyleC64_Green(); imgui_style = 6; }
@@ -382,6 +384,8 @@ void ViewContext::Draw()
 				}
 				ImGui::EndMenu();
 			}
+
+			ThemeColorMenu();
 
 			ImGui::EndMainMenuBar();
 

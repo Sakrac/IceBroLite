@@ -16,7 +16,7 @@ CXX = g++
 #CXX = clang++
 
 EXE = ../IceBroLite
-SOURCES = 6510.cpp Breakpoints.cpp C64Colors.cpp Commands.cpp Config.cpp Expressions.cpp
+SOURCES = 6510.cpp Breakpoints.cpp C64Colors.cpp CodeColoring.cpp Commands.cpp Config.cpp Expressions.cpp
 SOURCES += FileDialog.cpp Files.cpp IceBroLite.cpp Icons.cpp Image.cpp ImGui_Helper.cpp
 SOURCES += Mnemonics.cpp Platform.cpp SaveState.coo SourceDebug.cpp StartVice.cpp
 SOURCES += struse.cpp Sym.cpp Traces.cpp ViceInterface.cpp ViceMonitorInterface.cpp

@@ -1,5 +1,7 @@
 #include "imgui/imgui.h"
 #include "C64Colors.h"
+#include "CodeColoring.h"
+
 
 void StyleC64()
 {
@@ -67,6 +69,7 @@ void StyleC64()
 
 	style.GrabMinSize = 8;
 	style.GrabRounding = 0;
+	ResetCodeColoring();
 }
 
 void StyleC64_Darker()
@@ -140,6 +143,7 @@ void StyleC64_Darker()
 
 	style.GrabMinSize = 8;
 	style.GrabRounding = 0;
+	ResetCodeColoring();
 }
 
 void StyleC64_Green()
@@ -192,6 +196,7 @@ void StyleC64_Green()
 	colors[ImGuiCol_TabActive] = C64_BLUE;// ImLerp(colors[ImGuiCol_HeaderActive], colors[ImGuiCol_TitleBgActive], 0.60f);
 	colors[ImGuiCol_TabUnfocused] = C64_DGRAY;// ImLerp(colors[ImGuiCol_Tab], colors[ImGuiCol_TitleBg], 0.80f);
 	colors[ImGuiCol_TabUnfocusedActive] = C64_BLACK;// ImLerp(colors[ImGuiCol_TabActive], colors[ImGuiCol_TitleBg], 0.40f);
+	ResetCodeColoring();
 }
 
 
@@ -255,4 +260,5 @@ void StyleC64_Mid()
 	colors[ImGuiCol_NavWindowingHighlight] = ImVec4(0.70f, 0.70f, 0.70f, 0.70f);
 	colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.20f, 0.20f, 0.20f, 0.20f);
 	colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
+	ResetCodeColoring();
 }
