@@ -28,7 +28,7 @@
 
 struct ViewContext {
 	enum { sNumFontSizes = 7 };
-	enum { MaxMemViews = 4, MaxCodeViews = 4, MaxWatchViews = 4, kMaxGfxViews = 2 };
+	enum { MaxMemViews = 8, MaxCodeViews = 4, MaxWatchViews = 4, kMaxGfxViews = 2 };
 	ToolBar toolBar;
 	RegisterView regView;
 	MemView memView[MaxMemViews];
