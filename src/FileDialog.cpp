@@ -38,6 +38,8 @@ static bool sLoadSymbolsReady = false;
 static bool sLoadViceCmdReady = false;
 static bool sSetViceEXEPathReady = false;
 static bool sReadPrgReady = false;
+static bool sLoadThemeReady = false;
+static bool sSaveThemeReady = false;
 
 static char sLoadPrgFileName[PATH_MAX_LEN] = {};
 static char sLoadLstFileName[PATH_MAX_LEN] = {};
@@ -46,6 +48,7 @@ static char sLoadSymFileName[PATH_MAX_LEN] = {};
 static char sLoadViceFileName[PATH_MAX_LEN] = {};
 static char sViceEXEPath[PATH_MAX_LEN] = {};
 static char sReadPrgFileName[PATH_MAX_LEN] = {};
+static char sThemeFileName[PATH_MAX_LEN] = {};
 
 static char sFileDialogFolder[PATH_MAX_LEN];
 
@@ -66,6 +69,7 @@ static const char sLoadSymbolsParams[] = "Symbols:*.sym";
 static const char sLoadViceCmdParams[] = "Vice Commands:*.vs";
 static const char sViceEXEParams[] = "Vice EXE path:x*.exe";
 static const char sReadPrgParams[] = "Prg files:*.prg";
+static const char sThemeParams[] = "Theme files:*.theme.txt";
 #endif
 
 void InitStartFolder()
@@ -114,6 +118,22 @@ const char* ReadPRGToRAMReady()
 	if (sReadPrgReady) {
 		sReadPrgReady = false;
 		return sReadPrgFileName;
+	}
+	return nullptr;
+}
+
+const char* SaveThemeReady() {
+	if (sSaveThemeReady) {
+		sSaveThemeReady = false;
+		return sThemeFileName;
+	}
+	return nullptr;
+}
+
+const char* LoadThemeReady() {
+	if (sLoadThemeReady) {
+		sLoadThemeReady = false;
+		return sThemeFileName;
 	}
 	return nullptr;
 }
@@ -258,6 +278,38 @@ void LoadListingDialog()
 	FVFileView* filesView = GetFileView();
 	if (filesView && !filesView->IsOpen()) {
 		filesView->Show(strown<PATH_MAX_LEN>(StartFolder(sLoadLstFileName)).c_str(), &sLoadListingReady, sLoadLstFileName, sizeof(sLoadLstFileName), sLoadListingParams);
+	}
+#endif
+}
+
+void LoadThemeDialog()
+{
+	sLoadThemeReady = false;
+	sFileDialogOpen = true;
+
+#if defined(_WIN32) && !defined(CUSTOM_FILEVIEWER)
+	hThreadFileDialog = CreateThread(NULL, FILE_LOAD_THREAD_STACK, (LPTHREAD_START_ROUTINE)FileLoadDialogThreadRun, &aLoadTemplateInfo,
+		0, NULL);
+#else
+	FVFileView* filesView = GetFileView();
+	if (filesView && !filesView->IsOpen()) {
+		filesView->Show(strown<PATH_MAX_LEN>(StartFolder(sThemeFileName)).c_str(), &sLoadThemeReady, sThemeFileName, sizeof(sThemeFileName), sThemeParams);
+	}
+#endif
+}
+
+void SaveThemeDialog()
+{
+	sSaveThemeReady = false;
+	sFileDialogOpen = true;
+
+#if defined(_WIN32) && !defined(CUSTOM_FILEVIEWER)
+	hThreadFileDialog = CreateThread(NULL, FILE_LOAD_THREAD_STACK, (LPTHREAD_START_ROUTINE)FileLoadDialogThreadRun, &aLoadTemplateInfo,
+		0, NULL);
+#else
+	FVFileView* filesView = GetFileView();
+	if (filesView && !filesView->IsOpen()) {
+		filesView->Show(strown<PATH_MAX_LEN>(StartFolder(sThemeFileName)).c_str(), &sSaveThemeReady, sThemeFileName, sizeof(sThemeFileName), sThemeParams);
 	}
 #endif
 }

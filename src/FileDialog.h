@@ -11,12 +11,16 @@ const char* LoadKickDbgReady();
 const char* LoadSymbolsReady();
 const char* LoadViceCMDReady();
 const char* ReadPRGToRAMReady();
+const char* LoadThemeReady();
+const char* SaveThemeReady();
 bool LoadViceEXEPathReady();
 void LoadProgramDialog();
 void LoadListingDialog();
 void LoadKickDbgDialog();
 void LoadSymbolsDialog();
 void LoadViceCmdDialog();
+void LoadThemeDialog();
+void SaveThemeDialog();
 void SetViceEXEPathDialog();
 void ReadPRGDialog();
 

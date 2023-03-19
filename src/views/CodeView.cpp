@@ -442,8 +442,6 @@ void CodeView::Draw(int index)
 		}
 
 		line.clear();
-//		line.append(pc==read ? '>' : ' ');
-//		if (showAddress) { line.append_num(read, 4, 16); line.append(' '); }
 		int branchTrg = -1;
 		int argOffs = -1;
 		int bytes = Disassemble(cpu, read, line.end(), line.left(), argOffs, branchTrg, false, true, showLabels, showDisAsm);
@@ -539,11 +537,11 @@ void CodeView::Draw(int index)
 			// very cunningly draw code line AFTER breakpoint
 			line.c_str();
 			if (showAddress) {
+				ImVec4 col;
 				if (ImVec4* addrCol = GetBranchTargetColor(read)) {
-					ImGui::TextColored(*addrCol, "%04x ", read); ImGui::SameLine();
-				} else {
-					ImGui::Text("%04x ", read); ImGui::SameLine();
-				}
+					col = *addrCol;
+				} else { col = GetCodeAddrColor(); }
+				ImGui::TextColored(col, "%04x ", read); ImGui::SameLine(0.0f, fontCharWidth);
 			}
 			if (showBytes) {
 				strown<16> byteStr;
@@ -554,17 +552,24 @@ void CodeView::Draw(int index)
 				ImGui::TextUnformatted(byteStr.get(), byteStr.get() + byteStr.get_len());
 				ImGui::PopStyleColor();
 			}
+
+			// opcode
 			ImGui::SetCursorPos(ImVec2(currPos.x + fontCharWidth *
 				((showAddress ? 7 : 1) + (showBytes ? 10 : 0)), currPos.y));
-			if (trgCol && line.get_len() > (uint32_t)argOffs) {
-				ImGui::TextUnformatted(line.get(), line.get() + argOffs); ImGui::SameLine();
-				ImGui::TextColored(*trgCol, line.get() + argOffs);
-			} else {
-				ImGui::TextUnformatted(line.get());
+			ImGui::PushStyleColor(ImGuiCol_Text, GetCodeOpCodeColor());
+			ImGui::TextUnformatted(line.get(), line.get() + argOffs);
+			ImGui::PopStyleColor();
+			if (line.get_len() > (uint32_t)argOffs) {
+				ImGui::SameLine(0.0f, 0.0f);
+				ImGui::PushStyleColor(ImGuiCol_Text, trgCol ? *trgCol : GetCodeParamColor());
+				ImGui::TextUnformatted(line.get()+argOffs);
+				ImGui::PopStyleColor();
 			}
+
+			// source
 			if (showSrc && srcLine) {
 				ImGui::SetCursorPos(ImVec2(linePos.x + srcCol * fontCharWidth, linePos.y));
-				ImGui::PushStyleColor(ImGuiCol_Text, C64_YELLOW);
+				ImGui::PushStyleColor(ImGuiCol_Text, GetCodeSourceColor());
 				ImGui::TextUnformatted(srcLine.get(), srcLine.get() + srcLine.get_len());
 				ImGui::PopStyleColor();
 			}

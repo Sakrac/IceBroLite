@@ -352,6 +352,9 @@ void ViewContext::Draw()
 				if (ImGui::MenuItem("High Noon C64")) { StyleC64_Darker(); imgui_style = 4; }
 				if (ImGui::MenuItem("Regular C64")) { StyleC64_Mid(); imgui_style = 5; }
 				if (ImGui::MenuItem("Matrix C64")) { StyleC64_Green(); imgui_style = 6; }
+				if (HasCustomTheme()) {
+					if (ImGui::MenuItem("Custom")) { SetCustomTheme(); imgui_style = 6; }
+				}
 				ImGui::EndMenu();
 			}
 
