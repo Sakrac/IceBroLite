@@ -335,7 +335,8 @@ void CodeView::Draw(int index)
 
 	// drag the horizontal location of the source code
 	strl_t srcColBase = (showAddress ? 6 : 0) + (showBytes ? 9 : 0) + (showRefs ? 11 : 0) + (showLabels ? 6 : 0) + (showDisAsm ? 12 : 0) + srcColDif;
-	if (srcColBase < 4) { srcColBase = 4; }
+	strl_t srcColMin = (showAddress ? 6 : 1) + (showBytes ? 9 : 0) + 2;
+	if (srcColBase < srcColMin) { srcColBase = srcColMin; }
 	if (ImGui::GetCurrentWindow() == ImGui::GetCurrentContext()->HoveredWindow &&
 		mousePos.y >(winPos.y + ImGui::GetCursorPosY())) {
 		if (srcColDrag > 0 && ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
@@ -382,7 +383,7 @@ void CodeView::Draw(int index)
 			srcLine = GetSourceAt(read, srcSpaces);
 			srcCol += (srcSpaces + 3) / 4;
 		}
-		strl_t srcColClip = srcCol - (showAddress ? 8 : 3);
+		strl_t srcColClip = srcCol > srcColMin ? (srcCol - srcColMin) : 0;
 
 		// mouse hover
 		if (mousePos.y >= (winPos.y + linePos.y) && mousePos.y <= (winPos.y + linePos.y + lineHeight) &&
@@ -457,7 +458,9 @@ void CodeView::Draw(int index)
 			line.set_len(strref(line.get()).get_len());
 			if (showRefs) {
 				char buf[24];
-				if (InstrRef(cpu, read, buf, sizeof(buf))) { line.pad_to(' ', (showAddress ? 6 : 0) + (showBytes ? 9 : 0) + (showLabels ? 6 : 0) + (showDisAsm ? 11 : 0)).append(buf); }
+				if (InstrRef(cpu, read, buf, sizeof(buf))) {
+					line.append(' ').append(buf);
+				}
 			}
 			if (goToPC && read==pc) { goToPC = false; } // don't recenter PC if already in view
 			if (setPCAtCursor && read==addrCursor) {
@@ -493,8 +496,9 @@ void CodeView::Draw(int index)
 				}
 				if (active) {
 					ImDrawList* dl = ImGui::GetWindowDrawList();
-					dl->AddRectFilled(ps, ImVec2(ps.x + ImGui::CalcTextSize(line.c_str()).x,
-												 ps.y + lineHeight), ImColor(C64_PURPLE));
+					dl->AddRectFilled(ps,
+						ImVec2( ps.x + (srcColMin + line.get_len() - 2) * fontCharWidth,
+								ps.y + lineHeight), ImColor(C64_PURPLE));
 				}
 				dY = 0;
 			}
@@ -518,13 +522,15 @@ void CodeView::Draw(int index)
 			if (GetPCHighlightStyle() && pc == read) {
 				ImDrawList* draw_list = ImGui::GetWindowDrawList();
 				if (GetPCHighlightStyle() == 1) {
-					draw_list->AddRect(ImVec2(linePos.x + winPos.x, linePos.y + winPos.y - ImGui::GetScrollY()),
-						ImVec2(linePos.x + winPos.x + ImGui::CalcTextSize(line.c_str()).x - 2.0f,
+					draw_list->AddRect(
+						ImVec2(linePos.x + winPos.x, linePos.y + winPos.y - ImGui::GetScrollY()),
+						ImVec2(linePos.x + winPos.x + (srcColMin + line.get_len() - 2) * fontCharWidth,
 							linePos.y + winPos.y - ImGui::GetScrollY() + ImGui::GetTextLineHeightWithSpacing() - 1.0f),
 						GetPCHighlightColor(), 0.0f, 0, 1.0f);
 				} else {
-					draw_list->AddRectFilled(ImVec2(linePos.x + winPos.x, linePos.y + winPos.y - ImGui::GetScrollY()),
-						ImVec2(linePos.x + winPos.x + ImGui::CalcTextSize(line.c_str()).x - 2.0f,
+					draw_list->AddRectFilled(
+						ImVec2(linePos.x + winPos.x, linePos.y + winPos.y - ImGui::GetScrollY()),
+						ImVec2(linePos.x + winPos.x + (srcColMin + line.get_len() - 2) * fontCharWidth,
 							linePos.y + winPos.y - ImGui::GetScrollY() + ImGui::GetTextLineHeightWithSpacing() - 1.0f),
 						GetPCHighlightColor(), 0.0f, 0);
 				}
@@ -541,7 +547,7 @@ void CodeView::Draw(int index)
 				if (ImVec4* addrCol = GetBranchTargetColor(read)) {
 					col = *addrCol;
 				} else { col = GetCodeAddrColor(); }
-				ImGui::TextColored(col, "%04x ", read); ImGui::SameLine(0.0f, fontCharWidth);
+				ImGui::TextColored(col, "%04x", read); ImGui::SameLine(0.0f, fontCharWidth);
 			}
 			if (showBytes) {
 				strown<16> byteStr;
@@ -555,7 +561,7 @@ void CodeView::Draw(int index)
 
 			// opcode
 			ImGui::SetCursorPos(ImVec2(currPos.x + fontCharWidth *
-				((showAddress ? 7 : 1) + (showBytes ? 10 : 0)), currPos.y));
+				((showAddress ? 7 : 1) + (showBytes ? 9 : 0)), currPos.y));
 			ImGui::PushStyleColor(ImGuiCol_Text, GetCodeOpCodeColor());
 			ImGui::TextUnformatted(line.get(), line.get() + argOffs);
 			ImGui::PopStyleColor();
