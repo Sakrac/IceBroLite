@@ -12,6 +12,7 @@
 #include <string.h>
 #include <malloc.h>
 #include "imgui.h"
+#include "imgui_internal.h"
 
 #include "GLFW/glfw3.h"
 
@@ -30,7 +31,34 @@ void FVFileView::Show(const char *folder, bool *setWhenDone, char *pathWhenDone,
 	pathTarget = pathWhenDone;
 	pathTargetSize = pathWhenDoneSize;
 	open = true; 
+	save = false;
 	selectedFile[0] = 0;
+}
+
+bool FVFileView::Enter(strref newPath) {
+	if (selectIndex >=0 && selectIndex < (int)files.size() && files[selectIndex].fileType == FVFileInfo::dir) {
+		selectIndex = -1;
+		strovl usr(userPath, sizeof(userPath));
+		usr.copy(newPath);
+		usr.c_str();
+		userFile[0] = 0;
+		ReadDir(newPath.get(), filter);
+		ImGui::SetScrollHereY(0.0f);
+		return true;
+	} else {
+		strovl sel(selectedFile, sizeof(selectedFile));
+		sel.copy(newPath);
+		sel.c_str();
+		if (pathTarget && pathTargetSize) {
+			strovl target(pathTarget, pathTargetSize);
+			target.copy(newPath);
+			target.c_str();
+		}
+		if (selected) { *selected = true; }
+		open = false;
+		return true;
+	}
+	return false;
 }
 
 void FVFileView::Draw(const char *title)
@@ -55,6 +83,20 @@ void FVFileView::Draw(const char *title)
 				filterStr.append(filtType).append(" (").append(filt).append(")");
 			}
 			ImGui::Text(filterStr.c_str());
+		}
+		bool openSaveDisabled = selectIndex < 0 && userFile[0] == 0;
+		bool openFolder = selectIndex >= 0 && files[selectIndex].fileType == FVFileInfo::dir;
+		if (openSaveDisabled) { ImGui::BeginDisabled(); }
+		if (ImGui::Button((openFolder || !save) ? "Open" : "Save")) {
+			strown<PATH_MAX_LEN> newPath(path);
+			newPath.append(DIR_SEP).append(userFile[0] ? userFile : files[selectIndex].name).cleanup_path().c_str();
+			Enter(newPath.get_strref());
+		}
+		if (openSaveDisabled) { ImGui::EndDisabled(); }
+		ImGui::SameLine();
+		if (ImGui::Button("Cancel")) {
+			if (selected) { *selected = false; }
+			open = false;
 		}
 		const ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg |
 			ImGuiTableFlags_SizingStretchProp |/* ImGuiTableFlags_Resizable |*/ ImGuiTableFlags_NoSavedSettings |
@@ -82,28 +124,8 @@ void FVFileView::Draw(const char *title)
 						strown<PATH_MAX_LEN> newPath(path);
 						newPath.append(DIR_SEP).append(files[i].name);
 						newPath.cleanup_path();
-
-						if (files[i].fileType == FVFileInfo::dir) {
-							strovl usr(userPath, sizeof(userPath));
-							usr.copy(newPath);
-							usr.c_str();
-							userFile[0] = 0;
-							ReadDir(newPath.c_str(), filter);
-							ImGui::SetScrollHereY(0.0f);
-							break;
-						} else {
-							strovl sel(selectedFile, sizeof(selectedFile));
-							sel.copy(newPath);
-							sel.c_str();
-							if (pathTarget && pathTargetSize) {
-								strovl target(pathTarget, pathTargetSize);
-								target.copy(newPath);
-								target.c_str();
-							}
-							if (selected) { *selected = true; }
-							open = false;
-							break;
-						}
+						newPath.c_str();
+						if (Enter(newPath.get_strref())) { break; }
 					} else {
 						strovl usr(userFile, sizeof(userFile));
 						usr.copy(files[i].name);

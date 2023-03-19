@@ -69,7 +69,7 @@ static const char sLoadSymbolsParams[] = "Symbols:*.sym";
 static const char sLoadViceCmdParams[] = "Vice Commands:*.vs";
 static const char sViceEXEParams[] = "Vice EXE path:x*.exe";
 static const char sReadPrgParams[] = "Prg files:*.prg";
-static const char sThemeParams[] = "Theme files:*.theme.txt";
+static const char sThemeParams[] = "Theme:*.theme.txt";
 #endif
 
 void InitStartFolder()
@@ -310,6 +310,7 @@ void SaveThemeDialog()
 	FVFileView* filesView = GetFileView();
 	if (filesView && !filesView->IsOpen()) {
 		filesView->Show(strown<PATH_MAX_LEN>(StartFolder(sThemeFileName)).c_str(), &sSaveThemeReady, sThemeFileName, sizeof(sThemeFileName), sThemeParams);
+		filesView->SetSave();
 	}
 #endif
 }

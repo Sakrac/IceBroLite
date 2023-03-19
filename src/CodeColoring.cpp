@@ -189,11 +189,19 @@ void SaveCustomTheme(const char* themeFile) {
 	theme.AddValue(strref("BranchTargetHue"), str.get_strref());
 	str.sprintf("%.3f", sAvoidHueRadius);
 	theme.AddValue(strref("BranchTargetAvoid"), str.get_strref());
-	for (int i = 0; i < snCodeColors; ++i) {
+	for (int i = 0; i < snThemeColors; ++i) {
 		theme.AddValue(ImGui::GetStyleColorName(saThemeColors[i]),
 			strref(col, AppendColorHash(col, colSize, sCustomTheme[i])));
 	}
-	SaveFile(themeFile, theme.start, theme.curr - theme.start);
+
+	strown<_MAX_PATH> path(themeFile);
+	if (!path.has_suffix(".theme.txt")) {
+		int period = path.find('.');
+		if (period > 1) { path.set_len(period); }
+		path.append(".theme.txt");
+	}
+
+	SaveFile(path.c_str(), theme.start, theme.curr - theme.start);
 }
 
 void ResetCodeColoring() {
