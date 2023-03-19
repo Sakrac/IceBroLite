@@ -72,6 +72,7 @@ static ViewContext* viewContext = nullptr;
 static strown<PATH_MAX_LEN> sUserFontName;
 static int sUserFontSize = 0;
 static bool sForceFont = false;
+static bool sSetCustomTheme = false;
 static uint8_t sCodePCHighlight = 1;
 static uint8_t sCodePCColor = 13;
 static ImFont* sUserFont = nullptr;
@@ -153,6 +154,22 @@ ViewContext::ViewContext() : currFont(3), setupDocking(true), saveSettingsOnExit
 	memoryWasChanged = false;
 }
 
+void CheckCustomThemeAfterStateLoad() {
+	if (const char* themeFile = GetCustomThemePath()) {
+		LoadCustomTheme(themeFile);
+	}
+	if (sSetCustomTheme) {
+		sSetCustomTheme = false;
+		if (HasCustomTheme()) {
+			SetCustomTheme();
+			imgui_style = 7;
+			return;
+		}
+		imgui_style = 0; // fallback if not found
+		StyleC64();
+	}
+}
+
 void ViewContext::SaveState(UserData& conf)
 {
 	// ToolBar toolBar;
@@ -195,7 +212,7 @@ void ViewContext::SaveState(UserData& conf)
 	// ScreenView screenView;
 	conf.BeginStruct("Screen"); screenView.WriteConfig(conf); conf.EndStruct();
 	conf.BeginStruct("Trace"); traceView.WriteConfig(conf); conf.EndStruct();
-	conf.AddValue("Style", imgui_style);
+	conf.AddValue("Style", CustomThemeActive() ? 7 : imgui_style);
 	conf.AddValue("FontSize", currFont);
 	if (sUserFont && sUserFontSize && sUserFontName.valid()) {
 		conf.AddValue("UserFont", sUserFontName.get_strref());
@@ -229,6 +246,7 @@ void ViewContext::LoadState(strref config)
 					case 4: StyleC64_Darker(); break;
 					case 5: StyleC64_Mid(); break;
 					case 6: StyleC64_Green(); break;
+					case 7: sSetCustomTheme = true; break;
 					default: imgui_style = 0; break;
 				}
 				ResetCodeColoring();
@@ -353,7 +371,7 @@ void ViewContext::Draw()
 				if (ImGui::MenuItem("Regular C64")) { StyleC64_Mid(); imgui_style = 5; }
 				if (ImGui::MenuItem("Matrix C64")) { StyleC64_Green(); imgui_style = 6; }
 				if (HasCustomTheme()) {
-					if (ImGui::MenuItem("Custom")) { SetCustomTheme(); imgui_style = 6; }
+					if (ImGui::MenuItem("Custom")) { SetCustomTheme(); imgui_style = 7; }
 				}
 				ImGui::EndMenu();
 			}

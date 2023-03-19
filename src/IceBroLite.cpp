@@ -247,6 +247,7 @@ int main(int argc, char* argv[])
 	}
 
 	CheckUserFont();
+	CheckCustomThemeAfterStateLoad();
 
 	// if only symbols provided just read those in immediately
 	if (forceLoadProgram[0] == 0 && forceLoadSymbols[0] != 0) {

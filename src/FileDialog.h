@@ -28,4 +28,5 @@ const char* ReloadProgramFile();
 const char* ReadPRGFile();
 char* GetViceEXEPath();
 void SetViceEXEPath(strref path);
+const char* GetCustomThemePath();
 

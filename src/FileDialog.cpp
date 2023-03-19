@@ -417,6 +417,8 @@ void StateLoadFilenames(strref filenames)
 				strovl(sViceEXEPath, sizeof(sViceEXEPath)).append(value).c_str();
 			} else if (name.same_str("ReadPRGToRAMPath")) {
 				strovl(sReadPrgFileName, sizeof(sReadPrgFileName)).append(value).c_str();
+			} else if (name.same_str("CustomTheme")) {
+				strovl(sThemeFileName, sizeof(sThemeFileName)).append(value).c_str();
 			}
 		}
 	}
@@ -445,5 +447,12 @@ void StateSaveFilenames(UserData& conf)
 	if (sReadPrgFileName[0]) {
 		conf.AddValue("ReadPRGToRAMPath", strref(sReadPrgFileName));
 	}
+	if (sThemeFileName[0]) {
+		conf.AddValue("CustomTheme", strref(sThemeFileName));
+	}
+}
 
+const char* GetCustomThemePath() {
+	if (sThemeFileName[0]) { return sThemeFileName; }
+	return nullptr;
 }

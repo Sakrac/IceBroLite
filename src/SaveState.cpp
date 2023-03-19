@@ -9,6 +9,7 @@
 
 void StateLoadFilenames(strref filenames);
 void StateSaveFilenames(UserData& conf);
+const char* GetCustomThemePath();
 void StateLoadViews(strref conf);
 void StateSaveViews(UserData& conf);
 void SaveStateWindow(UserData& conf);

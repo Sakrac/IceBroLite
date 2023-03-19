@@ -2,6 +2,8 @@
 
 class FVFileView;
 
+void CheckCustomThemeAfterStateLoad();
+
 void InitViews();
 void ShowViews();
 void BeginViews();
