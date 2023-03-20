@@ -15,6 +15,7 @@
 #include "GLFW/glfw3.h"
 #include "Views.h"
 #include "WatchView.h"
+#include "../CodeColoring.h"
 
 WatchView::WatchView() : open(false), rebuildAll(false), recalcAll(false), forceEdit(false), 
   activeIndex(-1)
@@ -33,7 +34,7 @@ static void DrawBlueTextLine() {
 	const ImVec2 p = ImGui::GetCursorScreenPos();
 	ImGui::GetWindowDrawList()->AddRectFilled(
 		p, ImVec2(p.x + ImGui::GetColumnWidth(), p.y + ImGui::GetTextLineHeightWithSpacing()),
-		ImColor(64, 49, 141, 255));
+		ImColor(GetWatchChessColor()));
 }
 
 void WatchView::Evaluate(int index) {
@@ -374,7 +375,7 @@ void WatchView::Draw(int index)
 		draw_list->AddRect(ImVec2(activeRowPos.x, activeRowPos.y - ImGui::GetScrollY()),
 			ImVec2(activeRowPos.x + ImGui::GetWindowWidth() - 1.0f,
 				activeRowPos.y - ImGui::GetScrollY() + ImGui::GetTextLineHeightWithSpacing() - 1.0f),
-			ImColor(C64_LGREEN), 0.0f, 0, 1.0f);
+			ImColor(GetPCHighlightColor()), 0.0f, 0, 1.0f);
 
 		if (editExpression >= 0 && ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_ESCAPE)) {
 			editExpression = -1;

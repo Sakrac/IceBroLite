@@ -56,7 +56,10 @@ static const char* saCodeColoringNames[] = {
 	"Address Color",
 	"Bytes Color",
 	"Param Color",
-	"Source Color"
+	"Source Color",
+	"Code Cursor Color",
+	"PC Highlight Color",
+	"Watch Cell Color",
 };
 
 static const uint32_t snThemeColors = sizeof(saThemeColors) / sizeof(saThemeColors[0]);
@@ -64,36 +67,48 @@ static const uint32_t snCodeColors = sizeof(saCodeColoringNames) / sizeof(saCode
 
 #define IDX_SOURCE_COLOR (snCodeColors-1)
 
+struct CustomColors {
+	ImVec4 CodeBytesColor;
+	ImVec4 CodeAddrColor;
+	ImVec4 OpCodeColor;
+	ImVec4 SourceColor;
+	ImVec4 CodeParamColor;
+	ImVec4 CodeCursorColor;
+	ImVec4 CodePCHighlightColor;
+	ImVec4 WatchChessColor;
+	float AvoidHueCenter;
+	float AvoidHueRadius;
+	float BranchTargetV;
+	float BranchTargetS;
+	bool CodeColoringOn;
+	bool PCHighlightStyle;
+
+	CustomColors() {
+		CodeBytesColor = C64_LGRAY;
+		CodeAddrColor = C64_WHITE;
+		OpCodeColor = C64_WHITE;
+		SourceColor = C64_YELLOW;
+		CodeParamColor = C64_YELLOW;
+		CodeCursorColor = C64_PURPLE;
+		CodePCHighlightColor = C64_CYAN;
+		WatchChessColor = C64_BLUE;
+		AvoidHueCenter = -1.0f;
+		AvoidHueRadius = 0.1f;
+		BranchTargetV = 1.0f;
+		BranchTargetS = 0.25f;
+		CodeColoringOn = true;
+		PCHighlightStyle = true;
+	}
+};
+
+
 // remember branch targets for this session
 typedef HashTable<uint32_t, ImVec4> BranchTargetColor;
 
 static BranchTargetColor sBranchTargets;
-static ImVec4 sCodeBytesColor = C64_LGRAY;
-static ImVec4 sCodeAddrColor = C64_WHITE;
-static ImVec4 sOpCodeColor = C64_WHITE;
-static ImVec4 sSourceColor = C64_YELLOW;
-static ImVec4 sCodeParamColor = C64_YELLOW;
+static CustomColors sCurrentCustomColors;
+static CustomColors sThemeCustomColors;
 
-static ImVec4 sCodeBytesColorCT = C64_LGRAY;
-static ImVec4 sCodeAddrColorCT = C64_WHITE;
-static ImVec4 sOpCodeColorCT = C64_WHITE;
-static ImVec4 sSourceColorCT = C64_YELLOW;
-static ImVec4 sCodeParamColorCT = C64_YELLOW;
-
-static float sAvoidHueCenter = -1.0f;
-static float sAvoidHueRadius = 0.1f;
-static float sBranchTargetV = 1.0f;
-static float sBranchTargetS = 0.25f;
-
-static float sAvoidHueCenterCT = -1.0f;
-static float sAvoidHueRadiusCT = 0.1f;
-static float sBranchTargetVCT = 1.0f;
-static float sBranchTargetSCT = 0.25f;
-
-
-
-static bool sCodeColoringOn = true;
-static bool sCodeColoringOnCT = true;
 static bool sLoadThemeFromMenu = false;
 static bool sHasCustomTheme = false;
 static bool sCustomThemeActive = false;
@@ -101,19 +116,25 @@ static bool sCustomThemeActive = false;
 static ImVec4 sCustomTheme[ImGuiCol_COUNT];
 
 static ImVec4* saCodeColors[snCodeColors] = {
-	&sCodeBytesColor,
-	&sCodeAddrColor,
-	&sOpCodeColor,
-	&sCodeParamColor,
-	&sSourceColor,
+	&sCurrentCustomColors.OpCodeColor,
+	&sCurrentCustomColors.CodeAddrColor,
+	&sCurrentCustomColors.CodeBytesColor,
+	&sCurrentCustomColors.CodeParamColor,
+	&sCurrentCustomColors.SourceColor,
+	&sCurrentCustomColors.CodeCursorColor,
+	&sCurrentCustomColors.CodePCHighlightColor,
+	&sCurrentCustomColors.WatchChessColor,
 };
 
 static ImVec4* saCodeColorsCT[snCodeColors] = {
-	&sCodeBytesColorCT,
-	&sCodeAddrColorCT,
-	&sOpCodeColorCT,
-	&sCodeParamColorCT,
-	&sSourceColorCT,
+	&sThemeCustomColors.OpCodeColor,
+	&sThemeCustomColors.CodeAddrColor,
+	&sThemeCustomColors.CodeBytesColor,
+	&sThemeCustomColors.CodeParamColor,
+	&sThemeCustomColors.SourceColor,
+	&sThemeCustomColors.CodeCursorColor,
+	&sThemeCustomColors.CodePCHighlightColor,
+	&sThemeCustomColors.WatchChessColor,
 };
 
 void InvalidateBranchTargets() {
@@ -131,33 +152,13 @@ ImVec4 ParseCustomColor(strref value) {
 }
 
 void SetCustomTheme() {
-	sCodeBytesColor = sCodeBytesColorCT;
-	sCodeAddrColor = sCodeAddrColorCT;
-	sOpCodeColor = sOpCodeColorCT;
-	sSourceColor = sSourceColorCT;
-	sCodeParamColor = sCodeParamColorCT;
-	sAvoidHueCenter = sAvoidHueCenterCT;
-	sAvoidHueRadius = sAvoidHueRadiusCT;
-	sBranchTargetS = sBranchTargetSCT;
-	sBranchTargetV = sBranchTargetVCT;
-	sCodeColoringOn = sCodeColoringOnCT;
-
+	memcpy(&sCurrentCustomColors, &sThemeCustomColors, sizeof(CustomColors));
 	memcpy(ImGui::GetStyle().Colors, sCustomTheme, sizeof(sCustomTheme));
 	sCustomThemeActive = true;
 }
 
 void CopyThemeToCustom() {
-	sCodeBytesColorCT = sCodeBytesColor;
-	sCodeAddrColorCT = sCodeAddrColor;
-	sOpCodeColorCT = sOpCodeColor;
-	sSourceColorCT = sSourceColor;
-	sCodeParamColorCT = sCodeParamColor;
-	sAvoidHueCenterCT = sAvoidHueCenter;
-	sAvoidHueRadiusCT = sAvoidHueRadius;
-	sBranchTargetSCT = sBranchTargetS;
-	sBranchTargetVCT = sBranchTargetV;
-	sCodeColoringOnCT = sCodeColoringOn;
-
+	memcpy(&sThemeCustomColors, &sCurrentCustomColors, sizeof(CustomColors));
 	memcpy(sCustomTheme, ImGui::GetStyle().Colors, sizeof(ImGui::GetStyle().Colors));
 	sCustomThemeActive = true;
 	sHasCustomTheme = true;
@@ -180,27 +181,37 @@ void LoadCustomTheme(const char *themeFile) {
 			strref name, value;
 			ConfigParseType type = config.Next(&name, &value);
 			if (name.same_str("CodeColoring")) {
-				sCodeColoringOnCT = (bool)value.atoi();
+				sThemeCustomColors.CodeColoringOn = (bool)value.atoi();
 			} else if(name.same_str("SourceColor")) {
-				sSourceColorCT = ParseCustomColor(value);
+				sThemeCustomColors.SourceColor = ParseCustomColor(value);
 			} else if(name.same_str("OpCodeColor")) {
-				sOpCodeColorCT = ParseCustomColor(value);
+				sThemeCustomColors.OpCodeColor = ParseCustomColor(value);
 			} else if(name.same_str("AddrColor")) {
-				sCodeAddrColorCT = ParseCustomColor(value);
+				sThemeCustomColors.CodeAddrColor = ParseCustomColor(value);
 			} else if(name.same_str("ByteColor")) {
-				sCodeBytesColorCT = ParseCustomColor(value);
+				sThemeCustomColors.CodeBytesColor = ParseCustomColor(value);
+			} else if(name.same_str("CodeCursorColor")) {
+				sThemeCustomColors.CodeCursorColor = ParseCustomColor(value);
+			} else if(name.same_str("PCHighlightColor")) {
+				sThemeCustomColors.CodePCHighlightColor = ParseCustomColor(value);
+			} else if(name.same_str("WatchChessColor")) {
+				sThemeCustomColors.WatchChessColor = ParseCustomColor(value);
 			} else if(name.same_str("BranchTargetSaturation")) {
-				sBranchTargetSCT = value.atof();
+				sThemeCustomColors.BranchTargetS = value.atof();
 			} else if(name.same_str("BranchTargetBrightness")) {
-				sBranchTargetVCT = value.atof();
+				sThemeCustomColors.BranchTargetV = value.atof();
 			} else if(name.same_str("BranchTargetHue")) {
-				sAvoidHueCenterCT = value.atof();
+				sThemeCustomColors.AvoidHueCenter = value.atof();
 			} else if(name.same_str("BranchTargetAvoid")) {
-				sAvoidHueRadiusCT = value.atof();
+				sThemeCustomColors.AvoidHueRadius = value.atof();
+			} else if(name.same_str("PCHighlightStyle")) {
+				sThemeCustomColors.PCHighlightStyle = !!value.atoi();
 			} else {
-				for (int i = 0; i < snCodeColors; ++i) {
-					if (name.same_str(ImGui::GetStyleColorName(saThemeColors[i]))) {
-						sCustomTheme[saThemeColors[i]] = ParseCustomColor(value);
+				printf("color = " STRREF_FMT "\n", STRREF_ARG(value));
+				for (int i = 0; i < snThemeColors; ++i) {
+					int c = saThemeColors[i];
+					if (name.same_str(ImGui::GetStyleColorName(c))) {
+						sCustomTheme[c] = ParseCustomColor(value);
 					}
 				}
 			}
@@ -230,22 +241,27 @@ void SaveCustomTheme(const char* themeFile) {
 	const size_t colSize = sizeof(col);
 	strl_t colLen = 0;
 	strovl str(col, colSize);
-	theme.AddValue(strref("CodeColoring"), sCodeColoringOn ? 1 : 0);
-	theme.AddValue(strref("SourceColor"), strref(col, AppendColorHash(col, colSize, sSourceColor)));
-	theme.AddValue(strref("OpCodeColor"), strref(col, AppendColorHash(col, colSize, sOpCodeColor)));
-	theme.AddValue(strref("AddrColor"), strref(col, AppendColorHash(col, colSize, sCodeAddrColor)));
-	theme.AddValue(strref("ByteColor"), strref(col, AppendColorHash(col, colSize, sCodeBytesColor)));
-	str.sprintf("%.3f", sBranchTargetS);
+	theme.AddValue(strref("CodeColoring"), sCurrentCustomColors.CodeColoringOn ? 1 : 0);
+	theme.AddValue(strref("SourceColor"), strref(col, AppendColorHash(col, colSize, sCurrentCustomColors.SourceColor)));
+	theme.AddValue(strref("OpCodeColor"), strref(col, AppendColorHash(col, colSize, sCurrentCustomColors.OpCodeColor)));
+	theme.AddValue(strref("AddrColor"), strref(col, AppendColorHash(col, colSize, sCurrentCustomColors.CodeAddrColor)));
+	theme.AddValue(strref("ByteColor"), strref(col, AppendColorHash(col, colSize, sCurrentCustomColors.CodeBytesColor)));
+	theme.AddValue(strref("CodeCursorColor"), strref(col, AppendColorHash(col, colSize, sCurrentCustomColors.CodeCursorColor)));
+	theme.AddValue(strref("PCHighlightColor"), strref(col, AppendColorHash(col, colSize, sCurrentCustomColors.CodePCHighlightColor)));
+	theme.AddValue(strref("WatchChessColor"), strref(col, AppendColorHash(col, colSize, sCurrentCustomColors.WatchChessColor)));
+	str.sprintf("%.3f", sCurrentCustomColors.BranchTargetS);
 	theme.AddValue(strref("BranchTargetSaturation"), str.get_strref());
-	str.sprintf("%.3f", sBranchTargetV);
+	str.sprintf("%.3f", sCurrentCustomColors.BranchTargetV);
 	theme.AddValue(strref("BranchTargetBrightness"), str.get_strref());
-	str.sprintf("%.3f", sAvoidHueCenter);
+	str.sprintf("%.3f", sCurrentCustomColors.AvoidHueCenter);
 	theme.AddValue(strref("BranchTargetHue"), str.get_strref());
-	str.sprintf("%.3f", sAvoidHueRadius);
+	str.sprintf("%.3f", sCurrentCustomColors.AvoidHueRadius);
 	theme.AddValue(strref("BranchTargetAvoid"), str.get_strref());
+	theme.AddValue(strref("PCHighlightStyle"), sCurrentCustomColors.PCHighlightStyle ? 1 : 0);
 	for (int i = 0; i < snThemeColors; ++i) {
-		theme.AddValue(ImGui::GetStyleColorName(saThemeColors[i]),
-			strref(col, AppendColorHash(col, colSize, sCustomTheme[i])));
+		int c = saThemeColors[i];
+		theme.AddValue(ImGui::GetStyleColorName(c),
+			strref(col, AppendColorHash(col, colSize, sCustomTheme[c])));
 	}
 
 	strown<_MAX_PATH> path(themeFile);
@@ -262,64 +278,84 @@ void ResetCodeColoring() {
 	float s, v, th, ts, tv;
 	ImVec4 bg = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
 	ImVec4 fg = ImGui::GetStyleColorVec4(ImGuiCol_Text);
-	ImGui::ColorConvertRGBtoHSV(bg.x, bg.y, bg.z, sAvoidHueCenter, s, v);
+	ImGui::ColorConvertRGBtoHSV(bg.x, bg.y, bg.z, sCurrentCustomColors.AvoidHueCenter, s, v);
 	ImGui::ColorConvertRGBtoHSV(fg.x, fg.y, fg.z, th, ts, tv);
-	sBranchTargetV = v > 0.85f ? 0.5f : 1.0f;
-	sBranchTargetS = s < 0.25f ? 0.9f : 0.35f;
+	sCurrentCustomColors.BranchTargetV = v > 0.85f ? 0.5f : 1.0f;
+	sCurrentCustomColors.BranchTargetS = s < 0.25f ? 0.9f : 0.35f;
 	if (v < 0.1f || s > 0.9f) {
-		sAvoidHueCenter = th;
+		sCurrentCustomColors.AvoidHueCenter = th;
 		if (v < 0.1f || s > 0.9f) {
-			sAvoidHueRadius = 0.0f;
+			sCurrentCustomColors.AvoidHueRadius = 0.0f;
 		}
-		else if (sAvoidHueRadius < 0.1f) {
-			sAvoidHueRadius = 0.2f;
+		else if (sCurrentCustomColors.AvoidHueRadius < 0.1f) {
+			sCurrentCustomColors.AvoidHueRadius = 0.2f;
 		}
 	}
-	else if (sAvoidHueRadius < 0.1f) {
-		sAvoidHueRadius = 0.2f;
+	else if (sCurrentCustomColors.AvoidHueRadius < 0.1f) {
+		sCurrentCustomColors.AvoidHueRadius = 0.2f;
 	}
 
 	if (tv > 0.5f) { tv -= 0.4f; }
 	else { tv += 0.4f;}
 
-	ImGui::ColorConvertHSVtoRGB(th, ts, tv, sCodeBytesColor.x, sCodeBytesColor.y, sCodeBytesColor.z);
+	ImGui::ColorConvertHSVtoRGB(th, ts, tv,
+		sCurrentCustomColors.CodeBytesColor.x, sCurrentCustomColors.CodeBytesColor.y, sCurrentCustomColors.CodeBytesColor.z);
 
-	sCodeAddrColor = fg;
-	sOpCodeColor = fg;
-	sCodeParamColor = fg;
+	sCurrentCustomColors.CodeAddrColor = fg;
+	sCurrentCustomColors.OpCodeColor = fg;
+	sCurrentCustomColors.CodeParamColor = fg;
 	sCustomThemeActive = false;
 
 	InvalidateBranchTargets();
 }
 
 ImVec4 GetCodeBytesColor() {
-	return sCodeColoringOn ? sCodeBytesColor : ImGui::GetStyleColorVec4(ImGuiCol_Text);
+	return sCurrentCustomColors.CodeColoringOn ? sCurrentCustomColors.CodeBytesColor : ImGui::GetStyleColorVec4(ImGuiCol_Text);
 }
 
 ImVec4 GetCodeAddrColor() {
-	return sCodeColoringOn ? sCodeAddrColor : ImGui::GetStyleColorVec4(ImGuiCol_Text);
+	return sCurrentCustomColors.CodeColoringOn ? sCurrentCustomColors.CodeAddrColor : ImGui::GetStyleColorVec4(ImGuiCol_Text);
 }
 
 ImVec4 GetCodeOpCodeColor() {
-	return sCodeColoringOn ? sOpCodeColor : ImGui::GetStyleColorVec4(ImGuiCol_Text);
+	return sCurrentCustomColors.CodeColoringOn ? sCurrentCustomColors.OpCodeColor : ImGui::GetStyleColorVec4(ImGuiCol_Text);
 }
 
 ImVec4 GetCodeParamColor() {
-	return sCodeColoringOn ? sCodeParamColor : ImGui::GetStyleColorVec4(ImGuiCol_Text);
+	return sCurrentCustomColors.CodeColoringOn ? sCurrentCustomColors.CodeParamColor : ImGui::GetStyleColorVec4(ImGuiCol_Text);
+}
+
+ImVec4 GetCodeCursorColor()
+{
+	return sCurrentCustomColors.CodeCursorColor;
+}
+
+ImVec4 GetWatchChessColor() {
+	return sCurrentCustomColors.WatchChessColor;
+}
+
+ImVec4 GetPCHighlightColor()
+{
+	return sCurrentCustomColors.CodePCHighlightColor;
+}
+
+int GetPCHighlightStyle()
+{
+	return sCurrentCustomColors.PCHighlightStyle ? 1 : 0;
 }
 
 ImVec4 GetCodeSourceColor() {
-	return sSourceColor;
+	return sCurrentCustomColors.SourceColor;
 }
 
 
 static ImVec4 GetBranchColorCode(float h) {
-	float h2 = fmodf(h + 1.0f - sAvoidHueCenter, 1.0f);
-	h2 = h2 * (1.0f - 2.0f * sAvoidHueRadius) + sAvoidHueRadius;
-	float hue = fmodf(h2 + sAvoidHueCenter, 1.0f);
+	float h2 = fmodf(h + 1.0f - sCurrentCustomColors.AvoidHueCenter, 1.0f);
+	h2 = h2 * (1.0f - 2.0f * sCurrentCustomColors.AvoidHueRadius) + sCurrentCustomColors.AvoidHueRadius;
+	float hue = fmodf(h2 + sCurrentCustomColors.AvoidHueCenter, 1.0f);
 
 	ImVec4 col = C64_WHITE;
-	ImGui::ColorConvertHSVtoRGB(hue, sBranchTargetS, sBranchTargetV, col.x, col.y, col.z);
+	ImGui::ColorConvertHSVtoRGB(hue, sCurrentCustomColors.BranchTargetS, sCurrentCustomColors.BranchTargetV, col.x, col.y, col.z);
 	return col;
 }
 
@@ -338,11 +374,14 @@ void ThemeColorMenu()
 {
 	if (ImGui::BeginMenu("Theme")) {
 		if (ImGui::BeginMenu("Code Coloring")) {
-			if (ImGui::MenuItem("Enable Code Coloring", nullptr, &sCodeColoringOn)) {
+			if (ImGui::MenuItem("Enable Code Coloring", nullptr, &sCurrentCustomColors.CodeColoringOn)) {
 			}
-			if (sCodeColoringOn) {
+			if (ImGui::MenuItem("PC Highlight Rect", nullptr, &sCurrentCustomColors.PCHighlightStyle)) {
+				if (sCustomThemeActive) { sThemeCustomColors.PCHighlightStyle = sCurrentCustomColors.PCHighlightStyle; }
+			}
+			if (sCurrentCustomColors.CodeColoringOn) {
 				for (int i = 0; i < snCodeColors; ++i) {
-					if (sCodeColoringOn || i == IDX_SOURCE_COLOR) {
+					if (sCurrentCustomColors.CodeColoringOn || i == IDX_SOURCE_COLOR) {
 						ImGui::PushID(i);
 						ImVec4 currCol = *saCodeColors[i];
 						ImGui::ColorEdit4("##color", (float*)saCodeColors[i], ImGuiColorEditFlags_NoInputs);
@@ -361,17 +400,17 @@ void ThemeColorMenu()
 				if (ImGui::MenuItem("Reset Branch Targets")) {
 					InvalidateBranchTargets();
 				}
-				if (ImGui::SliderFloat("##avoid", &sAvoidHueRadius, 0.0f, 0.5f, "avoid = %.2f")) {
+				if (ImGui::SliderFloat("##avoid", &sCurrentCustomColors.AvoidHueRadius, 0.0f, 0.5f, "avoid = %.2f")) {
 					if (!sCustomThemeActive) { CopyThemeToCustom(); }
-					sAvoidHueRadiusCT = sAvoidHueRadius;
+					sThemeCustomColors.AvoidHueRadius = sCurrentCustomColors.AvoidHueRadius;
 				}
-				if (ImGui::SliderFloat("##sat", &sBranchTargetS, 0.0f, 1.0f, "saturation = %.2f")) {
+				if (ImGui::SliderFloat("##sat", &sCurrentCustomColors.BranchTargetS, 0.0f, 1.0f, "saturation = %.2f")) {
 					if (!sCustomThemeActive) { CopyThemeToCustom(); }
-					sBranchTargetSCT = sBranchTargetS;
+					sThemeCustomColors.BranchTargetS = sCurrentCustomColors.BranchTargetS;
 				}
-				if (ImGui::SliderFloat("##bri", &sBranchTargetV, 0.0f, 1.0f, "brightness = %.2f")) {
+				if (ImGui::SliderFloat("##bri", &sCurrentCustomColors.BranchTargetV, 0.0f, 1.0f, "brightness = %.2f")) {
 					if (!sCustomThemeActive) { CopyThemeToCustom(); }
-					sBranchTargetVCT = sBranchTargetS;
+					sThemeCustomColors.BranchTargetV = sCurrentCustomColors.BranchTargetV;
 				}
 				ImVec2 pos = ImGui::GetCursorScreenPos();
 
@@ -413,7 +452,7 @@ void ThemeColorMenu()
 						float h, s, v;
 						ImGui::ColorConvertRGBtoHSV(bg.x * b + ch.x * a, bg.y * b + ch.y * a, bg.z * b + ch.z * a,
 							h, s, v);
-						sAvoidHueCenter = sAvoidHueCenterCT = h;
+						sCurrentCustomColors.AvoidHueCenter = sThemeCustomColors.AvoidHueCenter = h;
 					}
 					sCustomTheme[c] = style.Colors[c];
 				}

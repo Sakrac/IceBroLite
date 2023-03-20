@@ -498,7 +498,7 @@ void CodeView::Draw(int index)
 					ImDrawList* dl = ImGui::GetWindowDrawList();
 					dl->AddRectFilled(ps,
 						ImVec2( ps.x + (srcColMin + line.get_len() - 2) * fontCharWidth,
-								ps.y + lineHeight), ImColor(C64_PURPLE));
+								ps.y + lineHeight), ImColor(GetCodeCursorColor()));
 				}
 				dY = 0;
 			}
@@ -524,15 +524,15 @@ void CodeView::Draw(int index)
 				if (GetPCHighlightStyle() == 1) {
 					draw_list->AddRect(
 						ImVec2(linePos.x + winPos.x, linePos.y + winPos.y - ImGui::GetScrollY()),
-						ImVec2(linePos.x + winPos.x + (srcColMin + line.get_len() - 2) * fontCharWidth,
+						ImVec2(linePos.x + winPos.x + (srcColMin + line.get_len() - 1) * fontCharWidth,
 							linePos.y + winPos.y - ImGui::GetScrollY() + ImGui::GetTextLineHeightWithSpacing() - 1.0f),
-						GetPCHighlightColor(), 0.0f, 0, 1.0f);
+						ImColor(GetPCHighlightColor()), 0.0f, 0, 1.0f);
 				} else {
 					draw_list->AddRectFilled(
 						ImVec2(linePos.x + winPos.x, linePos.y + winPos.y - ImGui::GetScrollY()),
-						ImVec2(linePos.x + winPos.x + (srcColMin + line.get_len() - 2) * fontCharWidth,
+						ImVec2(linePos.x + winPos.x + (srcColMin + line.get_len() - 1) * fontCharWidth,
 							linePos.y + winPos.y - ImGui::GetScrollY() + ImGui::GetTextLineHeightWithSpacing() - 1.0f),
-						GetPCHighlightColor(), 0.0f, 0);
+						ImColor(GetPCHighlightColor()), 0.0f, 0);
 				}
 			}
 

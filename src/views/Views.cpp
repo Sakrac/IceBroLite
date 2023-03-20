@@ -393,16 +393,6 @@ void ViewContext::Draw()
 				if (ImGui::MenuItem("Reset Layout")) { setupDocking = true; }
 				if (ImGui::MenuItem("Save Layout")) { UserSaveLayout(); }
 				if (ImGui::MenuItem("Save Layout on Exit", nullptr, &saveSettingsOnExit)) { saveSettingsOnExit = !saveSettingsOnExit; }
-				if (ImGui::BeginMenu("Code PC Highlight")) {
-					if (ImGui::MenuItem("None", nullptr, sCodePCHighlight == 0)) { sCodePCHighlight = 0; }
-					if (ImGui::MenuItem("Outline", nullptr, sCodePCHighlight == 1)) { sCodePCHighlight = 1; }
-					if (ImGui::MenuItem("Highlight", nullptr, sCodePCHighlight == 2)) { sCodePCHighlight = 2; }
-					if (ImGui::BeginMenu("Color")) {
-						sCodePCColor = DrawPaletteMenu(sCodePCColor);
-						ImGui::EndMenu();
-					}
-					ImGui::EndMenu();
-				}
 				ImGui::EndMenu();
 			}
 
@@ -742,6 +732,6 @@ uint8_t DrawPaletteMenu(uint8_t col) {
 	}
 	return col;
 }
-
-int GetPCHighlightStyle() { return sCodePCHighlight; }
-uint32_t GetPCHighlightColor() { return c64pal[sCodePCColor]; }
+//
+//int GetPCHighlightStyle() { return sCodePCHighlight; }
+//uint32_t GetPCHighlightColor() { return c64pal[sCodePCColor]; }
