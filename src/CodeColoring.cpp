@@ -23,17 +23,20 @@ static ImGuiCol saThemeColors[] = {
 	ImGuiCol_FrameBg,
 	ImGuiCol_FrameBgHovered,
 	ImGuiCol_FrameBgActive,
-	ImGuiCol_CheckMark,
 	ImGuiCol_TitleBg,
 	ImGuiCol_TitleBgActive,
 	ImGuiCol_TitleBgCollapsed,
+	ImGuiCol_Tab,                   // TabItem in a TabBar
+	ImGuiCol_TabHovered,
+	ImGuiCol_TabActive,
+	ImGuiCol_TabUnfocused,
+	ImGuiCol_TabUnfocusedActive,
+	ImGuiCol_CheckMark,
 	ImGuiCol_MenuBarBg,
 	ImGuiCol_Header,
 	ImGuiCol_HeaderHovered,
 	ImGuiCol_HeaderActive,
-	ImGuiCol_NavHighlight,
-	ImGuiCol_NavWindowingHighlight,
-	ImGuiCol_NavWindowingDimBg,
+	ImGuiCol_TableHeaderBg,
 	ImGuiCol_ScrollbarBg,
 	ImGuiCol_ScrollbarGrab,
 	ImGuiCol_ScrollbarGrabHovered,
@@ -46,8 +49,6 @@ static ImGuiCol saThemeColors[] = {
 	ImGuiCol_ResizeGrip,
 	ImGuiCol_ResizeGripHovered,
 	ImGuiCol_ResizeGripActive,
-	ImGuiCol_TextSelectedBg,
-	ImGuiCol_DragDropTarget,
 	ImGuiCol_ModalWindowDimBg,
 };
 
@@ -60,6 +61,7 @@ static const char* saCodeColoringNames[] = {
 	"Code Cursor Color",
 	"PC Highlight Color",
 	"Watch Cell Color",
+	"Code Label Color"
 };
 
 static const uint32_t snThemeColors = sizeof(saThemeColors) / sizeof(saThemeColors[0]);
@@ -76,6 +78,7 @@ struct CustomColors {
 	ImVec4 CodeCursorColor;
 	ImVec4 CodePCHighlightColor;
 	ImVec4 WatchChessColor;
+	ImVec4 CodeLabelColor;
 	float AvoidHueCenter;
 	float AvoidHueRadius;
 	float BranchTargetV;
@@ -92,6 +95,7 @@ struct CustomColors {
 		CodeCursorColor = C64_PURPLE;
 		CodePCHighlightColor = C64_CYAN;
 		WatchChessColor = C64_BLUE;
+		CodeLabelColor = C64_LGREEN;
 		AvoidHueCenter = -1.0f;
 		AvoidHueRadius = 0.1f;
 		BranchTargetV = 1.0f;
@@ -124,6 +128,7 @@ static ImVec4* saCodeColors[snCodeColors] = {
 	&sCurrentCustomColors.CodeCursorColor,
 	&sCurrentCustomColors.CodePCHighlightColor,
 	&sCurrentCustomColors.WatchChessColor,
+	&sCurrentCustomColors.CodeLabelColor,
 };
 
 static ImVec4* saCodeColorsCT[snCodeColors] = {
@@ -135,6 +140,7 @@ static ImVec4* saCodeColorsCT[snCodeColors] = {
 	&sThemeCustomColors.CodeCursorColor,
 	&sThemeCustomColors.CodePCHighlightColor,
 	&sThemeCustomColors.WatchChessColor,
+	&sThemeCustomColors.CodeLabelColor,
 };
 
 void InvalidateBranchTargets() {
@@ -196,6 +202,8 @@ void LoadCustomTheme(const char *themeFile) {
 				sThemeCustomColors.CodePCHighlightColor = ParseCustomColor(value);
 			} else if(name.same_str("WatchChessColor")) {
 				sThemeCustomColors.WatchChessColor = ParseCustomColor(value);
+			} else if(name.same_str("CodeLabelColor")) {
+				sThemeCustomColors.CodeLabelColor = ParseCustomColor(value);
 			} else if(name.same_str("BranchTargetSaturation")) {
 				sThemeCustomColors.BranchTargetS = value.atof();
 			} else if(name.same_str("BranchTargetBrightness")) {
@@ -249,6 +257,7 @@ void SaveCustomTheme(const char* themeFile) {
 	theme.AddValue(strref("CodeCursorColor"), strref(col, AppendColorHash(col, colSize, sCurrentCustomColors.CodeCursorColor)));
 	theme.AddValue(strref("PCHighlightColor"), strref(col, AppendColorHash(col, colSize, sCurrentCustomColors.CodePCHighlightColor)));
 	theme.AddValue(strref("WatchChessColor"), strref(col, AppendColorHash(col, colSize, sCurrentCustomColors.WatchChessColor)));
+	theme.AddValue(strref("CodeLabelColor"), strref(col, AppendColorHash(col, colSize, sCurrentCustomColors.CodeLabelColor)));
 	str.sprintf("%.3f", sCurrentCustomColors.BranchTargetS);
 	theme.AddValue(strref("BranchTargetSaturation"), str.get_strref());
 	str.sprintf("%.3f", sCurrentCustomColors.BranchTargetV);
@@ -332,6 +341,10 @@ ImVec4 GetCodeCursorColor()
 
 ImVec4 GetWatchChessColor() {
 	return sCurrentCustomColors.WatchChessColor;
+}
+
+ImVec4 GetCodeLabelColor() {
+	return sCurrentCustomColors.CodeLabelColor;
 }
 
 ImVec4 GetPCHighlightColor()

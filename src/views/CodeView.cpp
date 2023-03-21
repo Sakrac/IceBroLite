@@ -363,7 +363,7 @@ void CodeView::Draw(int index)
 	bool editAsmDone = false;
 	while (lineNum<lines) {
 		if (const char* label = GetSymbol(read)) {
-			ImGui::TextColored(C64_LGREEN, label);
+			ImGui::TextColored(GetCodeLabelColor() , label);
 			lineNum++;
 		}
 		ImVec2 linePos = ImGui::GetCursorPos();

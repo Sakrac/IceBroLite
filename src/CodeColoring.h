@@ -6,6 +6,7 @@ ImVec4 GetCodeBytesColor();
 ImVec4 GetCodeAddrColor();
 ImVec4 GetCodeOpCodeColor();
 ImVec4 GetWatchChessColor();
+ImVec4 GetCodeLabelColor();
 ImVec4 GetCodeSourceColor();
 ImVec4 GetCodeParamColor();
 ImVec4 GetCodeCursorColor();
