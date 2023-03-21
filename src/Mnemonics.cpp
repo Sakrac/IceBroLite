@@ -9,37 +9,37 @@
 #endif
 
 static const char* aAddrModeFmt[] = {
-	"%s ($%02x,x)",			// 00
-	"%s $%02x",				// 01
-	"%s #$%02x",			// 02
-	"%s $%04x",				// 03
-	"%s ($%02x),y",			// 04
-	"%s $%02x,x",			// 05
-	"%s $%04x,y",			// 06
-	"%s $%04x,x",			// 07
-	"%s ($%04x)",			// 08
-	"%s A",					// 09
-	"%s ",					// 0a
-	"%s $%04x",				// 1a
-	"%s ($%02x,y)",			// 17
-	"%s $%02x,y",				// 16
+	"($%02x,x)",		// 00
+	"$%02x",			// 01
+	"#$%02x",			// 02
+	"$%04x",			// 03
+	"($%02x),y",		// 04
+	"$%02x,x",			// 05
+	"$%04x,y",			// 06
+	"$%04x,x",			// 07
+	"($%04x)",			// 08
+	"A",				// 09
+	"",					// 0a
+	"$%04x",			// 1a
+	"($%02x,y)",		// 17
+	"$%02x,y",			// 16
 };
 
 static const char* aAddrModeLblFmt[] = {
-	"%s (%s,x) ; $%02x",	// 00
-	"%s %s ; $%02x",		// 01
-	"%s #%s ; $%02x",		// 02
-	"%s %s ; $%04x",		// 03
-	"%s (%s),y ; $%02x",	// 04
-	"%s %s,x ; $%02x",		// 05
-	"%s %s,y ; $%04x",		// 06
-	"%s %s,x ; $%04x",		// 07
-	"%s (%s) ; $%04x",		// 08
-	"%s A",					// 09
-	"%s ",					// 0a
-	"%s %s ; $%04x",		// 1a
-	"%s (%s,y) ; %02x",		// 17
-	"%s %s,y ; %02x" ,		// 16
+	"(%s,x) ; $%02x",	// 00
+	"%s ; $%02x",		// 01
+	"#%s ; $%02x",		// 02
+	"%s ; $%04x",		// 03
+	"(%s),y ; $%02x",	// 04
+	"%s,x ; $%02x",		// 05
+	"%s,y ; $%04x",		// 06
+	"%s,x ; $%04x",		// 07
+	"(%s) ; $%04x",		// 08
+	"A",				// 09
+	"",					// 0a
+	"%s ; $%04x",		// 1a
+	"(%s,y) ; %02x",	// 17
+	"%s,y ; %02x" ,		// 16
 };
 
 const char* AddressModeNames[]{
@@ -892,7 +892,7 @@ int InstrRef(CPU6510* cpu, uint16_t pc, char* buf, size_t bufSize)
 }
 
 // disassemble one instruction at addr into the dest string and return number of bytes for instruction
-int Disassemble(CPU6510* cpu, uint16_t addr, char* dest, int left, int& chars, int& branchTrg, bool showBytes, bool illegals, bool showLabels, bool showDis)
+int Disassemble(CPU6510* cpu, uint16_t addr, char* dest, int left, int& argOffs, int& branchTrg, bool showBytes, bool illegals, bool showLabels, bool showDis)
 {
 	strovl str(dest, left);
 	const dismnm* opcodes = a6502_ops;
@@ -908,7 +908,7 @@ int Disassemble(CPU6510* cpu, uint16_t addr, char* dest, int left, int& chars, i
 		for (uint16_t b = 0; b <= (uint16_t)arg_size; b++) {
 			str.sprintf_append("%02x ", cpu->GetByte(addr + b));
 		}
-		str.pad_to(' ', 9);
+		str.pad_to(' ', 10);
 	}
 
 	if (showDis) {
@@ -928,34 +928,40 @@ int Disassemble(CPU6510* cpu, uint16_t addr, char* dest, int left, int& chars, i
 					arg = (uint16_t)cpu->GetByte(addr) | ((uint16_t)cpu->GetByte(addr + 1)) << 8;
 					if (op == 0x20 || op == 0x4c) { branchTrg = arg; }
 					label = showLabels ? GetSymbol(arg) : nullptr;
+					str.append(mnemonic).append(' ');
+					argOffs = str.get_len();
 					if (label) {
 						//size_t newlen = 0;
 						//wcstombs_s(&newlen, label8, label, sizeof(label8)-1);
-						str.sprintf_append(aAddrModeLblFmt[mode], mnemonic, label, arg);
+						str.sprintf_append(aAddrModeLblFmt[mode], label, arg);
 					} else
-						str.sprintf_append(aAddrModeFmt[mode], mnemonic, arg);
+						str.sprintf_append(aAddrModeFmt[mode], arg);
 					break;
 
 				case AM_BRANCH:		// beq $1234
 					arg = addr + 1 + (char)cpu->GetByte(addr);
 					branchTrg = arg;
 					label = showLabels ? GetSymbol(arg) : nullptr;
+					str.append(mnemonic).append(' ');
+					argOffs = str.get_len();
 					if (label) {
 						//size_t newlen = 0;
 						//wcstombs_s(&newlen, label8, label, sizeof(label8)-1);
-						str.sprintf_append(aAddrModeLblFmt[mode], mnemonic, label, arg);
+						str.sprintf_append(aAddrModeLblFmt[mode], label, arg);
 					} else
-						str.sprintf_append(aAddrModeFmt[mode], mnemonic, arg);
+						str.sprintf_append(aAddrModeFmt[mode], arg);
 					break;
 
 				default:
-					str.sprintf_append(aAddrModeFmt[mode], mnemonic,
+					str.append(mnemonic).append(' ');
+					argOffs = str.get_len();
+					str.sprintf_append(aAddrModeFmt[mode],
 									   cpu->GetByte(addr), cpu->GetByte(addr + 1));
 					break;
 			}
 		}
 	}
-	chars = str.get_len();
+	str.c_str();
 	return 1 + arg_size;
 }
 

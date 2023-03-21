@@ -2,6 +2,8 @@
 
 class FVFileView;
 
+void CheckCustomThemeAfterStateLoad();
+
 void InitViews();
 void ShowViews();
 void BeginViews();
@@ -33,5 +35,5 @@ void ViewPopFont();
 
 FVFileView* GetFileView();
 uint8_t DrawPaletteMenu(uint8_t col);
-int GetPCHighlightStyle();
-uint32_t GetPCHighlightColor();
+//int GetPCHighlightStyle();
+//uint32_t GetPCHighlightColor();

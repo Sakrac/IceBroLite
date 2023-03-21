@@ -25,6 +25,7 @@
 #include "Views.h"
 #include "GLFW/glfw3.h"
 #include "../Image.h"
+#include "../CodeColoring.h"
 
 struct ViewContext {
 	enum { sNumFontSizes = 7 };
@@ -71,6 +72,7 @@ static ViewContext* viewContext = nullptr;
 static strown<PATH_MAX_LEN> sUserFontName;
 static int sUserFontSize = 0;
 static bool sForceFont = false;
+static bool sSetCustomTheme = false;
 static uint8_t sCodePCHighlight = 1;
 static uint8_t sCodePCColor = 13;
 static ImFont* sUserFont = nullptr;
@@ -152,6 +154,22 @@ ViewContext::ViewContext() : currFont(3), setupDocking(true), saveSettingsOnExit
 	memoryWasChanged = false;
 }
 
+void CheckCustomThemeAfterStateLoad() {
+	if (const char* themeFile = GetCustomThemePath()) {
+		LoadCustomTheme(themeFile);
+	}
+	if (sSetCustomTheme) {
+		sSetCustomTheme = false;
+		if (HasCustomTheme()) {
+			SetCustomTheme();
+			imgui_style = 7;
+			return;
+		}
+		imgui_style = 0; // fallback if not found
+		StyleC64();
+	}
+}
+
 void ViewContext::SaveState(UserData& conf)
 {
 	// ToolBar toolBar;
@@ -194,7 +212,7 @@ void ViewContext::SaveState(UserData& conf)
 	// ScreenView screenView;
 	conf.BeginStruct("Screen"); screenView.WriteConfig(conf); conf.EndStruct();
 	conf.BeginStruct("Trace"); traceView.WriteConfig(conf); conf.EndStruct();
-	conf.AddValue("Style", imgui_style);
+	conf.AddValue("Style", CustomThemeActive() ? 7 : imgui_style);
 	conf.AddValue("FontSize", currFont);
 	if (sUserFont && sUserFontSize && sUserFontName.valid()) {
 		conf.AddValue("UserFont", sUserFontName.get_strref());
@@ -222,14 +240,16 @@ void ViewContext::LoadState(strref config)
 				imgui_style = (int)value.atoi();
 				switch (imgui_style) {
 					case 0: break;// default
-					case 1: ImGui::StyleColorsDark(); break;
-					case 2: ImGui::StyleColorsLight(); break;
-					case 3: ImGui::StyleColorsClassic(); break;
+					case 1: ImGui::StyleColorsDark(); ResetCodeColoring(); break;
+					case 2: ImGui::StyleColorsLight(); ResetCodeColoring(); break;
+					case 3: ImGui::StyleColorsClassic(); ResetCodeColoring(); break;
 					case 4: StyleC64_Darker(); break;
 					case 5: StyleC64_Mid(); break;
 					case 6: StyleC64_Green(); break;
+					case 7: sSetCustomTheme = true; break;
 					default: imgui_style = 0; break;
 				}
+				ResetCodeColoring();
 			} else if(name.same_str("CodePCHighlight")) {
 				sCodePCHighlight = (uint8_t)value.atoi();
 			} else if(name.same_str("CodePCHighlightColor")) {
@@ -344,12 +364,15 @@ void ViewContext::Draw()
 
 			if (ImGui::BeginMenu("Style")) {
 				if (ImGui::MenuItem("MonstersGoBoom C64")) { StyleC64(); imgui_style = 0; }
-				if (ImGui::MenuItem("Dark")) { ImGui::StyleColorsDark(); imgui_style = 1; }
-				if (ImGui::MenuItem("Light")) { ImGui::StyleColorsLight(); imgui_style = 2; }
-				if (ImGui::MenuItem("Classic")) { ImGui::StyleColorsClassic(); imgui_style = 3; }
+				if (ImGui::MenuItem("Dark")) { ImGui::StyleColorsDark(); ResetCodeColoring(); imgui_style = 1; }
+				if (ImGui::MenuItem("Light")) { ImGui::StyleColorsLight(); ResetCodeColoring(); imgui_style = 2; }
+				if (ImGui::MenuItem("Classic")) { ImGui::StyleColorsClassic(); ResetCodeColoring(); imgui_style = 3; }
 				if (ImGui::MenuItem("High Noon C64")) { StyleC64_Darker(); imgui_style = 4; }
 				if (ImGui::MenuItem("Regular C64")) { StyleC64_Mid(); imgui_style = 5; }
 				if (ImGui::MenuItem("Matrix C64")) { StyleC64_Green(); imgui_style = 6; }
+				if (HasCustomTheme()) {
+					if (ImGui::MenuItem("Custom")) { SetCustomTheme(); imgui_style = 7; }
+				}
 				ImGui::EndMenu();
 			}
 
@@ -370,18 +393,10 @@ void ViewContext::Draw()
 				if (ImGui::MenuItem("Reset Layout")) { setupDocking = true; }
 				if (ImGui::MenuItem("Save Layout")) { UserSaveLayout(); }
 				if (ImGui::MenuItem("Save Layout on Exit", nullptr, &saveSettingsOnExit)) { saveSettingsOnExit = !saveSettingsOnExit; }
-				if (ImGui::BeginMenu("Code PC Highlight")) {
-					if (ImGui::MenuItem("None", nullptr, sCodePCHighlight == 0)) { sCodePCHighlight = 0; }
-					if (ImGui::MenuItem("Outline", nullptr, sCodePCHighlight == 1)) { sCodePCHighlight = 1; }
-					if (ImGui::MenuItem("Highlight", nullptr, sCodePCHighlight == 2)) { sCodePCHighlight = 2; }
-					if (ImGui::BeginMenu("Color")) {
-						sCodePCColor = DrawPaletteMenu(sCodePCColor);
-						ImGui::EndMenu();
-					}
-					ImGui::EndMenu();
-				}
 				ImGui::EndMenu();
 			}
+
+			ThemeColorMenu();
 
 			ImGui::EndMainMenuBar();
 
@@ -717,6 +732,6 @@ uint8_t DrawPaletteMenu(uint8_t col) {
 	}
 	return col;
 }
-
-int GetPCHighlightStyle() { return sCodePCHighlight; }
-uint32_t GetPCHighlightColor() { return c64pal[sCodePCColor]; }
+//
+//int GetPCHighlightStyle() { return sCodePCHighlight; }
+//uint32_t GetPCHighlightColor() { return c64pal[sCodePCColor]; }

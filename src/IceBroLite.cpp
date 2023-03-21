@@ -50,6 +50,7 @@
 #include "Image.h"
 #include "6510.h"
 #include "SourceDebug.h"
+#include "CodeColoring.h"
 #include "views/Views.h"
 
 #include "WindowIcon.inc"
@@ -246,6 +247,7 @@ int main(int argc, char* argv[])
 	}
 
 	CheckUserFont();
+	CheckCustomThemeAfterStateLoad();
 
 	// if only symbols provided just read those in immediately
 	if (forceLoadProgram[0] == 0 && forceLoadSymbols[0] != 0) {
@@ -365,6 +367,12 @@ int main(int argc, char* argv[])
 			if (ReadListingFile(listFile)) {
 				ReviewListing();
 			}
+		}
+		if (const char* themeFile = LoadThemeReady()) {
+			LoadCustomTheme(themeFile);
+		}
+		if (const char* themeFile = SaveThemeReady()) {
+			SaveCustomTheme(themeFile);
 		}
 		WaitForViceEXEPath();
 

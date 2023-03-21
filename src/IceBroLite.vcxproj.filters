@@ -115,6 +115,7 @@
     <ClInclude Include="resource1.h" />
     <ClInclude Include="SaveState.h" />
     <ClInclude Include="Commands.h" />
+    <ClInclude Include="CodeColoring.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\imgui.cpp">
@@ -208,6 +209,7 @@
       <Filter>views</Filter>
     </ClCompile>
     <ClCompile Include="Commands.cpp" />
+    <ClCompile Include="CodeColoring.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="struse\struse.natvis">
