@@ -147,10 +147,24 @@ const char* LoadListingReady()
 	return nullptr;
 }
 
+const char* GetListingFilename() {
+	if (sLoadLstFileName[0]) {
+		return sLoadLstFileName;
+	}
+	return nullptr;
+}
+
 const char* LoadKickDbgReady()
 {
 	if (sLoadKickDbgReady) {
 		sLoadKickDbgReady = false;
+		return sLoadDbgFileName;
+	}
+	return nullptr;
+}
+
+const char* GetKickDbgFile() {
+	if (sLoadDbgFileName[0]) {
 		return sLoadDbgFileName;
 	}
 	return nullptr;
@@ -165,10 +179,26 @@ const char* LoadSymbolsReady()
 	return nullptr;
 }
 
+const char* GetSymbolFilename()
+{
+	if (sLoadSymFileName[0]) {
+		return sLoadSymFileName;
+	}
+	return nullptr;
+}
+
 const char* LoadViceCMDReady()
 {
 	if (sLoadViceCmdReady) {
 		sLoadViceCmdReady = false;
+		return sLoadViceFileName;
+	}
+	return nullptr;
+}
+
+const char* GetViceCMDFilename()
+{
+	if (sLoadViceFileName[0]) {
 		return sLoadViceFileName;
 	}
 	return nullptr;

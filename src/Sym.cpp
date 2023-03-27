@@ -502,7 +502,7 @@ bool GetAddress( const char *name, size_t chars, uint16_t &addr )
 	return false;
 }
 
-void ReadViceCommandFile(const char *symFile)
+bool ReadViceCommandFile(const char *symFile)
 {
 	ResetSymbols();
 	size_t size = 0;
@@ -535,7 +535,9 @@ void ReadViceCommandFile(const char *symFile)
 		}
 		FilterSectionSymbols();
 		free(buf);
+		return true;
 	}
+	return false;
 }
 
 bool ReadSymbols(const char *filename)
@@ -576,11 +578,12 @@ bool ReadSymbols(const char *filename)
 	return false;
 }
 
-void ReadSymbolsFile(const char* symbols) {
+bool ReadSymbolsFile(const char* symbols) {
 	strref ext = strref(symbols).after_last('.');
-	if (ext.same_str("dbg")) ReadC64DbgSrc(symbols);
-	if (ext.same_str("sym")) ReadSymbols(symbols);
-	if (ext.same_str("vs")) ReadViceCommandFile(symbols);
+	if (ext.same_str("dbg")) return ReadC64DbgSrc(symbols);
+	if (ext.same_str("sym")) return ReadSymbols(symbols);
+	if (ext.same_str("vs")) return ReadViceCommandFile(symbols);
+	return false;
 }
 
 void ReadSymbolsForBinary(const char *binname)

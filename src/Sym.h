@@ -4,9 +4,9 @@ struct UserData;
 class strref;
 
 bool ReadSymbols(const char *binname);
-void ReadViceCommandFile(const char *symFile);
+bool ReadViceCommandFile(const char *symFile);
 void ReadSymbolsForBinary(const char *binname);
-void ReadSymbolsFile(const char* symbols);
+bool ReadSymbolsFile(const char* symbols);
 void ClearSymbols();
 bool GetAddress(const char *name, size_t chars, uint16_t &addr);
 bool SymbolsLoaded();

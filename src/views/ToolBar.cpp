@@ -57,7 +57,7 @@ void ToolBar::Draw()
 		return;
 	}
 
-	ImGui::Columns(9, 0, false);
+	ImGui::Columns(10, 0, false);
 
 	bool connected = ViceConnected();
 	bool playing = connected && ViceRunning();
@@ -94,6 +94,10 @@ void ToolBar::Draw()
 
 	bool reload = DrawTexturedIconCenter(ViceMonIcons::VMI_Reload);
 	reload = CenterTextButtonInColumn("Reload") || reload;
+
+	ImGui::NextColumn();
+
+	bool reload_info = CenterTextButtonInColumn("Reload\nDebug\nInfo");
 
 	ImGui::NextColumn();
 
@@ -153,6 +157,27 @@ void ToolBar::Draw()
 		if (const char* loadPrg = ReloadProgramFile()) {
 			ViceStartProgram(loadPrg);
 			ReadSymbolsForBinary(loadPrg);
+		}
+	}
+
+	if (reload_info) {
+		if (const char* dbgFile = GetKickDbgFile()) {
+			if (ReadSymbolsFile(dbgFile)) { reload_info = false; }
+		}
+		if (reload_info) {
+			if (const char* symFile = GetSymbolFilename()) {
+				if (ReadSymbolsFile(symFile)) { reload_info = false; }
+			}
+		}
+		if (reload_info) {
+			if (const char* vsFile = GetViceCMDFilename()) {
+				if (ReadSymbolsFile(vsFile)) { reload_info = false; }
+			}
+		}
+		if (reload_info) {
+			if (const char* loadPrg = ReloadProgramFile()) {
+				ReadSymbolsForBinary(loadPrg);
+			}
 		}
 	}
 //
