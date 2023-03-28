@@ -1,5 +1,7 @@
 #pragma once
 
+void FileDialogPathMenu();
+
 void InitStartFolder();
 bool GetCWD(char* dir, uint32_t dir_size);
 const char* GetStartFolder();

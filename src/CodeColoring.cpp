@@ -441,7 +441,6 @@ void ThemeColorMenu()
 					}
 				}
 			}
-
 			ImGui::EndMenu();
 		}
 

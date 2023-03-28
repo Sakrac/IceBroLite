@@ -9,6 +9,7 @@
 #include "views/FilesView.h"
 #include "views/Views.h"
 #include "struse/struse.h"
+#include "imgui/imgui.h"
 #ifdef __linux__
 #include <unistd.h>
 #include <linux/limits.h>
@@ -71,6 +72,32 @@ static const char sViceEXEParams[] = "Vice EXE path:x*.exe";
 static const char sReadPrgParams[] = "Prg files:*.prg";
 static const char sThemeParams[] = "Theme:*.theme.txt";
 #endif
+
+void FileDialogPathEntry(const char* name, char* path) {
+	ImGui::PushID(name);
+	ImGui::TextUnformatted(name);
+	ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+	ImGui::TextUnformatted(path[0] ? path : "<empty>");
+	if (path[0]) {
+		ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+		if (ImGui::Button("clear")) {
+			path[0] = 0;
+		}
+	}
+	ImGui::PopID();
+}
+
+void FileDialogPathMenu() {
+	FileDialogPathEntry("Load .prg/.d64/.drt:", sLoadPrgFileName);
+	FileDialogPathEntry("Listing file (.lst):", sLoadLstFileName);
+	FileDialogPathEntry("KickAsm debug file (.dbg):", sLoadDbgFileName);
+	FileDialogPathEntry("Symbols file (.sym):", sLoadSymFileName);
+	FileDialogPathEntry("VICE commands file:", sLoadViceFileName);
+	FileDialogPathEntry("VICE exec:", sViceEXEPath);
+	FileDialogPathEntry("Secondary .prg:", sReadPrgFileName);
+	FileDialogPathEntry("Theme:", sThemeFileName);
+}
+
 
 void InitStartFolder()
 {
