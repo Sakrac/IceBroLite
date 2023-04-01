@@ -21,6 +21,68 @@
 #define sprintf_s sprintf
 #endif
 
+// (Notes from Sleeping Elephant for Vic 20 graphics)
+// Vic 20 VIC
+// Vic-I reference: http://sleepingelephant.com/denial/wiki/index.php/MOS_Technology_VIC
+//
+// color ram
+// The color RAM is a 1k block at memory locations $9400 - $97FF(37888 - 38911).
+//. The specific memory used may start at exactly $9400, or 512 bytes higher at $9600,
+// depending upon a setting in VIC register (bit 7 of $9002).The unused portion of the
+// memory block(typically just over 512 bytes, but more or less if other VIC registers
+// have been set to change the screen size)
+//
+// Palette
+// #000000
+// #ffffff
+// #a8734a
+// #e9b287
+// #772d26
+// #b66862
+// #85d4dc
+// #c5ffff
+// #a85fb4
+// #e99df5
+// #559e4a
+// #92df87
+// #42348b
+// #7e70ca
+// #bdcc71
+// #ffffb0
+// 
+// VIC registers
+// $9000	36864	ABBBBBBB	$05	$0C	Interlace mode / Screen origin(horizontal)
+// $9001	36865	CCCCCCCC	$19	$26	Screen origin(vertical)
+// $9002	36866	HDDDDDDD	$16	Screen memory offset / Number of columns
+// $9003	36867	GEEEEEEF	$2E	Raster value(lowest bit) / Number of rows / Double character size
+// $9004	36868	GGGGGGGG	variable	Raster value
+// $9005	36869	HHHHIIII	$F0	Screen memory location / Character memory location
+// $900E	36878	WWWWVVVV	$00	Auxiliary color / Composite sound volume
+// $900F	36879	XXXXYZZZ	$1B	Screen color / Reverse mode / Border color
+//
+// Values in $9005
+// Byte $9005(36869) is comprised of two 4 - bit addresses for the character memoryand video memory.These addresses refer to sixteen 1k blocks.Values in the range of 0 - 7 are addresses in the $8000 - $9FFF range, and values in the range of 8 - 15 are in the $0000 - $1FFF range :
+// 0 : $8000, 1k character ROM, capitals + glyphs
+// 1 : $8400, 1k character ROM, capitals + lowercase
+// 2 : $8800, 1k character ROM, inverse capitals + glyphs
+// 3 : $8C00, 1k character ROM, inverse capitals + lowercase
+// 4 : $9000, 1k VIC / VIA registers
+// 5 : $9400, 1k RAM used as Color RAM
+// 6 : $9800, 1k Expansion port
+// 7 : $9C00, 1k Expansion port
+// 8 : $0000, 1k RAM, zeropage, datasette buffer, and other various uses
+// 9 : $0400, 1k Expansion port
+// 10 : $0800, 1k Expansion port
+// 11 : $0C00, 1k Expansion port
+// 12 : $1000, 1k RAM
+// 13 : $1400, 1k RAM
+// 14 : $1800, 1k RAM
+// 15 : $1C00, 1k RAM
+// The character memory always starts at byte 0 of the selected block, while the video memory can be offset by 512 bytes by setting bit 7 of $9002. While these are the values that can be chosen via $9005, in practice, much isn't usable for a variety of reasons:
+
+
+
+
 unsigned char _aStartupFont[] = {
 	0x3c, 0x66, 0x6e, 0x6e, 0x60, 0x62, 0x3c, 0x00, 0x18, 0x3c, 0x66, 0x7e, 0x66, 0x66, 0x66, 0x00, 0x7c, 0x66, 0x66, 0x7c, 0x66, 0x66, 0x7c, 0x00, 0x3c, 0x66, 0x60, 0x60, 0x60, 0x66, 0x3c, 0x00, 0x78, 0x6c, 0x66, 0x66, 0x66, 0x6c, 0x78, 0x00, 0x7e, 0x60, 0x60, 0x78, 0x60, 0x60, 0x7e, 0x00, 0x7e, 0x60, 0x60, 0x78, 0x60, 0x60, 0x60, 0x00, 0x3c, 0x66, 0x60, 0x6e, 0x66, 0x66, 0x3c, 0x00,
 	0x66, 0x66, 0x66, 0x7e, 0x66, 0x66, 0x66, 0x00, 0x3c, 0x18, 0x18, 0x18, 0x18, 0x18, 0x3c, 0x00, 0x1e, 0x0c, 0x0c, 0x0c, 0x0c, 0x6c, 0x38, 0x00, 0x66, 0x6c, 0x78, 0x70, 0x78, 0x6c, 0x66, 0x00, 0x60, 0x60, 0x60, 0x60, 0x60, 0x60, 0x7e, 0x00, 0x63, 0x77, 0x7f, 0x6b, 0x63, 0x63, 0x63, 0x00, 0x66, 0x76, 0x7e, 0x7e, 0x6e, 0x66, 0x66, 0x00, 0x3c, 0x66, 0x66, 0x66, 0x66, 0x66, 0x3c, 0x00,
