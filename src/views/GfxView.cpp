@@ -80,8 +80,26 @@
 // 15 : $1C00, 1k RAM
 // The character memory always starts at byte 0 of the selected block, while the video memory can be offset by 512 bytes by setting bit 7 of $9002. While these are the values that can be chosen via $9005, in practice, much isn't usable for a variety of reasons:
 
+#define ColHex6( hex ) uint32_t(0xff000000|((hex<<16)&0xff0000)|(hex&0xff00)|((hex>>16)&0xff))
 
-
+static uint32_t vic20pal[16] = {
+	ColHex6(0x000000),
+	ColHex6(0xffffff),
+	ColHex6(0xa8734a),
+	ColHex6(0xe9b287),
+	ColHex6(0x772d26),
+	ColHex6(0xb66862),
+	ColHex6(0x85d4dc),
+	ColHex6(0xc5ffff),
+	ColHex6(0xa85fb4),
+	ColHex6(0xe99df5),
+	ColHex6(0x559e4a),
+	ColHex6(0x92df87),
+	ColHex6(0x42348b),
+	ColHex6(0x7e70ca),
+	ColHex6(0xbdcc71),
+	ColHex6(0xffffb0),
+};
 
 unsigned char _aStartupFont[] = {
 	0x3c, 0x66, 0x6e, 0x6e, 0x60, 0x62, 0x3c, 0x00, 0x18, 0x3c, 0x66, 0x7e, 0x66, 0x66, 0x66, 0x00, 0x7c, 0x66, 0x66, 0x7c, 0x66, 0x66, 0x7c, 0x00, 0x3c, 0x66, 0x60, 0x60, 0x60, 0x66, 0x3c, 0x00, 0x78, 0x6c, 0x66, 0x66, 0x66, 0x6c, 0x78, 0x00, 0x7e, 0x60, 0x60, 0x78, 0x60, 0x60, 0x7e, 0x00, 0x7e, 0x60, 0x60, 0x78, 0x60, 0x60, 0x60, 0x00, 0x3c, 0x66, 0x60, 0x6e, 0x66, 0x66, 0x3c, 0x00,
@@ -387,7 +405,7 @@ void GfxView::Draw(int index)
 		ImGui::Columns(numColumns, name.c_str(), true);  // 5-ways, no border
 		name.copy("system##");
 		name.append_num(index + 1, 1, 10);
-		ImGui::Combo(name.c_str(), &displaySystem, "SPC\0C64\0\0");
+		ImGui::Combo(name.c_str(), &displaySystem, "Generic\0C64\0Vic20\0\0");
 		ImGui::NextColumn();
 
 		int prevMode = displayMode;
@@ -464,6 +482,10 @@ void GfxView::Draw(int index)
 				ImGui::Combo(name.c_str(), &c64Mode, "Current\0Text\0Bitmap\0Sprites\0\0");
 				displayMode = c64Mode + C64_Modes;
 				break;
+			case Vic20:
+				ImGui::Combo(name.c_str(), &vic20Mode, "Current\0Text\0\0");
+				displayMode = vic20Mode + V20_Modes;
+				break;
 		}
 		if (prevMode != displayMode) { redraw = true; }
 		ImGui::NextColumn();
@@ -492,7 +514,7 @@ void GfxView::Draw(int index)
 				redraw = true;
 			}
 
-		} else if (displayMode != C64_Current) {
+		} else if (displayMode != C64_Current && displayMode != V20_Current) {
 //			ImGui::NextColumn();
 
 			if (displayMode == C64_Bitmap || displayMode == C64_Text) {
@@ -712,6 +734,10 @@ void GfxView::Create8bppBitmap(CPU6510* cpu)
 		case ColumnScreen_MC: CreateC64ColorTextColumns(cpu, d, c64pal, addrGfxValue, addrScreenValue, addrColValue, cl, rw); break;
 
 		case C64_Current: CreateC64CurrentBitmap(cpu, d, c64pal); break;
+
+		case V20_Text:
+			CreateC64ColorTextBitmap(cpu, d, vic20pal, addrGfxValue, addrScreenValue, addrColValue, cl, rw);
+			break;
 	}
 
 	if (!texture) { texture = CreateTexture(); }

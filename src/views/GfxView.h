@@ -8,6 +8,7 @@ struct GfxView {
 	enum System {
 		Generic,
 		C64,
+		Vic20,
 		Count
 	};
 
@@ -20,7 +21,10 @@ struct GfxView {
 		C64_Current = C64_Modes,
 		C64_Text,
 		C64_Bitmap,
-		C64_Sprites
+		C64_Sprites,
+		V20_Modes,
+		V20_Current = V20_Modes,
+		V20_Text,
 	};
 
 	enum Zoom {
@@ -53,6 +57,7 @@ struct GfxView {
 	int displayMode;
 	int genericMode;
 	int c64Mode;
+	int vic20Mode;
 
 	uint16_t hoverScreenAddr;
 	uint16_t hoverGfxAddr;
