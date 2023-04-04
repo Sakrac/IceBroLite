@@ -52,6 +52,12 @@ struct GfxView {
 	uint32_t columns_sprite;
 	uint32_t rows_sprite;
 
+	uint16_t v20ScreenAddr;
+	uint16_t v20GfxAddr;
+	uint16_t v20ColorAddr;
+	uint16_t v20Columns;
+	uint16_t v20Rows;
+
 	int zoom;
 	int displaySystem;
 	int displayMode;
@@ -86,6 +92,7 @@ struct GfxView {
 
 	GfxView();
 
+	void SwapSystem();
 	void WriteConfig(UserData& config);
 
 	void ReadConfig(strref config);
@@ -104,7 +111,7 @@ struct GfxView {
 	void CreateC64ColorBitmapBitmap(CPU6510* cpu, uint32_t* dst, const uint32_t* palette, uint16_t bitmap, uint16_t screen, size_t cl, uint32_t rw);
 	void CreateC64ExtBkgTextBitmap(CPU6510* cpu, uint32_t* dst, const uint32_t* palette, uint16_t bitmap, uint16_t screen, uint16_t cm, size_t cl, uint32_t rw, bool useVicCol);
 	void CreateC64TextBitmap(CPU6510* cpu, uint32_t* dst, const uint32_t* palette, size_t cl, uint32_t rw);
-	void CreateC64ColorTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t bitmap, uint16_t screen, uint16_t cm, size_t cl, uint32_t rw);
+	void CreateC64ColorTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t bitmap, uint16_t screen, uint16_t cm, size_t cl, uint32_t rw, uint8_t bgCol);
 	void CreateC64MulticolorTextBitmap(CPU6510* cpu, uint32_t* dst, const uint32_t* palette, uint16_t bitmap, uint16_t screen, uint16_t cm, size_t cl, uint32_t rw, bool useVicCol);
 	void CreateC64MulticolorBitmapBitmap(CPU6510* cpu, uint32_t* dst, const uint32_t* palette, uint16_t bitmap, uint16_t screen, uint16_t cm, size_t cl, uint32_t rw);
 	void CreateC64SpritesBitmap(CPU6510* cpu, uint32_t* dst, int lines, uint32_t width, const uint32_t* palette);
