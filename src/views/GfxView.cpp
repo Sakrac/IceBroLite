@@ -85,19 +85,19 @@
 static uint32_t vic20pal[16] = {
 	ColHex6(0x000000),
 	ColHex6(0xffffff),
+	ColHex6(0x772d26),
+	ColHex6(0x85d4dc),
+	ColHex6(0xa85fb4),
+	ColHex6(0x559e4a),
+	ColHex6(0x42348b),
+	ColHex6(0xbdcc71),
 	ColHex6(0xa8734a),
 	ColHex6(0xe9b287),
-	ColHex6(0x772d26),
 	ColHex6(0xb66862),
-	ColHex6(0x85d4dc),
 	ColHex6(0xc5ffff),
-	ColHex6(0xa85fb4),
 	ColHex6(0xe99df5),
-	ColHex6(0x559e4a),
 	ColHex6(0x92df87),
-	ColHex6(0x42348b),
 	ColHex6(0x7e70ca),
-	ColHex6(0xbdcc71),
 	ColHex6(0xffffb0),
 };
 
@@ -758,8 +758,9 @@ void GfxView::Create8bppBitmap(CPU6510* cpu)
 		case C64_Current: CreateC64CurrentBitmap(cpu, d, c64pal); break;
 
 		case V20_Text:
-			CreateC64ColorTextBitmap(cpu, d, vic20pal, v20GfxAddr, v20ScreenAddr, v20ColorAddr,
-				v20Columns, v20Rows, cpu->GetByte(0x900f)>>4);
+			CreateV20TextBitmap(cpu, d, vic20pal, v20GfxAddr,
+				v20ScreenAddr, v20ColorAddr,
+				v20Columns, v20Rows, true);
 			break;
 	}
 
@@ -1036,6 +1037,46 @@ void GfxView::CreateC64MulticolorTextBitmap(CPU6510* cpu, uint32_t* d, const uin
 					}
 				}
 				o += (cl-1) * 8;
+			}
+			o -= cl * 64 - 8;
+		}
+		o += 56 * cl;
+	}
+}
+
+void GfxView::CreateV20TextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t cm, size_t cl, uint32_t rw, bool useVicCol)
+{
+	uint8_t k[4] = { bg, 0, txt_col[0], txt_col[1] };
+	if (useVicCol) {
+		k[0] = cpu->GetByte(0x900f) >> 4;
+		k[1] = 0;
+		k[2] = cpu->GetByte(0x900f) & 0x7;
+		k[3] = cpu->GetByte(0x900e) >> 4;
+	}
+
+	uint32_t* o = d;
+	for (size_t y = 0; y < rw; y++) {
+		for (size_t x = 0; x < cl; x++) {
+			uint8_t colRam = cpu->GetByte(cm++) & 0xf;
+			k[1] = colRam & 7;
+			int mc = colRam & 0x8;
+			uint8_t chr = cpu->GetByte(a++);
+			uint16_t cs = g + 8 * chr;
+			for (int h = 0; h < 8; h++) {
+				uint8_t b = cpu->GetByte(cs++);
+				if (mc) {
+					for (int bit = 6; bit >= 0; bit -= 2) {
+						uint8_t c = k[(b >> bit) & 0x3];
+						*o++ = pal[c];
+						*o++ = pal[c];
+					}
+				}
+				else {
+					for (int bit = 7; bit >= 0; bit--) {
+						*o++ = pal[k[((b >> bit) & 1) ? 1 : 0]];
+					}
+				}
+				o += (cl - 1) * 8;
 			}
 			o -= cl * 64 - 8;
 		}
