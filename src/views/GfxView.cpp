@@ -690,7 +690,9 @@ void GfxView::Create8bppBitmap(CPU6510* cpu)
 {
 	// make sure generated bitmap fits in mem
 	uint32_t cl = 40, rw = 25;
-	if (displayMode == C64_Sprites) {
+	if (displaySystem == System::Vic20) {
+		cl = v20Columns; rw = v20Rows;
+	} else if (displayMode == C64_Sprites) {
 		cl = columns_sprite; rw = rows_sprite;
 	} else if( displayMode != C64_Current) {
 		cl = columns; rw = rows;
@@ -1046,11 +1048,11 @@ void GfxView::CreateC64MulticolorTextBitmap(CPU6510* cpu, uint32_t* d, const uin
 
 void GfxView::CreateV20TextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t cm, size_t cl, uint32_t rw, bool useVicCol)
 {
-	uint8_t k[4] = { bg, 0, txt_col[0], txt_col[1] };
+	uint8_t k[4] = { bg, txt_col[0], 0, txt_col[1] };
 	if (useVicCol) {
 		k[0] = cpu->GetByte(0x900f) >> 4;
-		k[1] = 0;
-		k[2] = cpu->GetByte(0x900f) & 0x7;
+		k[1] = cpu->GetByte(0x900f) & 0x7;
+		k[2] = 0;
 		k[3] = cpu->GetByte(0x900e) >> 4;
 	}
 
@@ -1058,7 +1060,7 @@ void GfxView::CreateV20TextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal
 	for (size_t y = 0; y < rw; y++) {
 		for (size_t x = 0; x < cl; x++) {
 			uint8_t colRam = cpu->GetByte(cm++) & 0xf;
-			k[1] = colRam & 7;
+			k[2] = colRam & 7;
 			int mc = colRam & 0x8;
 			uint8_t chr = cpu->GetByte(a++);
 			uint16_t cs = g + 8 * chr;
@@ -1070,10 +1072,10 @@ void GfxView::CreateV20TextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal
 						*o++ = pal[c];
 						*o++ = pal[c];
 					}
-				}
-				else {
+				} else {
 					for (int bit = 7; bit >= 0; bit--) {
-						*o++ = pal[k[((b >> bit) & 1) ? 1 : 0]];
+						*o++ = pal[k[(b&0x80) ? 2 : 0]];
+						b <<= 1;
 					}
 				}
 				o += (cl - 1) * 8;
