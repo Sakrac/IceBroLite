@@ -82,7 +82,7 @@
 
 #define ColHex6( hex ) uint32_t(0xff000000|((hex<<16)&0xff0000)|(hex&0xff00)|((hex>>16)&0xff))
 
-static uint32_t vic20pal[16] = {
+static const uint32_t vic20pal[16] = {
 	ColHex6(0x000000),
 	ColHex6(0xffffff),
 	ColHex6(0x772d26),
@@ -99,6 +99,25 @@ static uint32_t vic20pal[16] = {
 	ColHex6(0x92df87),
 	ColHex6(0x7e70ca),
 	ColHex6(0xffffb0),
+};
+
+static const uint16_t vic20GfxAddr[16] = {
+	0x8000, // 1k character ROM, capitals + glyphs
+	0x8400, // 1k character ROM, capitals + lowercase
+	0x8800, // 1k character ROM, inverse capitals + glyphs
+	0x8C00, // 1k character ROM, inverse capitals + lowercase
+	0x9000, // 1k VIC / VIA registers
+	0x9400, // 1k RAM used as Color RAM
+	0x9800, // 1k Expansion port
+	0x9C00, // 1k Expansion port
+	0x0000, // 1k RAM, zeropage, datasette buffer, and other various uses
+	0x0400, // 1k Expansion port
+	0x0800, // 1k Expansion port
+	0x0C00, // 1k Expansion port
+	0x1000, // 1k RAM
+	0x1400, // 1k RAM
+	0x1800, // 1k RAM
+	0x1C00, // 1k RAM
 };
 
 unsigned char _aStartupFont[] = {
@@ -143,6 +162,7 @@ void GfxView::SwapSystem() {
 		sprintf_s(address_col, "$%04x", v20ColorAddr);
 		sprintf_s(columns_str, "%d", v20Columns);
 		sprintf_s(rows_str, "%d", v20Rows);
+		displayMode = V20_Current;
 	} else {
 		sprintf_s(address_screen, "$%04x", addrScreenValue);
 		sprintf_s(address_gfx, "$%04x", addrGfxValue);
@@ -151,7 +171,9 @@ void GfxView::SwapSystem() {
 		sprintf_s(rows_str, "%d", rows);
 		sprintf_s(columns_spr_str, "%d", columns_sprite);
 		sprintf_s(rows_spr_str, "%d", rows_sprite);
+		displayMode = C64_Current;
 	}
+	reeval = true;
 }
 
 void GfxView::WriteConfig(UserData& config)
@@ -448,7 +470,7 @@ void GfxView::Draw(int index)
 			multicolor = !!colMode;
 			ImGui::NextColumn();
 			ImGui::NextColumn();
-		} else if (displayMode != C64_Current) {
+		} else if (displayMode != C64_Current && displayMode != V20_Current) {
 			name.copy("screen##");
 			name.append_num(index + 1, 1, 10);
 			if (ImGui::InputText(name.c_str(), address_screen, sizeof(address_screen))) {
@@ -759,6 +781,17 @@ void GfxView::Create8bppBitmap(CPU6510* cpu)
 
 		case C64_Current: CreateC64CurrentBitmap(cpu, d, c64pal); break;
 
+		case V20_Current: {
+			uint8_t so = cpu->GetByte(0x9002);
+			uint8_t sc = cpu->GetByte(0x9005);
+
+			uint16_t screen = vic20GfxAddr[sc >> 4] + ((so&0x80)?0x200 : 0);
+			uint16_t chsrs = vic20GfxAddr[sc & 0x0f];
+			CreateV20TextBitmap(cpu, d, vic20pal, chsrs,
+				screen, (sc&0x80) ? 0x9600 : 0x9400,
+				cpu->GetByte(0x9002)&0x7f, (cpu->GetByte(0x9003)&0x7f)>>1, true);
+			break;
+		}
 		case V20_Text:
 			CreateV20TextBitmap(cpu, d, vic20pal, v20GfxAddr,
 				v20ScreenAddr, v20ColorAddr,
