@@ -273,7 +273,7 @@ void SaveCustomTheme(const char* themeFile) {
 			strref(col, AppendColorHash(col, colSize, sCustomTheme[c])));
 	}
 
-	strown<_MAX_PATH> path(themeFile);
+	strown<PATH_MAX_LEN> path(themeFile);
 	if (!path.has_suffix(".theme.txt")) {
 		int period = path.find('.');
 		if (period > 1) { path.set_len(period); }
