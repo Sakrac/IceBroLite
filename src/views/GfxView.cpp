@@ -710,21 +710,27 @@ void GfxView::PrintHoverInfo(CPU6510* cpu, int *hoverPos, int mode, uint16_t scr
 
 void GfxView::Create8bppBitmap(CPU6510* cpu)
 {
+	int cellWid = 8, cellHgt = 8;
+	if (displayMode == C64_Sprites) {
+		cellWid = 24;
+		cellHgt = 21;
+	}
+
 	// make sure generated bitmap fits in mem
 	uint32_t cl = 40, rw = 25;
 	if (displaySystem == System::Vic20) {
-		cl = v20Columns; rw = v20Rows;
+		cl = v20Columns; rw = v20Rows; cellHgt = vic20DoubleHeightChars ? 16 : 8;
+		if (displayMode == V20_Current) {
+			cl = cpu->GetByte(0x9002) & 0x7f;
+			rw = (cpu->GetByte(0x9003) & 0x7f) >> 1;
+			cellHgt = (cpu->GetByte(0x9003) & 0x01) ? 16 : 8;
+		}
 	} else if (displayMode == C64_Sprites) {
 		cl = columns_sprite; rw = rows_sprite;
 	} else if( displayMode != C64_Current) {
 		cl = columns; rw = rows;
 	}
 
-	int cellWid = 8, cellHgt = 8;
-	if (displayMode == C64_Sprites) {
-		cellWid = 24;
-		cellHgt = 21;
-	}
 
 	size_t bitmapMem = (size_t)cl * (size_t)rw * cellWid * cellHgt * 4;
 	if (!bitmap || bitmapMem > bitmapSize) {
@@ -789,13 +795,15 @@ void GfxView::Create8bppBitmap(CPU6510* cpu)
 			uint16_t chsrs = vic20GfxAddr[sc & 0x0f];
 			CreateV20TextBitmap(cpu, d, vic20pal, chsrs,
 				screen, (sc&0x80) ? 0x9600 : 0x9400,
-				cpu->GetByte(0x9002)&0x7f, (cpu->GetByte(0x9003)&0x7f)>>1, true);
+				cpu->GetByte(0x9002)&0x7f, (cpu->GetByte(0x9003)&0x7f)>>1,
+				(cpu->GetByte(0x9003)&0x01)==1,
+				true);
 			break;
 		}
 		case V20_Text:
 			CreateV20TextBitmap(cpu, d, vic20pal, v20GfxAddr,
 				v20ScreenAddr, v20ColorAddr,
-				v20Columns, v20Rows, true);
+				v20Columns, v20Rows, vic20DoubleHeightChars, true);
 			break;
 	}
 
@@ -1079,7 +1087,7 @@ void GfxView::CreateC64MulticolorTextBitmap(CPU6510* cpu, uint32_t* d, const uin
 	}
 }
 
-void GfxView::CreateV20TextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t cm, size_t cl, uint32_t rw, bool useVicCol)
+void GfxView::CreateV20TextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t cm, size_t cl, uint32_t rw, bool dhc, bool useVicCol)
 {
 	uint8_t k[4] = { bg, txt_col[0], 0, txt_col[1] };
 	if (useVicCol) {
@@ -1090,14 +1098,15 @@ void GfxView::CreateV20TextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal
 	}
 
 	uint32_t* o = d;
+	const size_t ch = dhc ? 16 : 8;
 	for (size_t y = 0; y < rw; y++) {
 		for (size_t x = 0; x < cl; x++) {
 			uint8_t colRam = cpu->GetByte(cm++) & 0xf;
 			k[2] = colRam & 7;
 			int mc = colRam & 0x8;
 			uint8_t chr = cpu->GetByte(a++);
-			uint16_t cs = g + 8 * chr;
-			for (int h = 0; h < 8; h++) {
+			uint16_t cs = g + ch * chr;
+			for (int h = 0; h < ch; h++) {
 				uint8_t b = cpu->GetByte(cs++);
 				if (mc) {
 					for (int bit = 6; bit >= 0; bit -= 2) {
@@ -1113,9 +1122,9 @@ void GfxView::CreateV20TextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal
 				}
 				o += (cl - 1) * 8;
 			}
-			o -= cl * 64 - 8;
+			o -= cl * ch*8 - 8;
 		}
-		o += 56 * cl;
+		o += (ch*8-8) * cl;
 	}
 }
 

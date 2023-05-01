@@ -64,6 +64,7 @@ struct GfxView {
 	int genericMode;
 	int c64Mode;
 	int vic20Mode;
+	bool vic20DoubleHeightChars;
 
 	uint16_t hoverScreenAddr;
 	uint16_t hoverGfxAddr;
@@ -118,6 +119,6 @@ struct GfxView {
 	void CreateC64SpritesMCBitmap(CPU6510* cpu, uint32_t* d, int linesHigh, uint32_t w, const uint32_t* pal);
 	void CreateC64ColorTextColumns(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t bitmap, uint16_t screen, uint16_t colorAddr, size_t cl, uint32_t rw);
 	void CreateC64CurrentBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal);
-	void CreateV20TextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t cm, size_t cl, uint32_t rw, bool useVicCol);
+	void CreateV20TextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t cm, size_t cl, uint32_t rw, bool dhc, bool useVicCol);
 };
 
