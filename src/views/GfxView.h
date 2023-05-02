@@ -44,6 +44,12 @@ struct GfxView {
 	char columns_spr_str[32];
 	char rows_spr_str[32];
 
+	char v20_addr_screen_str[32];
+	char v20_addr_gfx_str[32];
+	char v20_addr_col_str[32];
+	char v20_columns_str[32];
+	char v20_rows_str[32];
+
 	uint32_t addrScreenValue;
 	uint32_t addrGfxValue;
 	uint32_t addrColValue;
@@ -52,9 +58,9 @@ struct GfxView {
 	uint32_t columns_sprite;
 	uint32_t rows_sprite;
 
-	uint16_t v20ScreenAddr;
-	uint16_t v20GfxAddr;
-	uint16_t v20ColorAddr;
+	uint32_t v20ScreenAddr;
+	uint32_t v20GfxAddr;
+	uint32_t v20ColorAddr;
 	uint16_t v20Columns;
 	uint16_t v20Rows;
 

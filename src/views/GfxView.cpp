@@ -157,21 +157,9 @@ unsigned char _aStartupFont[] = {
 
 void GfxView::SwapSystem() {
 	if (displaySystem == System::Vic20) {
-		sprintf_s(address_screen, "$%04x", v20ScreenAddr);
-		sprintf_s(address_gfx, "$%04x", v20GfxAddr);
-		sprintf_s(address_col, "$%04x", v20ColorAddr);
-		sprintf_s(columns_str, "%d", v20Columns);
-		sprintf_s(rows_str, "%d", v20Rows);
-		displayMode = V20_Current;
+		displayMode = V20_Modes + vic20Mode;
 	} else {
-		sprintf_s(address_screen, "$%04x", addrScreenValue);
-		sprintf_s(address_gfx, "$%04x", addrGfxValue);
-		sprintf_s(address_col, "$%04x", addrColValue);
-		sprintf_s(columns_str, "%d", columns);
-		sprintf_s(rows_str, "%d", rows);
-		sprintf_s(columns_spr_str, "%d", columns_sprite);
-		sprintf_s(rows_spr_str, "%d", rows_sprite);
-		displayMode = C64_Current;
+		displayMode = C64_Modes + c64Mode;
 	}
 	reeval = true;
 }
@@ -210,6 +198,13 @@ void GfxView::WriteConfig(UserData& config)
 	config.AddValue(strref("mc1_color"), txt_col[1]);
 	config.AddValue(strref("mc2_color"), txt_col[2]);
 	config.AddValue(strref("ext_color"), txt_col[3]);
+	config.AddValue(strref("vic20Mode"), vic20Mode);
+	config.AddValue(strref("addressScreenV20"), v20ScreenAddr);
+	config.AddValue(strref("addressCharsV20"), v20GfxAddr);
+	config.AddValue(strref("addressColorV20"), v20ColorAddr);
+	config.AddValue(strref("columnsV20"), v20Columns);
+	config.AddValue(strref("rowsV20"), v20Rows);
+	config.AddValue(strref("doubleHeightV20"), vic20DoubleHeightChars ? 1 : 0);
 }
 
 void GfxView::ReadConfig(strref config)
@@ -257,6 +252,9 @@ void GfxView::ReadConfig(strref config)
 		} else if (name.same_str("c64Mode") && type == ConfigParseType::CPT_Value) {
 			c64Mode = (int)value.atoi();
 			reeval = true;
+		} else if (name.same_str("vic20Mode") && type == ConfigParseType::CPT_Value) {
+			vic20Mode = (int)value.atoi();
+			reeval = true;
 		} else if (name.same_str("zoom") && type == ConfigParseType::CPT_Value) {
 			zoom = (int)value.atoi();
 			reeval = true;
@@ -276,6 +274,29 @@ void GfxView::ReadConfig(strref config)
 			rows_sprite = (int)value.atoi();
 			reeval = true;
 			strovl(rows_spr_str, sizeof(rows_spr_str)).append_num(rows_sprite, 0, 10).c_str();
+		} else if (name.same_str("addressScreenV20") && type == ConfigParseType::CPT_Value) {
+			v20ScreenAddr = (int)value.atoi();
+			reeval = true;
+			strovl(v20_addr_screen_str, sizeof(v20_addr_screen_str)).append('$').append_num(v20ScreenAddr, 4, 16).c_str();
+		} else if (name.same_str("addressCharsV20") && type == ConfigParseType::CPT_Value) {
+			v20GfxAddr = (int)value.atoi();
+			reeval = true;
+			strovl(v20_addr_gfx_str, sizeof(v20_addr_gfx_str)).append('$').append_num(v20GfxAddr, 4, 16).c_str();
+		} else if (name.same_str("addressColorV20") && type == ConfigParseType::CPT_Value) {
+			v20ColorAddr = (int)value.atoi();
+			reeval = true;
+			strovl(v20_addr_col_str, sizeof(v20_addr_col_str)).append('$').append_num(v20ColorAddr, 4, 16).c_str();
+		} else if (name.same_str("columnsV20") && type == ConfigParseType::CPT_Value) {
+			v20Columns = (int)value.atoi();
+			reeval = true;
+			strovl(v20_columns_str, sizeof(v20_columns_str)).append_num(v20Columns, 0, 10).c_str();
+		} else if (name.same_str("rowsV20") && type == ConfigParseType::CPT_Value) {
+			v20Rows = (int)value.atoi();
+			reeval = true;
+			strovl(v20_rows_str, sizeof(v20_rows_str)).append_num(v20Rows, 0, 10).c_str();
+		} else if (name.same_str("doubleHeightV20") && type == ConfigParseType::CPT_Value) {
+			vic20DoubleHeightChars = !!value.atoi();
+			reeval = true;
 		} else if (name.same_str("color") && type == ConfigParseType::CPT_Value) {
 			color = !value.same_str("off");
 		} else if (name.same_str("multicolor") && type == ConfigParseType::CPT_Value) {
@@ -470,6 +491,40 @@ void GfxView::Draw(int index)
 			multicolor = !!colMode;
 			ImGui::NextColumn();
 			ImGui::NextColumn();
+		} else if (displayMode == V20_Text) {
+			name.copy("screen##");
+			name.append_num(index + 1, 1, 10);
+			if (ImGui::InputText(name.c_str(), v20_addr_screen_str, sizeof(v20_addr_screen_str))) {
+				v20ScreenAddr = ValueFromExpression(v20_addr_screen_str);
+				redraw = true;
+			}
+			if (AcceptDragDropAddress(&v20ScreenAddr, v20_addr_screen_str, sizeof(v20_addr_screen_str))) {
+				redraw = true;
+			}
+
+			ImGui::NextColumn();
+			name.copy("chars##");
+			name.append_num(index + 1, 1, 10);
+			if (ImGui::InputText(name.c_str(), v20_addr_gfx_str, sizeof(v20_addr_gfx_str))) {
+				v20GfxAddr = ValueFromExpression(v20_addr_gfx_str);
+				redraw = true;
+			}
+			if (AcceptDragDropAddress(&v20GfxAddr, v20_addr_gfx_str, sizeof(v20_addr_gfx_str))) {
+				redraw = true;
+			}
+
+			ImGui::NextColumn();
+			name.copy("color##");
+			name.append_num(index + 1, 1, 10);
+			if (ImGui::InputText(name.c_str(), v20_addr_col_str, sizeof(v20_addr_col_str))) {
+				v20ColorAddr = ValueFromExpression(v20_addr_col_str);
+				redraw = true;
+			}
+			if (AcceptDragDropAddress(&v20ColorAddr, v20_addr_col_str, sizeof(v20_addr_col_str))) {
+				redraw = true;
+			}
+
+			ImGui::NextColumn();
 		} else if (displayMode != C64_Current && displayMode != V20_Current) {
 			name.copy("screen##");
 			name.append_num(index + 1, 1, 10);
@@ -555,10 +610,27 @@ void GfxView::Draw(int index)
 				rows_sprite = ValueFromExpression(rows_spr_str);
 				redraw = true;
 			}
-
+		} else if (displayMode == V20_Text) {
+			name.copy("cols##");
+			name.append_num(index + 1, 1, 10);
+			if (ImGui::InputText(name.c_str(), columns_str, sizeof(columns_str))) {
+				v20Columns = ValueFromExpression(columns_str);
+				redraw = true;
+			}
+			ImGui::NextColumn();
+			name.copy("rows##");
+			name.append_num(index + 1, 1, 10);
+			if (ImGui::InputText(name.c_str(), rows_str, sizeof(rows_str))) {
+				v20Rows = ValueFromExpression(rows_str);
+				redraw = true;
+			}
+			ImGui::NextColumn();
+			name.copy("dblhgt##");
+			name.append_num(index + 1, 1, 10);
+			bool wasDblHgt = vic20DoubleHeightChars;
+			ImGui::Checkbox(name.c_str(), &vic20DoubleHeightChars);
+			if (wasDblHgt != vic20DoubleHeightChars) { redraw = true; }
 		} else if (displayMode != C64_Current && displayMode != V20_Current) {
-//			ImGui::NextColumn();
-
 			if (displayMode == C64_Bitmap || displayMode == C64_Text) {
 				int colMode = color ? 1 : (multicolor ? 2 : 0);
 				if (displayMode == C64_Text && ecbm) { colMode = 3; }
@@ -1105,8 +1177,8 @@ void GfxView::CreateV20TextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal
 			k[2] = colRam & 7;
 			int mc = colRam & 0x8;
 			uint8_t chr = cpu->GetByte(a++);
-			uint16_t cs = g + ch * chr;
-			for (int h = 0; h < ch; h++) {
+			uint16_t cs = (uint16_t)(g + ch * chr);
+			for (size_t h = 0; h < ch; h++) {
 				uint8_t b = cpu->GetByte(cs++);
 				if (mc) {
 					for (int bit = 6; bit >= 0; bit -= 2) {
@@ -1254,6 +1326,8 @@ GfxView::GfxView() : open(false), reeval(false), color(false), multicolor(false)
 	v20ScreenAddr = 0x1e00;
 	v20GfxAddr = 0x8000;
 	v20ColorAddr = 0x9600;
+	vic20DoubleHeightChars = false;
+	vic20Mode = 0;
 
 	v20Columns = 22;
 	v20Rows = 23;
