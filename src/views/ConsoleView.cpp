@@ -466,7 +466,7 @@ void IceConsole::ExecCommand(const char* command_line)
 			strown<128> memStr;
 			memStr.append("= ").append_num(value, 4, 16);
 			for (int b = 0; b < 32; ++b) { memStr.append(' ').append_num(cpu->GetByte(uint16_t(value + b)), 2, 16); }
-			AddLog(memStr.c_str());
+			AddLog("%s", memStr.c_str());
 		} else {
 			AddLog("= $%x", value);
 		}

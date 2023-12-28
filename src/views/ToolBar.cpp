@@ -34,7 +34,7 @@ bool CenterTextButtonInColumn(const char* text)
 	textSize.x += 12.0f;
 	textSize.y += 4.0f;
 	ImGui::SetCursorPosX(0.5f * (ImGui::GetColumnWidth() - textSize.x) + ImGui::GetColumnOffset());
-//	ImGui::Text( text );
+//	ImGui::Text("%s", text );
 	return ImGui::Button(text, textSize);
 }
 
@@ -44,7 +44,7 @@ void CenterTextonInColumn(const char* text)
 	textSize.x += 12.0f;
 	textSize.y += 4.0f;
 	ImGui::SetCursorPosX(0.5f * (ImGui::GetColumnWidth() - textSize.x) + ImGui::GetColumnOffset());
-	ImGui::Text( text );
+	ImGui::Text("%s", text );
 }
 
 void ToolBar::Draw()

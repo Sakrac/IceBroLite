@@ -117,10 +117,10 @@ void SymbolView::Draw()
 
                 strown<16> str;
                 str.append('$').append_num(address, address < 0x10000 ? 4 : 0, 16);
-                ImGui::Text(str.c_str());
+                ImGui::Text("%s", str.c_str());
 
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text(symbol);
+                ImGui::Text("%s", symbol);
 
                 if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
                     SymbolDragDrop drag;
@@ -133,7 +133,7 @@ void SymbolView::Draw()
                 }
 
                 ImGui::TableSetColumnIndex(2);
-                ImGui::Text(section);
+                ImGui::Text("%s", section);
             }
         }
 

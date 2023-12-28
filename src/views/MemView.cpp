@@ -258,7 +258,7 @@ void MemView::Draw(int index)
 					line.push_utf8(code);
 				}
 			}
-			ImGui::Text(line.c_str());
+			ImGui::Text("%s", line.c_str());
 			if (showText && petsciiFont >= 0) {
 				float yPos = ImGui::GetCursorPosY();
 				ImGui::SameLine();
@@ -269,7 +269,7 @@ void MemView::Draw(int index)
 				for (uint32_t c = 0; c < spanWin; ++c) {
 					line.push_utf8((textLowercase ? 0xee00 : 0xef00) + cpu->GetByte(chars++));
 				}
-				ImGui::Text(line.c_str());
+				ImGui::Text("%s", line.c_str());
 				ImGui::PopFont();
 				ImGui::SetCursorPosY(yPos);
 			}
@@ -321,7 +321,7 @@ void MemView::Draw(int index)
 					uint8_t b = cpu->GetByte(addrValue+(cursor[0]-colT)+cursor[1]*spanWin);
 					curChr.push_utf8(0xee00+b);//curChr[ 0 ] = ScreenToAscii( b );
 				}
-				ImGui::TextColored(style.Colors[ImGuiCol_ChildBg], curChr.c_str());
+				ImGui::TextColored(style.Colors[ImGuiCol_ChildBg], "%s", curChr.c_str());
 			}
 		}
 	}

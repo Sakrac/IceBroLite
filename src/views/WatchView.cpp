@@ -300,7 +300,7 @@ void WatchView::Draw(int index)
 		if (rebuildAll) { Evaluate(i); } else if (recalcAll) { EvaluateItem(i); }
 		if (i != editExpression) {
 			if ((i & 1) == 0) { DrawBlueTextLine(); }
-			ImGui::Text(expressions[i].c_str());
+			ImGui::Text("%s", expressions[i].c_str());
 			if (cpu->MemoryChange()) { Evaluate(i); }
 		} else {
 			if (forceEdit) {
@@ -319,7 +319,7 @@ void WatchView::Draw(int index)
 		ImGui::NextColumn();
 		if (currWidth < 0) { currWidth = (int)ImGui::GetColumnWidth(); }
 		if ((i & 1) != 0) { DrawBlueTextLine(); }
-		ImGui::Text(results[i].c_str());
+		ImGui::Text("%s", results[i].c_str());
 
 		if (ImGui::IsMouseReleased(ImGuiMouseButton_Right)) {
 			ImVec2 mousePos = ImGui::GetMousePos();

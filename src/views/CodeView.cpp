@@ -363,7 +363,7 @@ void CodeView::Draw(int index)
 	bool editAsmDone = false;
 	while (lineNum<lines) {
 		if (const char* label = GetSymbol(read)) {
-			ImGui::TextColored(GetCodeLabelColor() , label);
+			ImGui::TextColored(GetCodeLabelColor(), "%s" , label);
 			lineNum++;
 		}
 		ImVec2 linePos = ImGui::GetCursorPos();
@@ -398,7 +398,7 @@ void CodeView::Draw(int index)
 						lblStr.sprintf("$%04x", refAddr); lblStr.c_str();
 						ImGui::SetDragDropPayload("AddressDragDrop", &drag, sizeof(drag));
 						strown<8> refStr; refStr.append_num(refAddr, 4, 16);
-						ImGui::Text(refStr.c_str());
+						ImGui::Text("%s", refStr.c_str());
 						ImGui::EndDragDropSource();
 					}
 				}
@@ -437,7 +437,7 @@ void CodeView::Draw(int index)
 				}
 				ImGui::SetNextWindowBgAlpha(0.75f);
 				ImGui::BeginTooltip();
-				ImGui::Text(disbuf.c_str());
+				ImGui::Text("%s", disbuf.c_str());
 				ImGui::EndTooltip();
 			}
 		}

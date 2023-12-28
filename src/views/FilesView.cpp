@@ -82,7 +82,7 @@ void FVFileView::Draw(const char *title)
 				else { filterStr.append(", "); }
 				filterStr.append(filtType).append(" (").append(filt).append(")");
 			}
-			ImGui::Text(filterStr.c_str());
+			ImGui::Text("%s", filterStr.c_str());
 		}
 		bool openSaveDisabled = selectIndex < 0 && userFile[0] == 0;
 		bool openFolder = selectIndex >= 0 && files[selectIndex].fileType == FVFileInfo::dir;
@@ -113,7 +113,7 @@ void FVFileView::Draw(const char *title)
 				if (files[i].fileType == FVFileInfo::dir) {
 					ImGui::Text("(dir)");
 				} else {
-					if (files[i].size < (10 * 1024)) { ImGui::Text("%d", files[i].size); }
+					if (files[i].size < (10 * 1024)) { ImGui::Text("%ld", files[i].size); }
 					else  if (files[i].size < (1024 * 1024)) { ImGui::Text("%.1fkb", (float)(files[i].size/1024.0f)); }
 					else { ImGui::Text("%.2fMb", (float)(files[i].size / (1024.0f*1024.0f))); }
 				}

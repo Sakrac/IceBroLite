@@ -212,21 +212,21 @@ void BreakpointView::Draw()
 				num.append_num(bp.number, 0, 10);
 				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetColumnWidth() - ImGui::CalcTextSize(num.c_str()).x
 									 - ImGui::GetScrollX() - 2 * ImGui::GetStyle().ItemSpacing.x);
-				ImGui::Text(num.c_str());
+				ImGui::Text("%s", num.c_str());
 				ImGui::TableSetColumnIndex(col++);
 				num.clear();
 				num.append('$').append_num(bp.start, 4, 16);
 				if (bp.end != bp.start) {
 					num.append("-$").append_num(bp.end, 4, 16);
 				}
-				ImGui::Text(num.c_str());
+				ImGui::Text("%s", num.c_str());
 				if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 					SymbolDragDrop drag;
 					drag.address = bp.start;
 					strovl lblStr(drag.symbol, sizeof(drag.symbol));
 					lblStr.copy(num); lblStr.c_str();
 					ImGui::SetDragDropPayload("AddressDragDrop", &drag, sizeof(drag));
-					ImGui::Text(num.c_str());
+					ImGui::Text("%s", num.c_str());
 					ImGui::EndDragDropSource();
 				}
 				ImGui::TableSetColumnIndex(col++);
@@ -235,7 +235,7 @@ void BreakpointView::Draw()
 					num.clear();
 					num.append(label);
 					if (offs) { num.append("+$").append_num(offs, 4, 16); }
-					ImGui::Text(num.c_str());
+					ImGui::Text("%s", num.c_str());
 
 					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 						SymbolDragDrop drag;
@@ -253,7 +253,7 @@ void BreakpointView::Draw()
 						ViceSetCondition(bp.number, conditionEdit);
 					}
 				} else if (bp.condition) {
-					ImGui::Text(bp.condition);
+					ImGui::Text("%s", bp.condition);
 				}
 			}
 		}
