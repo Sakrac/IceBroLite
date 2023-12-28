@@ -746,7 +746,7 @@ void GfxView::PrintCurrentInfo(CPU6510* cpu, int* hoverPos) {
 	else { line.append(mc ? "MultiColor Text " : "Text "); }
 	line.append("Screen: $").append_num(screen, 4, 16).append((d011 & 0x20) ? " Bitmap: $" : " Font: $").append_num(chars, 4, 16);
 	ImGui::SetCursorPos(ImVec2(0, ImGui::GetWindowSize().y - ImGui::GetTextLineHeightWithSpacing()));
-	ImGui::Text(line.c_str());
+	ImGui::Text("%s", line.c_str());
 
 	PrintHoverInfo(cpu, hoverPos, mode, screen, chars, chars&0xe000, d011&0x40, 2);
 }
@@ -777,7 +777,7 @@ void GfxView::PrintHoverInfo(CPU6510* cpu, int *hoverPos, int mode, uint16_t scr
 		line.append(" scr:$").append_num(ss, 4, 16).append(" bm:$").append_num(sb, 4, 16);
 	}
 	ImGui::SetCursorPos(ImVec2(0, ImGui::GetWindowSize().y - row * ImGui::GetTextLineHeightWithSpacing()));
-	ImGui::Text(line.c_str());
+	ImGui::Text("%s", line.c_str());
 }
 
 void GfxView::Create8bppBitmap(CPU6510* cpu)

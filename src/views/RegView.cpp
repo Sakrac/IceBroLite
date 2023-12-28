@@ -92,7 +92,7 @@ void RegisterView::Draw()
 	regs.append_num(r.LIN, 3, 16).append(' ');
 	regs.append_num(r.CYC, 3, 16).append(' ');
 	ImVec2 curPos = ImGui::GetCursorPos();
-	ImGui::Text(regs.c_str());
+	ImGui::Text("%s", regs.c_str());
 
 	if (active && editing && cursor >= 0) {
 		int o = cursor;
@@ -157,7 +157,7 @@ void RegisterView::Draw()
 			ImColor(255, 255, 255));
 		strown<16> curChr;
 		curChr.append(regs[cursor]);
-		ImGui::TextColored(style.Colors[ImGuiCol_ChildBg], curChr.c_str());
+		ImGui::TextColored(style.Colors[ImGuiCol_ChildBg], "%s", curChr.c_str());
 	}
 
 	wasActive = active;

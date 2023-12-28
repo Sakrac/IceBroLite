@@ -155,24 +155,24 @@ void TraceView::Draw()
 					str.append(hit.fl & 0x04 ? 'I' : '.');
 					str.append(hit.fl & 0x02 ? 'Z' : '.');
 					str.append(hit.fl & 0x01 ? 'C' : '.');
-					ImGui::SetTooltip(str.c_str());
+					ImGui::SetTooltip("%s", str.c_str());
 					str.clear();
 				}
 				ImGui::TableSetColumnIndex(0);
 				str.append_num(hit.addr, 4, 16);
-				ImGui::Text(str.c_str());
+				ImGui::Text("%s", str.c_str());
 				ImGui::TableSetColumnIndex(1);
 				str.clear();
 				str.append_num(hit.pc, 4, 16);
-				ImGui::Text(str.c_str());
+				ImGui::Text("%s", str.c_str());
 				ImGui::TableSetColumnIndex(2);
 				str.clear();
 				str.append_num(hit.line, 0, 10).append('/').append_num(hit.cycle,0,10);
-				ImGui::Text(str.c_str());
+				ImGui::Text("%s", str.c_str());
 				ImGui::TableSetColumnIndex(3);
 				str.clear();
 				str.append_num(hit.frame, 0, 10);
-				ImGui::Text(str.c_str());
+				ImGui::Text("%s", str.c_str());
 				++numRows;
 			}
 			lastDrawnRows = (int)(numRows + (size_t)(winSize.y - ImGui::GetCursorPosY()) / ImGui::GetFontSize());
