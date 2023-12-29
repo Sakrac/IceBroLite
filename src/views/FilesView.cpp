@@ -280,8 +280,16 @@ void FVFileList::ReadDir(const char* full_path, const char* file_filter)
 			info.fileType = FVFileInfo::dir;
 		} else {
 			// check against filter
-			if(filter && !CheckFileFilter(strref(ffd.cFileName), strref(filter))) {
-				continue;
+			if(filter && filter[0]) {
+				strref filter_str(filter);
+				bool match = false;
+				while(strref filter_seg = filter_str.split_token(',')) {
+					if(CheckFileFilter(strref(ffd.cFileName), filter_seg)) {
+						match = true;
+						break;
+					}
+				}
+				if(!match) { continue; }
 			}
 			info.name = _strdup(ffd.cFileName);
 			info.size = (uint64_t)ffd.nFileSizeLow + (((uint64_t)ffd.nFileSizeHigh)<<32);

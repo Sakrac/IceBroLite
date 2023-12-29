@@ -68,7 +68,11 @@ static const char sLoadListingParams[] = "Listing:*.lst";
 static const char sLoadKickDbgParams[] = "Kick Asm Debug:*.dbg";
 static const char sLoadSymbolsParams[] = "Symbols:*.sym";
 static const char sLoadViceCmdParams[] = "Vice Commands:*.vs";
-static const char sViceEXEParams[] = "Vice EXE path:x*.exe";
+#ifdef _WIN32
+static const char sViceEXEParams[] = "Vice EXE path:x128*.exe,x64*.exe,xcbm*.exe,xpet*.exe,xplus4*.exe,xscpu64*.exe,xvic*.exe";
+#else
+static const char sViceEXEParams[] = "Vice EXE path:x128*,x64*,xcbm*,xpet*,xplus4*,xscpu64*,xvic*";
+#endif
 static const char sReadPrgParams[] = "Prg files:*.prg";
 static const char sThemeParams[] = "Theme:*.theme.txt";
 #endif
