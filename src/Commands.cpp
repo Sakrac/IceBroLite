@@ -255,6 +255,8 @@ const char* CommandGfxSave(strref param) {
 		colRegs = 3;
 	}
 
+	strref name = param.after_last_or_full('/', '\\');
+
 	FILE* f;
 #ifdef _WIN32
 	if (fopen_s(&f, file.c_str(), "w") == 0 && f != nullptr) {
@@ -262,7 +264,7 @@ const char* CommandGfxSave(strref param) {
 	f = fopen(filename, "w");
 	if (f) {
 #endif
-		fprintf(f, "; Info for screendump files " STRREF_FMT "\n", STRREF_ARG(param));
+		fprintf(f, "; Info for screendump files " STRREF_FMT "\n", STRREF_ARG(name));
 		fprintf(f, "mode: %s\n", sazScreenModes[mode]);
 		fprintf(f, "d011: $%02x\n", d011);
 		fprintf(f, "d016: $%02x\n", d016);
