@@ -268,7 +268,7 @@ const char* CommandGfxSave(strref param) {
 		fprintf(f, "d016: $%02x\n", d016);
 		fprintf(f, "d018: $%02x\n", d016);
 		for (int c = 0; c < colRegs; ++c) {
-			fprintf(f, "%04x: $%02x\n", 0xd020+c, cpu->GetByte(0xd020+c));
+			fprintf(f, "%04x: $%02x\n", 0xd020+c, cpu->GetByte(0xd020+c) & 0xf);
 		}
 		fclose(f);
 	}
