@@ -11,6 +11,7 @@
 #include "Expressions.h"
 #include "6510.h"
 #include "ViceInterface.h"
+#include "Commands.h"
 
 static std::vector<uint16_t> sRemembered;
 
@@ -197,4 +198,127 @@ void CommandMatch(strref param, int charSpace) {
 		ViceLog(result.get_strref());
 		if (wasRunning) { ViceGo(); }
 	}
+}
+
+enum {
+	GFX_Text,
+	GFX_TextMC,
+	GFX_TextEBCM,
+	GFX_Bitmap,
+	GFX_BitmapMC
+};
+
+const char* sazScreenModes[] = {
+	"Text",
+	"Text Multi-Color",
+	"Text EBCM",
+	"Bitmap",
+	"Bitmap Multi-Color"
+};
+
+const char szBankRam[] = "bank ram";
+void SendViceMonitorLine(const char* message, int size);
+
+const char* CommandGfxSave(strref param) {
+
+	bool wasRunning = HaltViceWait();
+	SendViceMonitorLine(szBankRam, sizeof(szBankRam));
+
+	CPU6510* cpu = GetCurrCPU();
+	uint16_t vic = (3 ^ (cpu->GetByte(0xdd00) & 3)) * 0x4000;
+	uint8_t d018 = cpu->GetByte(0xd018);
+	uint8_t d011 = cpu->GetByte(0xd011);
+	uint8_t d016 = cpu->GetByte(0xd016);
+	uint16_t chars = (d018 & 0xe) * 0x400 + vic;
+	uint16_t screen = (d018 >> 4) * 0x400 + vic;
+	bool mc = (d016 & 0x10) ? true : false;
+
+	strown<128> file(param);
+	file.append(".txt");
+
+	int mode = GFX_Text;
+	int numChars = 256;
+	int charBaseMask = 0x800;
+	int colRegs = 2;
+
+	if (d011 & 0x40) { 
+		mode = GFX_TextEBCM;
+		numChars = 64;
+		colRegs = 5;
+	} else if (d011 & 0x20) {
+		mode = mc ? GFX_BitmapMC : GFX_Bitmap;
+		numChars = 1000;
+		charBaseMask = 0x2000;
+		colRegs = 0;
+	} else if (mc) { 
+		mode = GFX_TextMC;
+		colRegs = 3;
+	}
+
+	FILE* f;
+#ifdef _WIN32
+	if (fopen_s(&f, file.c_str(), "w") == 0 && f != nullptr) {
+#else
+	f = fopen(filename, "w");
+	if (f) {
+#endif
+		fprintf(f, "; Info for screendump files " STRREF_FMT "\n", STRREF_ARG(param));
+		fprintf(f, "mode: %s\n", sazScreenModes[mode]);
+		fprintf(f, "d011: $%02x\n", d011);
+		fprintf(f, "d016: $%02x\n", d016);
+		fprintf(f, "d018: $%02x\n", d016);
+		for (int c = 0; c < colRegs; ++c) {
+			fprintf(f, "%04x: $%02x\n", 0xd020+c, cpu->GetByte(0xd020+c));
+		}
+		fclose(f);
+	}
+
+	file.copy(param);
+	file.append(".scr");
+#ifdef _WIN32
+	if (fopen_s(&f, file.c_str(), "wb") == 0 && f != nullptr) {
+#else
+	f = fopen(filename, "wb");
+	if (f) {
+#endif
+		fwrite(cpu->GetMem(screen), 1000, 1, f);
+		fclose(f);
+	}
+
+	if (mode != GFX_Bitmap) {
+		file.copy(param);
+		file.append(".col");
+#ifdef _WIN32
+		if (fopen_s(&f, file.c_str(), "wb") == 0 && f != nullptr) {
+#else
+		f = fopen(filename, "wb");
+		if (f) {
+#endif
+			uint8_t tmpCol[1000];
+			memcpy(tmpCol, cpu->GetMem(0xd800), 1000);
+			for (int i = 0; i < 1000; ++i) {
+				tmpCol[i] &= 0x0f;
+			}
+			fwrite(tmpCol, 1000, 1, f);
+			fclose(f);
+		}
+	}
+
+	file.copy(param);
+	file.append(".chr");
+#ifdef _WIN32
+	if (fopen_s(&f, file.c_str(), "wb") == 0 && f != nullptr) {
+#else
+	f = fopen(filename, "wb");
+	if (f) {
+#endif
+		fwrite(cpu->GetMem(chars), numChars * 8, 1, f);
+		fclose(f);
+	}
+
+	if (wasRunning) {
+		ViceGo();
+	}
+
+	return sazScreenModes[mode];
 }

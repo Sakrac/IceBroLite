@@ -23,9 +23,15 @@ void CPU6510::MemoryFromVICE(uint16_t start, uint16_t end, uint8_t *bytes)
 	memoryChanged = true;
 	IBMutexRelease(&memoryUpdateMutex);
 }
+
 uint8_t CPU6510::GetByte(uint16_t addr)
 {
 	return ram[addr];
+}
+
+const uint8_t* CPU6510::GetMem(uint16_t addr)
+{
+	return ram + addr;
 }
 
 void CPU6510::SetByte(uint16_t addr, uint8_t byte)

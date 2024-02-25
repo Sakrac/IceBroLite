@@ -130,7 +130,7 @@ void FVFileView::Draw(const char *title)
 						strovl usr(userFile, sizeof(userFile));
 						usr.copy(files[i].name);
 						usr.c_str();
-						selectIndex = i;
+						selectIndex = (int)i;
 					}
 				}
 			}

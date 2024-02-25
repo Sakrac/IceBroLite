@@ -494,6 +494,15 @@ void IceConsole::ExecCommand(const char* command_line)
 	} else if (cmd.same_str("match")) {
 		if (!ViceConnected()) { AddLog("VICE Not Connected Error"); }
 		else { CommandMatch(param, (int)ImGui::GetWindowSize().x / (int)ImGui::GetFont()->GetCharAdvance('D')); }
+	} else if (cmd.same_str("gfxsave")) {
+		if (!ViceConnected()) { AddLog("VICE Not Connected Error"); }
+		else {
+			strref arg = param.valid() ? param : strref("gfxsave");
+			const char* mode = CommandGfxSave(arg);
+			AddLog("Exported " STRREF_FMT ".txt, " STRREF_FMT ".scr (screen),\n"
+				STRREF_FMT ".col (color mem) and " STRREF_FMT ".chr (characters)\nfor graphics mode %s\n",
+				STRREF_ARG(arg), STRREF_ARG(arg), STRREF_ARG(arg), STRREF_ARG(arg), mode);
+		}
 	} else if (cmd.same_str("commands") || cmd.same_str("cmd")) {
 		if (param.same_str("remember")) {
 			AddLog("remember command:");
@@ -530,7 +539,7 @@ void IceConsole::ExecCommand(const char* command_line)
 			AddLog("Vice Console IceBro Commands");
 			AddLog(" connect/cnct [<ip>:<port>] - connect to a remote host, default to 127.0.0.1:6510;");
 			AddLog(" pause; font <size:0-6>; eval <exp>; history/hist;");
-			AddLog(" clear, cwd, poke; remember; forget; match");
+			AddLog(" clear, cwd, poke; remember; forget; match; gfxsave");
 			AddLog(" type cmd <command> for more information on some commands.");
 		}
 	}
