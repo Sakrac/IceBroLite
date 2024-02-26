@@ -216,13 +216,15 @@ const char* sazScreenModes[] = {
 	"Bitmap Multi-Color"
 };
 
-const char szBankRam[] = "bank ram";
+const char szBankRam[] = "bank ram\n";
+const char szBankIO[] = "bank io\n";
 void SendViceMonitorLine(const char* message, int size);
 
 const char* CommandGfxSave(strref param) {
 
 	bool wasRunning = HaltViceWait();
-	SendViceMonitorLine(szBankRam, sizeof(szBankRam));
+
+	SendViceMonitorLine(szBankIO, sizeof(szBankRam));
 
 	CPU6510* cpu = GetCurrCPU();
 	uint16_t vic = (3 ^ (cpu->GetByte(0xdd00) & 3)) * 0x4000;
@@ -233,6 +235,8 @@ const char* CommandGfxSave(strref param) {
 	uint16_t screen = (d018 >> 4) * 0x400 + vic;
 	bool mc = (d016 & 0x10) ? true : false;
 
+	SendViceMonitorLine(szBankRam, sizeof(szBankRam));
+
 	strown<128> file(param);
 	file.append(".txt");
 
@@ -240,19 +244,40 @@ const char* CommandGfxSave(strref param) {
 	int numChars = 256;
 	int charBaseMask = 0x800;
 	int colRegs = 2;
+	int used = 0;
 
 	if (d011 & 0x40) { 
 		mode = GFX_TextEBCM;
 		numChars = 64;
 		colRegs = 5;
+		uint16_t useMap[64] = {};
+		for (int c = 0; c < 1000; ++c) {
+			useMap[cpu->GetByte(screen + c) & 0x3f]++;
+		}
+		for (int i = 0; i < 64; ++i) {
+			if (useMap[i]) {
+				++used;
+			}
+		}
 	} else if (d011 & 0x20) {
 		mode = mc ? GFX_BitmapMC : GFX_Bitmap;
+		chars &= ~0x1fff;
 		numChars = 1000;
 		charBaseMask = 0x2000;
-		colRegs = 0;
+		colRegs = 1;
+		used = 1000;
 	} else if (mc) { 
 		mode = GFX_TextMC;
-		colRegs = 3;
+		colRegs = 4;
+		uint16_t useMap[256] = {};
+		for (int c = 0; c < 1000; ++c) {
+			useMap[cpu->GetByte(screen + c)]++;
+		}
+		for (int i = 0; i < 256; ++i) {
+			if (useMap[i]) {
+				++used;
+			}
+		}
 	}
 
 	strref name = param.after_last_or_full('/', '\\');
@@ -265,10 +290,11 @@ const char* CommandGfxSave(strref param) {
 	if (f) {
 #endif
 		fprintf(f, "; Info for screendump files " STRREF_FMT "\n", STRREF_ARG(name));
+		fprintf(f, "; Used characters: %d\n", used);
 		fprintf(f, "mode: %s\n", sazScreenModes[mode]);
 		fprintf(f, "d011: $%02x\n", d011);
 		fprintf(f, "d016: $%02x\n", d016);
-		fprintf(f, "d018: $%02x\n", d016);
+		fprintf(f, "d018: $%02x\n", d018);
 		for (int c = 0; c < colRegs; ++c) {
 			fprintf(f, "%04x: $%02x\n", 0xd020+c, cpu->GetByte(0xd020+c) & 0xf);
 		}
