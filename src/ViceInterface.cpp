@@ -151,6 +151,18 @@ struct { const char* name; uint8_t id; } aCommandNames[] = {
 	{ "AutoStart", 0xdd }
 };
 
+static VICEEmuType emuType = VICEEmuType::C64;
+
+VICEEmuType ViceGetEmuType()
+{
+	return emuType;
+}
+
+
+void ViceSetEmuType(VICEEmuType value)
+{
+	emuType = value;
+}
 
 
 ViceConnection::ViceConnection(const char* ip, uint32_t port) : waitCount(0), ipPort(port), connected(false), stopped(false)

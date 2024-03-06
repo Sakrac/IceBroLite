@@ -171,13 +171,25 @@ void ScreenView::Refresh(uint8_t* img, uint16_t w, uint16_t h,
 		bitmap = (uint8_t*)calloc(1, bitmapSize);
 	}
 	if (bitmap) {
+		VICEEmuType emuType = ViceGetEmuType();
+
 		width = w;
 		height = h;
 //		memcpy(bitmap, img, bitmapSize);
 		uint32_t* bo = (uint32_t*)bitmap;
 		for (int y = 0; y < h; ++y) {
 			for (int x = 0; x < w; ++x) {
-				*bo++ = c64pal[(*img++)&0xf];
+				switch(emuType) {
+					case VICEEmuType::C64:
+						*bo++ = c64pal[(*img++)&0xf];
+						break;
+					case VICEEmuType::Vic20:
+						*bo++ = vic20pal_sc[(*img++)&0xf];
+						break;
+					case VICEEmuType::Plus4:
+						*bo++ = plus4pal[(*img++)&0x7f];
+						break;
+				}
 			}
 		}
 		refresh = true;

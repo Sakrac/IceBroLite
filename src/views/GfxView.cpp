@@ -101,6 +101,41 @@ static const uint32_t vic20pal[16] = {
 	ColHex6(0xffffb0),
 };
 
+static const uint8_t plus4c64pal[16] = {
+	// Black
+	0x00,
+	// White
+	0x71,
+	// Red
+	0x52,
+	// Cyan
+	0x53,
+	// Purple
+	0x54,
+	// Green
+	0x55,
+	// Blue
+	0x26,
+	// Yellow
+	0x79,
+	// Orange
+	0x58,
+	// Brown
+	0x18,
+	// Pink
+	0x52,
+	// Dark Grey
+	0x11,
+	// Mid Grey
+	0x31,
+	// Light Green
+	0x65,
+	// Light Blue
+	0x6d,
+	// Light Grey
+	0x51,
+};
+
 static const uint16_t vic20GfxAddr[16] = {
 	0x8000, // 1k character ROM, capitals + glyphs
 	0x8400, // 1k character ROM, capitals + lowercase
@@ -158,8 +193,10 @@ unsigned char _aStartupFont[] = {
 void GfxView::SwapSystem() {
 	if (displaySystem == System::Vic20) {
 		displayMode = V20_Modes + vic20Mode;
-	} else {
+	} else if (displaySystem == System::C64) {
 		displayMode = C64_Modes + c64Mode;
+	} else if (displaySystem == System::Plus4) {
+		displayMode = Plus4_Modes + plus4Mode;
 	}
 	reeval = true;
 }
@@ -357,7 +394,7 @@ bool GfxView::HandleContextMenu()
 		if (ImGui::Selectable("ROM Font", useRomFont)) {
 			useRomFont = !useRomFont; redraw = true;
 		}
-		if (multicolor || (displayMode==C64_Text && ecbm)) {
+		if (multicolor || ((displayMode==C64_Text || displayMode == Plus4_Text) && ecbm)) {
 			if (ImGui::Selectable("VIC colors", vicColors)) {
 				vicColors = !vicColors; redraw = true;
 			}
@@ -391,23 +428,23 @@ bool GfxView::HandleContextMenu()
 				if (ImGui::MenuItem("->Memory 4")) { SetMemoryViewAddr(hoverGfxAddr, 3); }
 				ImGui::EndMenu();
 			}
-		} else if (displayMode == C64_Bitmap || displayMode == C64_Text) {
+		} else if (displayMode == C64_Bitmap || displayMode == C64_Text || displayMode == Plus4_Bitmap || displayMode == Plus4_Text) {
 			if (!ecbm && !color && !multicolor && ImGui::BeginMenu("FG")) {
 				uint8_t new_col = DrawPaletteMenu(txt_col[0]);
 				if (new_col != txt_col[0]) { txt_col[0] = new_col; redraw = true; }
 				ImGui::EndMenu();
-			} else if ((multicolor || ecbm) && displayMode == C64_Text) {
-				if (ImGui::BeginMenu("d022")) {
+			} else if ((multicolor || ecbm) && (displayMode == C64_Text || displayMode == Plus4_Text)) {
+				if (ImGui::BeginMenu(displayMode == C64_Text ? "d022" : "ff16")) {
 					uint8_t new_col = DrawPaletteMenu(txt_col[1]);
 					if (new_col != txt_col[1]) { txt_col[1] = new_col; redraw = true; }
 					ImGui::EndMenu();
 				}
-				if (ImGui::BeginMenu("d023")) {
+				if (ImGui::BeginMenu(displayMode == C64_Text ? "d023" : "ff17")) {
 					uint8_t new_col = DrawPaletteMenu(txt_col[2]);
 					if (new_col != txt_col[2]) { txt_col[2] = new_col; redraw = true; }
 					ImGui::EndMenu();
 				}
-				if (ecbm && ImGui::BeginMenu("d024")) {
+				if (ecbm && ImGui::BeginMenu(displayMode == C64_Text ? "d024" : "ff18")) {
 					uint8_t new_col = DrawPaletteMenu(txt_col[3]);
 					if (new_col != txt_col[3]) { txt_col[3] = new_col; redraw = true; }
 					ImGui::EndMenu();
@@ -466,7 +503,7 @@ void GfxView::Draw(int index)
 		ImGui::Columns(numColumns, name.c_str(), true);  // 5-ways, no border
 		name.copy("system##");
 		name.append_num(index + 1, 1, 10);
-		if (ImGui::Combo(name.c_str(), &displaySystem, "Generic\0C64\0Vic20\0\0")) {
+		if (ImGui::Combo(name.c_str(), &displaySystem, "Generic\0C64\0Vic20\0Plus4\0\0")) {
 			SwapSystem();
 		}
 		ImGui::NextColumn();
@@ -525,7 +562,7 @@ void GfxView::Draw(int index)
 			}
 
 			ImGui::NextColumn();
-		} else if (displayMode != C64_Current && displayMode != V20_Current) {
+		} else if (displayMode != C64_Current && displayMode != V20_Current && displayMode != Plus4_Current) {
 			name.copy("screen##");
 			name.append_num(index + 1, 1, 10);
 			if (ImGui::InputText(name.c_str(), address_screen, sizeof(address_screen))) {
@@ -583,6 +620,10 @@ void GfxView::Draw(int index)
 				ImGui::Combo(name.c_str(), &vic20Mode, "Current\0Text\0\0");
 				displayMode = vic20Mode + V20_Modes;
 				break;
+			case Plus4:
+				ImGui::Combo(name.c_str(), &plus4Mode, "Current\0Text\0Bitmap\0\0");
+				displayMode = plus4Mode + Plus4_Modes;
+				break;
 		}
 		if (prevMode != displayMode) { redraw = true; }
 		ImGui::NextColumn();
@@ -630,20 +671,20 @@ void GfxView::Draw(int index)
 			bool wasDblHgt = vic20DoubleHeightChars;
 			ImGui::Checkbox(name.c_str(), &vic20DoubleHeightChars);
 			if (wasDblHgt != vic20DoubleHeightChars) { redraw = true; }
-		} else if (displayMode != C64_Current && displayMode != V20_Current) {
-			if (displayMode == C64_Bitmap || displayMode == C64_Text) {
+		} else if (displayMode != C64_Current && displayMode != V20_Current && displayMode != Plus4_Current) {
+			if (displayMode == C64_Bitmap || displayMode == C64_Text || displayMode == Plus4_Bitmap || displayMode == Plus4_Text) {
 				int colMode = color ? 1 : (multicolor ? 2 : 0);
-				if (displayMode == C64_Text && ecbm) { colMode = 3; }
+				if ((displayMode == C64_Text || displayMode == Plus4_Text) && ecbm) { colMode = 3; }
 				int prevMode = colMode;
 				name.copy("Color##");
 				name.append_num(index + 1, 1, 10);
 				ImGui::Combo(name.c_str(), &colMode, 
-					displayMode == C64_Text ? "Mono\0Color\0Multi\0ECBM\0\0" : "Mono\0Color\0Multi\0\0");
+					(displayMode == C64_Text || displayMode == Plus4_Text) ? "Mono\0Color\0Multi\0ECBM\0\0" : "Mono\0Color\0Multi\0\0");
 				if (prevMode != colMode) {
-					if (displayMode == C64_Text && colMode == 3) {
+					if ((displayMode == C64_Text || displayMode == Plus4_Text) && colMode == 3) {
 						ecbm = true;
 					} else {
-						if (displayMode == C64_Text) { ecbm = false; }
+						if (displayMode == C64_Text || displayMode == Plus4_Text) { ecbm = false; }
 						color = colMode == 1;
 						multicolor = colMode == 2;
 					}
@@ -760,14 +801,14 @@ void GfxView::PrintHoverInfo(CPU6510* cpu, int *hoverPos, int mode, uint16_t scr
 		line.append(" xs:").append_num(hoverPos[0] / 24, 0, 10).append(" ys:").append_num(hoverPos[1] / 24, 0, 10);
 		line.append(" spr:$").append_num((sa / 64) & 0xff, 2, 16).append(" addr:$").append_num(sa, 4, 16);
 		hoverGfxAddr = sa;
-	} else if (mode == C64_Text) {
+	} else if (mode == C64_Text || mode == Plus4_Text) {
 		int s = hoverPos[0] / 8 + (hoverPos[1] / 8) * columns;
 		int sa = scrnAddr + s;
 		line.append(" xc:").append_num(hoverPos[0] / 8, 0, 10).append(" yc:").append_num(hoverPos[1] / 8, 0, 10);
 		line.append(" scr:$").append_num(sa, 4, 16).append(" chr:$").append_num(cpu->GetByte(sa), 2, 16);
 		hoverScreenAddr = sa;
 		hoverGfxAddr = fontAddr + (cpu->GetByte(sa) & (_ecbm ? 0x3f : 0xff)) * 8;
-	} else if (mode == C64_Bitmap) {
+	} else if (mode == C64_Bitmap || mode == Plus4_Bitmap) {
 		int s = hoverPos[0] / 8 + (hoverPos[1] / 8) * columns;
 		int ss = scrnAddr + s;
 		int sb = bitmAddr + s * 8;
@@ -877,6 +918,29 @@ void GfxView::Create8bppBitmap(CPU6510* cpu)
 				v20ScreenAddr, v20ColorAddr,
 				v20Columns, v20Rows, vic20DoubleHeightChars, true);
 			break;
+
+		case Plus4_Bitmap:
+			if (color) {
+				CreatePlus4ColorBitmapBitmap(cpu, d, plus4pal, addrGfxValue, addrScreenValue, addrColValue, cl, rw);
+			} else if (multicolor) {
+				CreatePlus4MulticolorBitmapBitmap(cpu, d, plus4pal, addrGfxValue, addrScreenValue, addrColValue, cl, rw); break;
+			} else {
+				CreatePlus4BitmapBitmap(cpu, d, plus4pal, addrGfxValue, cl, rw); break;
+			}
+			break;
+
+		case Plus4_Text:
+			if (ecbm) {
+				CreatePlus4ExtBkgTextBitmap(cpu, d, plus4pal, addrGfxValue, addrScreenValue, addrColValue, cl, rw, vicColors);
+			} else if (color) {
+				CreatePlus4ColorTextBitmap(cpu, d, plus4pal, addrGfxValue, addrScreenValue, addrColValue, cl, rw, plus4c64pal[bg]);
+			} else if (multicolor) {
+				CreatePlus4MulticolorTextBitmap(cpu, d, plus4pal, addrGfxValue, addrScreenValue, addrColValue, cl, rw, vicColors);
+			} else {
+				CreatePlus4TextBitmap(cpu, d, plus4pal, cl, rw); break;
+			}
+			break;
+		case Plus4_Current: CreatePlus4CurrentBitmap(cpu, d, plus4pal); break;
 	}
 
 	if (!texture) { texture = CreateTexture(); }
@@ -916,6 +980,229 @@ void GfxView::CreateColumnsBitmap(CPU6510* cpu, uint32_t* d, int linesHigh, uint
 				m >>= 1;
 			}
 		}
+	}
+}
+
+#define FGCOL(l,c) ((((l)&0x0f)<<4|((c)&0xf0)>>4)&0x7f)
+#define BKCOL(l,c) ((((l)&0xf0)|((c)&0x0f))&0x7f)
+void GfxView::CreatePlus4CurrentBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal)
+{
+	uint8_t ff06 = cpu->GetByte(0xff06);
+	uint8_t ff07 = cpu->GetByte(0xff07);
+	uint16_t chars = (cpu->GetByte(0xff13) & 0xfc)<<8;
+	uint16_t colors = (cpu->GetByte(0xff14) & 0xf8)<<8;
+	uint16_t screen = colors + 0x400;
+	uint16_t bm = (cpu->GetByte(0xff12) & 0x38) * 0x0400;
+	bool mc = (ff07 & 0x10) ? true : false;
+
+	if(ff06 & 0x40) {
+		CreatePlus4ExtBkgTextBitmap(cpu, d, pal, chars, screen, colors, 40, 25, true);
+	} else if (ff06 & 0x20) {
+		if(mc) {
+			CreatePlus4MulticolorBitmapBitmap(cpu, d, pal, bm, screen, colors, 40, 25);
+		} else {
+			CreatePlus4ColorBitmapBitmap(cpu, d, pal, bm, screen, colors, 40, 25);
+		}
+	} else {
+		if(mc) {
+			CreatePlus4MulticolorTextBitmap(cpu, d, pal, chars, screen, colors, 40, 25, true);
+		} else {
+			CreatePlus4ColorTextBitmap(cpu, d, pal, chars, screen, colors, 40, 25, cpu->GetByte(0xff15)&0x7f);
+		}
+	}
+}
+
+void GfxView::CreatePlus4ExtBkgTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t cm, size_t cl, uint32_t rw, bool useVicCol)
+{
+	uint32_t k[4] = { plus4c64pal[bg], plus4c64pal[txt_col[1]], plus4c64pal[txt_col[2]], plus4c64pal[txt_col[3]] };
+	if (useVicCol) {
+		k[0] = cpu->GetByte(0xff15)&0x7f;
+		k[1] = cpu->GetByte(0xff16)&0x7f;
+		k[2] = cpu->GetByte(0xff17)&0x7f;
+		k[3] = cpu->GetByte(0xff18)&0x7f;
+	}
+
+	for (size_t y = 0; y < rw; y++) {
+		for (size_t x = 0; x < cl; x++) {
+			uint8_t chr = cpu->GetByte(a++);
+			uint32_t bg = pal[k[chr >> 6]];
+			uint32_t fg = pal[cpu->GetByte(uint16_t(y * 40 + x + cm)) & 0x7f];
+			chr &= 0x3f;
+			uint16_t cs = g + 8 * chr;
+			for (int h = 0; h < 8; h++) {
+				uint8_t b;
+				if (useRomFont) {
+					b = _aStartupFont[(cs++) & 0x7ff];
+				} else {
+					b = cpu->GetByte(cs++);
+				}
+				uint8_t m = 0x80;
+				for (int bit = 0; bit < 8; bit++) {
+					d[(y * 8 + h)*cl*8 + (x * 8 + bit)] = (b&m) ? fg : bg;
+					m >>= 1;
+				}
+			}
+		}
+	}
+}
+
+void GfxView::CreatePlus4MulticolorBitmapBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t a, uint16_t col, uint16_t lum, size_t cl, uint32_t rw)
+{
+	uint8_t col00 = cpu->GetByte(0xff15)&0x7f;
+	uint8_t col11 = cpu->GetByte(0xff16)&0x7f;
+
+	for (size_t y = 0; y < rw; y++) {
+		for (size_t x = 0; x < cl; x++) {
+			uint8_t col10 = BKCOL(cpu->GetByte(lum), cpu->GetByte(col));
+			uint8_t col01 = FGCOL(cpu->GetByte(lum++), cpu->GetByte(col++));
+			for (int h = 0; h < 8; h++) {
+				uint8_t b = cpu->GetByte(a++);
+				for (int p = 3; p >= 0; p--) {
+					uint8_t c = 0;
+					switch ((b >> (p << 1)) & 3) {
+						case 0: c = col00; break;
+						case 1: c = col01; break;
+						case 2: c = col10; break;
+						case 3: c = col11; break;
+					}
+					*d++ = pal[c];
+					*d++ = pal[c];
+				}
+				d += cl*8 - 8;
+			}
+			d -= cl*64 - 8;
+		}
+		d += cl * 56;
+	}
+}
+
+void GfxView::CreatePlus4BitmapBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t a, size_t cl, uint32_t rw)
+{
+	for (size_t y = 0; y < rw; y++) {
+		for (size_t x = 0; x < cl; x++) {
+			uint32_t* o = d + y * 64 * cl + x * 8;
+			for (int h = 0; h < 8; h++) {
+				uint8_t b = cpu->GetByte(a++);
+				uint8_t m = 0x80;
+				for (int bit = 0; bit < 8; bit++) {
+					*o = pal[plus4c64pal[(b&m) ? 14 : bg]];
+					o++;
+					m >>= 1;
+				}
+				o += (cl-1) * 8;
+			}
+		}
+	}
+}
+
+void GfxView::CreatePlus4ColorBitmapBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t a, uint16_t col, uint16_t lum, size_t cl, uint32_t rw)
+{
+	for (size_t y = 0; y < rw; y++) {
+		for (size_t x = 0; x < cl; x++) {
+			uint32_t* o = d + y * 64 * cl + x * 8;
+			uint8_t bk = BKCOL(cpu->GetByte(lum), cpu->GetByte(col));
+			uint8_t fg = FGCOL(cpu->GetByte(lum++), cpu->GetByte(col++));
+			for (int h = 0; h < 8; h++) {
+				uint8_t b = cpu->GetByte(a++);
+				uint8_t m = 0x80;
+				for (int bit = 0; bit < 8; bit++) {
+					*o = pal[(b&m) ? fg : bk];
+					o++;
+					m >>= 1;
+				}
+				o += cl*8 - 8;
+			}
+		}
+	}
+}
+
+void GfxView::CreatePlus4MulticolorTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t cm, size_t cl, uint32_t rw, bool useVicCol)
+{
+	uint8_t k[4] = { plus4c64pal[bg], plus4c64pal[txt_col[0]], plus4c64pal[txt_col[1]], 0 };
+	if (useVicCol) {
+		k[0] = cpu->GetByte(0xff15) & 0x7f;
+		k[1] = cpu->GetByte(0xff16) & 0x7f;
+		k[2] = cpu->GetByte(0xff17) & 0x7f;
+		k[3] = 0;
+	}
+
+	uint32_t *o = d;
+	for (size_t y = 0; y < rw; y++) {
+		for (size_t x = 0; x < cl; x++) {
+			k[3] = cpu->GetByte(cm++) & 0x7f;
+			int mc = k[3] & 0x8;
+			k[3] &= 0x77;
+			uint8_t chr = cpu->GetByte(a++);
+			uint16_t cs = g + 8 * chr;
+			for (int h = 0; h < 8; h++) {
+				uint8_t b = cpu->GetByte(cs++);
+				if (mc) {
+					for (int bit = 6; bit >= 0; bit -= 2) {
+						uint8_t c = k[(b >> bit) & 0x3];
+						*o++ = pal[c];
+						*o++ = pal[c];
+					}
+				} else {
+					for (int bit = 7; bit >= 0; bit--) {
+						*o++ = pal[k[((b >> bit) & 1) ? 3 : 0]];
+					}
+				}
+				o += (cl-1) * 8;
+			}
+			o -= cl * 64 - 8;
+		}
+		o += 56 * cl;
+	}
+}
+
+void GfxView::CreatePlus4TextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, size_t cl, uint32_t rw)
+{
+	uint16_t a = addrScreenValue;
+	uint8_t col0 = bg, col1 = txt_col[0];
+	for (size_t y = 0; y < rw; y++) {
+		for (size_t x = 0; x < cl; x++) {
+			uint8_t chr = cpu->GetByte(a++);
+			uint16_t cs = addrGfxValue + 8 * chr;
+			for (int h = 0; h < 8; h++) {
+				uint8_t b;
+				if (useRomFont) {
+					b = _aStartupFont[(cs++) & 0x7ff];
+				} else {
+					b = cpu->GetByte(cs++);
+				}
+				uint8_t m = 0x80;
+				for (int bit = 0; bit < 8; bit++) {
+					d[(y * 8 + h)*cl*8 + (x * 8 + bit)] = pal[plus4c64pal[(b&m) ? col1 : col0]];
+					m >>= 1;
+				}
+			}
+		}
+	}
+}
+
+void GfxView::CreatePlus4ColorTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t f, size_t cl, uint32_t rw, uint8_t k)
+{
+	uint32_t *o = d;
+	for (size_t y = 0, ye = rw; y < ye; y++) {
+		for (size_t x = 0; x < cl; x++) {
+			uint8_t c = cpu->GetByte(f++) & 0x7f;
+			uint8_t chr = cpu->GetByte(a++);
+			uint16_t cs = g + 8 * chr;
+			for (int h = 0; h < 8; h++) {
+				uint8_t b;
+				if (useRomFont) {
+					b = _aStartupFont[(cs++) & 0x7ff];
+				} else {
+					b = cpu->GetByte(cs++);
+				}
+				for (int m = 0x80; m; m>>=1) {
+					*o++ = pal[(m&b) ? c : k];
+				}
+				o += cl*8 - 8;
+			}
+			o -= (cl*8 - 1) * 8;
+		}
+		o += 56*cl;
 	}
 }
 
@@ -1317,9 +1604,11 @@ void GfxView::CreateC64ColorTextColumns(CPU6510* cpu, uint32_t* d, const uint32_
 
 GfxView::GfxView() : open(false), reeval(false), color(false), multicolor(false), useRomFont(true), bitmapWidth(0)
 {
-	addrScreenValue = 0x0400;
-	addrGfxValue = 0x1000;
-	addrColValue = 0xd800;
+	VICEEmuType emuType = ViceGetEmuType();
+
+	addrScreenValue = emuType != VICEEmuType::Plus4 ? 0x0400 : 0x0c00;
+	addrGfxValue = emuType != VICEEmuType::Plus4 ? 0x1000 : 0x2000;
+	addrColValue = emuType != VICEEmuType::Plus4 ? 0xd800 : 0x0800;
 	columns = 40;
 	rows = 25;
 
@@ -1331,13 +1620,28 @@ GfxView::GfxView() : open(false), reeval(false), color(false), multicolor(false)
 
 	v20Columns = 22;
 	v20Rows = 23;
+
 	columns_sprite = 8;
 	rows_sprite = 6;
 	zoom = Zoom_FitWindow;
-	displaySystem = 1;
-	displayMode = C64_Current;
+	switch(emuType) {
+		default:
+		case VICEEmuType::C64:
+			displaySystem = System::C64;
+			displayMode = C64_Current;
+			break;
+		case VICEEmuType::Vic20:
+			displaySystem = System::Vic20;
+			displayMode = V20_Current;
+			break;
+		case VICEEmuType::Plus4:
+			displaySystem = System::Plus4;
+			displayMode = Plus4_Current;
+			break;
+	}
 	genericMode = Planar - Generic_Modes;
 	c64Mode = C64_Current - C64_Modes;
+	plus4Mode = Plus4_Current - Plus4_Modes;
 	bitmap = nullptr;
 	bitmapSize = 0;
 	texture = 0;

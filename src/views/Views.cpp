@@ -220,6 +220,7 @@ void ViewContext::SaveState(UserData& conf)
 	}
 	conf.AddValue("CodePCHighlight", sCodePCHighlight);
 	conf.AddValue("CodePCHighlightColor", sCodePCColor);
+	conf.AddValue("EmuType", (int)ViceGetEmuType());
 }
 
 void ViewContext::LoadState(strref config)
@@ -254,6 +255,8 @@ void ViewContext::LoadState(strref config)
 				sCodePCHighlight = (uint8_t)value.atoi();
 			} else if(name.same_str("CodePCHighlightColor")) {
 				sCodePCColor = (uint8_t)value.atoi() & 0xf;
+			} else if(name.same_str("EmuType")) {
+				ViceSetEmuType((VICEEmuType)value.atoi());
 			}
 		}
 		if (type == ConfigParseType::CPT_Struct) {
@@ -317,6 +320,13 @@ void ViewContext::Draw()
 					ImGui::EndMenu();
 				}
 				if (ImGui::MenuItem("Detach Cartridge")) { SendViceMonitorLine(DetachCartridgeCommand, sizeof(DetachCartridgeCommand)); }
+				if (ImGui::BeginMenu("Emu Type")) {
+					VICEEmuType emuType = ViceGetEmuType();
+					if (ImGui::MenuItem("C64", NULL, emuType == VICEEmuType::C64)) { ViceSetEmuType(VICEEmuType::C64); }
+					if (ImGui::MenuItem("Vic20", NULL, emuType == VICEEmuType::Vic20)) { ViceSetEmuType(VICEEmuType::Vic20); }
+					if (ImGui::MenuItem("Plus4", NULL, emuType == VICEEmuType::Plus4)) { ViceSetEmuType(VICEEmuType::Plus4); }
+					ImGui::EndMenu();
+				}
 
 				if (ImGui::MenuItem("Quit", "Alt+F4")) {}
 				ImGui::EndMenu();

@@ -9,6 +9,7 @@ struct GfxView {
 		Generic,
 		C64,
 		Vic20,
+		Plus4,
 		Count
 	};
 
@@ -25,6 +26,10 @@ struct GfxView {
 		V20_Modes,
 		V20_Current = V20_Modes,
 		V20_Text,
+		Plus4_Modes,
+		Plus4_Current = Plus4_Modes,
+		Plus4_Text,
+		Plus4_Bitmap,
 	};
 
 	enum Zoom {
@@ -70,6 +75,7 @@ struct GfxView {
 	int genericMode;
 	int c64Mode;
 	int vic20Mode;
+	int plus4Mode;
 	bool vic20DoubleHeightChars;
 
 	uint16_t hoverScreenAddr;
@@ -126,5 +132,15 @@ struct GfxView {
 	void CreateC64ColorTextColumns(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t bitmap, uint16_t screen, uint16_t colorAddr, size_t cl, uint32_t rw);
 	void CreateC64CurrentBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal);
 	void CreateV20TextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t cm, size_t cl, uint32_t rw, bool dhc, bool useVicCol);
+
+	void CreatePlus4CurrentBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal);
+	void CreatePlus4ExtBkgTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t cm, size_t cl, uint32_t rw, bool useVicCol);
+	void CreatePlus4MulticolorBitmapBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t a, uint16_t col, uint16_t lum, size_t cl, uint32_t rw);
+	void CreatePlus4ColorBitmapBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t a, uint16_t col, uint16_t lum, size_t cl, uint32_t rw);
+	void CreatePlus4MulticolorTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t cm, size_t cl, uint32_t rw, bool useVicCol);
+	void CreatePlus4BitmapBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t a, size_t cl, uint32_t rw);
+	void CreatePlus4TextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, size_t cl, uint32_t rw);
+	void CreatePlus4ColorTextBitmap(CPU6510* cpu, uint32_t* d, const uint32_t* pal, uint16_t g, uint16_t a, uint16_t f, size_t cl, uint32_t rw, uint8_t k);
+
 };
 
