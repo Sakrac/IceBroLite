@@ -709,6 +709,12 @@ void GfxView::Draw(int index)
 			}
 		}
 		ImGui::Columns(1);
+
+		// Render hovered text
+		ImGui::Columns(1, nullptr, true);
+		ImGui::Text("%s", info_text[0].c_str());
+		ImGui::Columns(1, nullptr, true);
+		ImGui::Text("%s", info_text[1].c_str());
 	}
 
 	if (HandleContextMenu()) { redraw = true; }
@@ -760,36 +766,60 @@ void GfxView::Draw(int index)
 	if(hoverPos[0]>=0 && hoverPos[0]<bitmapWidth && hoverPos[1]>=0 && hoverPos[1]<bitmapWidth) {
 		hovering = true;
 		if (ImGui::GetCurrentWindow() == ImGui::GetCurrentContext()->HoveredWindow) {
-			if (displayMode == C64_Current) {
+			if (displayMode == C64_Current || displayMode == Plus4_Current) {
 				PrintCurrentInfo(cpu, hoverPos);
 			} else {
 				PrintHoverInfo(cpu, hoverPos, displayMode, addrScreenValue, addrGfxValue,
 					addrGfxValue, ecbm);
 			}
 		}
+	} else {
+		info_text[0].clear();
+		info_text[1].clear();
 	}
 	ImGui::End();
 }
 
 void GfxView::PrintCurrentInfo(CPU6510* cpu, int* hoverPos) {
-	uint16_t vic = (3 ^ (cpu->GetByte(0xdd00) & 3)) * 0x4000;
-	uint8_t d018 = cpu->GetByte(0xd018);
-	uint8_t d011 = cpu->GetByte(0xd011);
-	uint8_t d016 = cpu->GetByte(0xd016);
-	uint16_t chars = (d018 & 0xe) * 0x400 + vic;
-	uint16_t screen = (d018 >> 4) * 0x400 + vic;
-	bool mc = (d016 & 0x10) ? true : false;
 
 	strown<128> line;
-	int mode = C64_Text;
-	if (d011 & 0x40) { line.append("ExtCol "); }
-	else if (d011 & 0x20) { line.append(mc ? "MultiColor Bitmap " : "Bitmap "); mode = C64_Bitmap; }
-	else { line.append(mc ? "MultiColor Text " : "Text "); }
-	line.append("Screen: $").append_num(screen, 4, 16).append((d011 & 0x20) ? " Bitmap: $" : " Font: $").append_num(chars, 4, 16);
-	ImGui::SetCursorPos(ImVec2(0, ImGui::GetWindowSize().y - ImGui::GetTextLineHeightWithSpacing()));
-	ImGui::Text("%s", line.c_str());
 
-	PrintHoverInfo(cpu, hoverPos, mode, screen, chars, chars&0xe000, d011&0x40, 2);
+	if(displayMode = C64_Current) {
+		uint16_t vic = (3 ^ (cpu->GetByte(0xdd00) & 3)) * 0x4000;
+		uint8_t d018 = cpu->GetByte(0xd018);
+		uint8_t d011 = cpu->GetByte(0xd011);
+		uint8_t d016 = cpu->GetByte(0xd016);
+		uint16_t chars = (d018 & 0xe) * 0x400 + vic;
+		uint16_t screen = (d018 >> 4) * 0x400 + vic;
+		bool mc = (d016 & 0x10) ? true : false;
+
+		int mode = C64_Text;
+		if (d011 & 0x40) { line.append("ExtCol "); }
+		else if (d011 & 0x20) { line.append(mc ? "MultiColor Bitmap " : "Bitmap "); mode = C64_Bitmap; }
+		else { line.append(mc ? "MultiColor Text " : "Text "); }
+		line.append("Screen: $").append_num(screen, 4, 16).append((d011 & 0x20) ? " Bitmap: $" : " Font: $").append_num(chars, 4, 16);
+		info_text[0] = line;
+
+		PrintHoverInfo(cpu, hoverPos, mode, screen, chars, chars&0xe000, d011&0x40, 2);
+	} else if(displayMode = Plus4_Current) {
+		uint8_t ff06 = cpu->GetByte(0xff06);
+		uint8_t ff07 = cpu->GetByte(0xff07);
+		uint16_t chars = (ff06 & 0x20) ? (cpu->GetByte(0xff12) & 0x38) * 0x0400 : (cpu->GetByte(0xff13) & 0xfc)<<8;
+		uint16_t colors = (cpu->GetByte(0xff14) & 0xf8)<<8;
+		uint16_t screen = colors + 0x400;
+		bool mc = (ff07 & 0x10) ? true : false;
+
+		int mode = Plus4_Text;
+		if (ff06 & 0x40) { line.append("ExtCol "); }
+		else if (ff06 & 0x20) { line.append(mc ? "MultiColor Bitmap " : "Bitmap "); mode = Plus4_Bitmap; }
+		else { line.append(mc ? "MultiColor Text " : "Text "); }
+		line.append("Screen: $").append_num(screen, 4, 16).append((ff06 & 0x20) ? " Bitmap: $" : " Font: $").append_num(chars, 4, 16);
+		info_text[0] = line;
+
+		PrintHoverInfo(cpu, hoverPos, mode, screen, chars, chars, ff06&0x40, 2);
+	} else {
+		// vic20 unsupported
+	}
 }
 
 void GfxView::PrintHoverInfo(CPU6510* cpu, int *hoverPos, int mode, uint16_t scrnAddr, uint16_t fontAddr, uint16_t bitmAddr, bool _ecbm, int row) {
@@ -817,8 +847,7 @@ void GfxView::PrintHoverInfo(CPU6510* cpu, int *hoverPos, int mode, uint16_t scr
 		line.append(" xc:").append_num(hoverPos[0] / 8, 0, 10).append(" yc:").append_num(hoverPos[1] / 8, 0, 10);
 		line.append(" scr:$").append_num(ss, 4, 16).append(" bm:$").append_num(sb, 4, 16);
 	}
-	ImGui::SetCursorPos(ImVec2(0, ImGui::GetWindowSize().y - row * ImGui::GetTextLineHeightWithSpacing()));
-	ImGui::Text("%s", line.c_str());
+	info_text[1] = line;
 }
 
 void GfxView::Create8bppBitmap(CPU6510* cpu)
@@ -840,7 +869,7 @@ void GfxView::Create8bppBitmap(CPU6510* cpu)
 		}
 	} else if (displayMode == C64_Sprites) {
 		cl = columns_sprite; rw = rows_sprite;
-	} else if( displayMode != C64_Current) {
+	} else if( displayMode != C64_Current && displayMode != Plus4_Current) {
 		cl = columns; rw = rows;
 	}
 
@@ -923,9 +952,9 @@ void GfxView::Create8bppBitmap(CPU6510* cpu)
 			if (color) {
 				CreatePlus4ColorBitmapBitmap(cpu, d, plus4pal, addrGfxValue, addrScreenValue, addrColValue, cl, rw);
 			} else if (multicolor) {
-				CreatePlus4MulticolorBitmapBitmap(cpu, d, plus4pal, addrGfxValue, addrScreenValue, addrColValue, cl, rw); break;
+				CreatePlus4MulticolorBitmapBitmap(cpu, d, plus4pal, addrGfxValue, addrScreenValue, addrColValue, cl, rw);
 			} else {
-				CreatePlus4BitmapBitmap(cpu, d, plus4pal, addrGfxValue, cl, rw); break;
+				CreatePlus4BitmapBitmap(cpu, d, plus4pal, addrGfxValue, cl, rw);
 			}
 			break;
 
@@ -937,7 +966,7 @@ void GfxView::Create8bppBitmap(CPU6510* cpu)
 			} else if (multicolor) {
 				CreatePlus4MulticolorTextBitmap(cpu, d, plus4pal, addrGfxValue, addrScreenValue, addrColValue, cl, rw, vicColors);
 			} else {
-				CreatePlus4TextBitmap(cpu, d, plus4pal, cl, rw); break;
+				CreatePlus4TextBitmap(cpu, d, plus4pal, cl, rw);
 			}
 			break;
 		case Plus4_Current: CreatePlus4CurrentBitmap(cpu, d, plus4pal); break;
@@ -1650,6 +1679,9 @@ GfxView::GfxView() : open(false), reeval(false), color(false), multicolor(false)
 	bg = 6;
 	spr_col[0] = 14; spr_col[1] = 0; spr_col[2] = 1;
 	txt_col[0] = 14; txt_col[1] = 0; txt_col[2] = 1; txt_col[3] = 5;
+
+	info_text[0].clear();
+	info_text[1].clear();
 
 	SwapSystem();
 }

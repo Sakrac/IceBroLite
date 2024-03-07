@@ -55,6 +55,8 @@ struct GfxView {
 	char v20_columns_str[32];
 	char v20_rows_str[32];
 
+	strown<128> info_text[2];
+
 	uint32_t addrScreenValue;
 	uint32_t addrGfxValue;
 	uint32_t addrColValue;
