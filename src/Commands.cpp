@@ -280,13 +280,15 @@ const char* CommandGfxSave(strref param) {
 		}
 	}
 
+	chars &= ~(charBaseMask-1);
+
 	strref name = param.after_last_or_full('/', '\\');
 
 	FILE* f;
 #ifdef _WIN32
 	if (fopen_s(&f, file.c_str(), "w") == 0 && f != nullptr) {
 #else
-	f = fopen(filename, "w");
+	f = fopen(file.c_str(), "w");
 	if (f) {
 #endif
 		fprintf(f, "; Info for screendump files " STRREF_FMT "\n", STRREF_ARG(name));
@@ -306,7 +308,7 @@ const char* CommandGfxSave(strref param) {
 #ifdef _WIN32
 	if (fopen_s(&f, file.c_str(), "wb") == 0 && f != nullptr) {
 #else
-	f = fopen(filename, "wb");
+	f = fopen(file.c_str(), "wb");
 	if (f) {
 #endif
 		fwrite(cpu->GetMem(screen), 1000, 1, f);
@@ -319,7 +321,7 @@ const char* CommandGfxSave(strref param) {
 #ifdef _WIN32
 		if (fopen_s(&f, file.c_str(), "wb") == 0 && f != nullptr) {
 #else
-		f = fopen(filename, "wb");
+		f = fopen(file.c_str(), "wb");
 		if (f) {
 #endif
 			uint8_t tmpCol[1000];
@@ -337,7 +339,7 @@ const char* CommandGfxSave(strref param) {
 #ifdef _WIN32
 	if (fopen_s(&f, file.c_str(), "wb") == 0 && f != nullptr) {
 #else
-	f = fopen(filename, "wb");
+	f = fopen(file.c_str(), "wb");
 	if (f) {
 #endif
 		fwrite(cpu->GetMem(chars), numChars * 8, 1, f);

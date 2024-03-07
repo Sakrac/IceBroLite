@@ -165,7 +165,7 @@ void CodeView::UpdateTrackPC(CPU6510 *cpu, int& dY, int lines)
 
 		int rows = lastShownPCRow > 0 ? lastShownPCRow : (lines / 3);
 		while (rows) {
-			if (const char* label = GetSymbol(a)) { --rows; }
+			if (/*const char* label =*/ GetSymbol(a)) { --rows; }
 			if (rows) {
 				uint16_t an = a--;
 				while (((ValidInstructionBytes(cpu, a) + a) & 0xffff) != an && (an - a) < 3) {
@@ -424,7 +424,7 @@ void CodeView::Draw(int index)
 			}
 			if (disasm) {
 				strown<512> disbuf;
-				size_t dsof = 0, l = 0;
+				size_t l = 0;
 				while (disbuf.left() && l < 10) {
 					int argOffs;
 					int branchTrg = -1;

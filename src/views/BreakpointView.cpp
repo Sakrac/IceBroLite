@@ -88,11 +88,11 @@ void BreakpointView::Draw()
 	ImGui::TableSetColumnIndex(0);
 
 	if (ImGui::BeginCombo("Type", azsBreakTypes[addCheckpointType], ImGuiComboFlags_NoArrowButton)) {
-		for (int n = 0; n < snBreakTypes; n++) {
-			if (ImGui::Selectable(azsBreakTypes[n], n == addCheckpointType)) {
+		for (uint32_t n = 0; n < snBreakTypes; n++) {
+			if (ImGui::Selectable(azsBreakTypes[n], n == (uint32_t)addCheckpointType)) {
 				addCheckpointType = n;
 			}
-			if (n == addCheckpointType) { ImGui::SetItemDefaultFocus(); }
+			if (n == (uint32_t)addCheckpointType) { ImGui::SetItemDefaultFocus(); }
 		}
 		ImGui::EndCombo();
 	}

@@ -743,14 +743,14 @@ void ViceConnection::updateGetMemory(VICEBinMemGetResponse* resp)
 	IBMutexLock(&userRequestMutex);
 	// TODO: Check memory range for end
 	uint32_t id = resp->GetReqID();
-	uint16_t start = 0, bank = 0;
+	uint16_t start = 0;
 	uint8_t space = 0;
 	bool found = false;
 	for (size_t i = 0; i < sMemRequests.size(); ++i) {
 		if (sMemRequests[i].requestID == id) {
 			start = sMemRequests[i].start;
 			//end = sMemRequests[i].end;
-			bank = sMemRequests[i].bank;
+			//bank = sMemRequests[i].bank;
 			space = sMemRequests[i].space;
 			found = true;
 			sMemRequests.erase(sMemRequests.begin() + i);

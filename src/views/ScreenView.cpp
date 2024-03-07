@@ -121,7 +121,6 @@ void ScreenView::Draw()
 		if (drawRasterTime) {
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 			ImVec2 winPos = ImGui::GetWindowPos();
-			ImVec2 winSize = ImGui::GetWindowSize();
 
 			winPos.x += cursorTop.x;
 			winPos.y += cursorTop.y;
@@ -184,7 +183,8 @@ void ScreenView::Refresh(uint8_t* img, uint16_t w, uint16_t h,
 	}
 }
 
-ScreenView::ScreenView() : bitmap(nullptr), bitmapSize(0), width(0), height(0), open(true), refresh(false), drawRasterTime(false)
+ScreenView::ScreenView() : bitmap(nullptr), bitmapSize(0), width(0),
+	height(0), open(true), refresh(false), drawRasterTime(false)
 {
 	offs_x = 0;
 	offs_y = 0;
