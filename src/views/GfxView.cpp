@@ -784,7 +784,7 @@ void GfxView::PrintCurrentInfo(CPU6510* cpu, int* hoverPos) {
 
 	strown<128> line;
 
-	if(displayMode = C64_Current) {
+	if(displayMode == C64_Current) {
 		uint16_t vic = (3 ^ (cpu->GetByte(0xdd00) & 3)) * 0x4000;
 		uint8_t d018 = cpu->GetByte(0xd018);
 		uint8_t d011 = cpu->GetByte(0xd011);
@@ -801,7 +801,7 @@ void GfxView::PrintCurrentInfo(CPU6510* cpu, int* hoverPos) {
 		info_text[0] = line;
 
 		PrintHoverInfo(cpu, hoverPos, mode, screen, chars, chars&0xe000, d011&0x40, 2);
-	} else if(displayMode = Plus4_Current) {
+	} else if(displayMode == Plus4_Current) {
 		uint8_t ff06 = cpu->GetByte(0xff06);
 		uint8_t ff07 = cpu->GetByte(0xff07);
 		uint16_t chars = (ff06 & 0x20) ? (cpu->GetByte(0xff12) & 0x38) * 0x0400 : (cpu->GetByte(0xff13) & 0xfc)<<8;
