@@ -219,10 +219,30 @@ const char* sazScreenModes[] = {
 const char szBankRam[] = "bank ram\n";
 const char szBankIO[] = "bank io\n";
 void SendViceMonitorLine(const char* message, int size);
+int CommandGfxSaveC64(strref param);
+int CommandGfxSavePlus4(strref param);
 
 const char* CommandGfxSave(strref param) {
-
 	bool wasRunning = HaltViceWait();
+	int mode = 0;
+	switch(ViceGetEmuType()) {
+		case VICEEmuType::C64:
+			mode = CommandGfxSaveC64(param);
+			break;
+		case VICEEmuType::Vic20:
+			/* unsupported */
+			break;
+		case VICEEmuType::Plus4:
+			mode = CommandGfxSavePlus4(param);
+			break;
+	}
+	if (wasRunning) {
+		ViceGo();
+	}
+	return sazScreenModes[mode];
+}
+
+int CommandGfxSaveC64(strref param) {
 
 	SendViceMonitorLine(szBankIO, sizeof(szBankRam));
 
@@ -346,9 +366,126 @@ const char* CommandGfxSave(strref param) {
 		fclose(f);
 	}
 
-	if (wasRunning) {
-		ViceGo();
+	return mode;
+}
+
+int CommandGfxSavePlus4(strref param) {
+
+	CPU6510* cpu = GetCurrCPU();
+	uint8_t ff06 = cpu->GetByte(0xff06);
+	uint8_t ff07 = cpu->GetByte(0xff07);
+	uint8_t ff13 = cpu->GetByte(0xff13);
+	uint8_t ff14 = cpu->GetByte(0xff14);
+
+	uint16_t chars = (ff13&0xfc)<<8;
+	uint16_t screen = ((ff14&0xf8)<<8)+0x400;
+	bool mc = (ff07 & 0x10) ? true : false;
+
+	strown<128> file(param);
+	file.append(".txt");
+
+	int mode = GFX_Text;
+	int numChars = 256;
+	int colRegs = 1;
+	int used = 0;
+
+	if (ff06 & 0x40) { 
+		mode = GFX_TextEBCM;
+		numChars = 64;
+		colRegs = 5;
+		uint16_t useMap[64] = {};
+		for (int c = 0; c < 1000; ++c) {
+			useMap[cpu->GetByte(screen + c) & 0x3f]++;
+		}
+		for (int i = 0; i < 64; ++i) {
+			if (useMap[i]) {
+				++used;
+			}
+		}
+	} else if (ff06 & 0x20) {
+		mode = mc ? GFX_BitmapMC : GFX_Bitmap;
+		chars = (cpu->GetByte(0xff12)&0x38)*0x400;
+		numChars = 1000;
+		colRegs = mc ? 2 : 1;
+		used = 1000;
+	} else {
+		if(mc) {
+			mode = GFX_TextMC;
+			colRegs = 4;
+		}
+		uint16_t useMap[256] = {};
+		for (int c = 0; c < 1000; ++c) {
+			useMap[cpu->GetByte(screen + c)]++;
+		}
+		for (int i = 0; i < 256; ++i) {
+			if (useMap[i]) {
+				++used;
+			}
+		}
 	}
 
-	return sazScreenModes[mode];
+	strref name = param.after_last_or_full('/', '\\');
+
+	FILE* f;
+#ifdef _WIN32
+	if (fopen_s(&f, file.c_str(), "w") == 0 && f != nullptr) {
+#else
+	f = fopen(file.c_str(), "w");
+	if (f) {
+#endif
+		fprintf(f, "; Info for screendump files " STRREF_FMT "\n", STRREF_ARG(name));
+		fprintf(f, "; Used characters: %d\n", used);
+		fprintf(f, "mode: %s\n", sazScreenModes[mode]);
+		fprintf(f, "ff06: $%02x\n", ff06);
+		fprintf(f, "ff07: $%02x\n", ff07);
+		fprintf(f, "ff13: $%02x\n", ff13);
+		fprintf(f, "ff14: $%02x\n", ff14);
+		for (int c = 0; c < colRegs; ++c) {
+			fprintf(f, "%04x: $%02x\n", 0xff15+c, cpu->GetByte(0xff15+c) & 0x7f);
+		}
+		fclose(f);
+	}
+
+	file.copy(param);
+	file.append(".scr");
+#ifdef _WIN32
+	if (fopen_s(&f, file.c_str(), "wb") == 0 && f != nullptr) {
+#else
+	f = fopen(file.c_str(), "wb");
+	if (f) {
+#endif
+		fwrite(cpu->GetMem(screen), 1000, 1, f);
+		fclose(f);
+	}
+
+	if (mode != GFX_Bitmap) {
+		file.copy(param);
+		file.append(".col");
+#ifdef _WIN32
+		if (fopen_s(&f, file.c_str(), "wb") == 0 && f != nullptr) {
+#else
+		f = fopen(file.c_str(), "wb");
+		if (f) {
+#endif
+			uint8_t tmpCol[1000];
+			memcpy(tmpCol, cpu->GetMem(screen-0x400), 1000);
+			fwrite(tmpCol, 1000, 1, f);
+			fclose(f);
+		}
+	}
+
+	file.copy(param);
+	file.append(".chr");
+#ifdef _WIN32
+	if (fopen_s(&f, file.c_str(), "wb") == 0 && f != nullptr) {
+#else
+	f = fopen(file.c_str(), "wb");
+	if (f) {
+#endif
+		fwrite(cpu->GetMem(chars), numChars * 8, 1, f);
+		fclose(f);
+	}
+
+	return mode;
 }
+

@@ -63,7 +63,7 @@ struct FileTypeInfo {
 
 #ifndef CUSTOM_FILEVIEWER
 #else
-static const char sLoadProgramParams[] = "Prg:*.prg,D64:*.d64,Cart:*.crt";
+static const char sLoadProgramParams[] = "Prg:*.prg,*.c64,*.vic20,*.plus4,D64:*.d64,Cart:*.crt";
 static const char sLoadListingParams[] = "Listing:*.lst";
 static const char sLoadKickDbgParams[] = "Kick Asm Debug:*.dbg";
 static const char sLoadSymbolsParams[] = "Symbols:*.sym";
@@ -73,7 +73,7 @@ static const char sViceEXEParams[] = "Vice EXE path:x128*.exe,x64*.exe,xcbm*.exe
 #else
 static const char sViceEXEParams[] = "Vice EXE path:x128*,x64*,xcbm*,xpet*,xplus4*,xscpu64*,xvic*";
 #endif
-static const char sReadPrgParams[] = "Prg files:*.prg";
+static const char sReadPrgParams[] = "Prg files:*.prg,*.c64,*.vic20,*.plus4";
 static const char sThemeParams[] = "Theme:*.theme.txt";
 #endif
 

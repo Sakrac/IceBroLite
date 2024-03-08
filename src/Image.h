@@ -39,3 +39,5 @@ void UpdateTextureData(int width, int height, const void* data);
 //ImTextureID LoadTexture( const char* filename, int* width, int* height );
 
 extern uint32_t c64pal[16];
+extern uint32_t vic20pal_sc[16];
+extern uint32_t plus4pal[128];

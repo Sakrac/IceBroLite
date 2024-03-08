@@ -10,6 +10,15 @@ enum class VICEMemSpaces {
 	Drive11
 };
 
+enum class VICEEmuType {
+  C64,
+  Vic20,
+  Plus4
+};
+
+VICEEmuType ViceGetEmuType();
+void ViceSetEmuType(VICEEmuType value);
+
 bool ViceConnected();
 bool ViceRunning();
 

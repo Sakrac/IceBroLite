@@ -243,6 +243,15 @@ int main(int argc, char* argv[])
 					ForceUserFont(file, line.atoi() ? (int)line.atoi() : 13);
 				}
 			}
+			else if (cmd.same_str("emu")) {
+				if(line.same_str("c64")) {
+					ViceSetEmuType(VICEEmuType::C64);
+				} else if(line.same_str("vic20")) {
+					ViceSetEmuType(VICEEmuType::Vic20);
+				} else if(line.same_str("plus4")) {
+					ViceSetEmuType(VICEEmuType::Plus4);
+				}
+			}
 		}
 	}
 
