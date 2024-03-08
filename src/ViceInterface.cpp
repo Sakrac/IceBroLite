@@ -745,12 +745,17 @@ void ViceConnection::updateGetMemory(VICEBinMemGetResponse* resp)
 	uint32_t id = resp->GetReqID();
 	uint16_t start = 0;
 	uint8_t space = 0;
+#ifdef VICELOG
+	uint16_t bank = 0;
+#endif
 	bool found = false;
 	for (size_t i = 0; i < sMemRequests.size(); ++i) {
 		if (sMemRequests[i].requestID == id) {
 			start = sMemRequests[i].start;
 			//end = sMemRequests[i].end;
-			//bank = sMemRequests[i].bank;
+#ifdef VICELOG
+			bank = sMemRequests[i].bank;
+#endif
 			space = sMemRequests[i].space;
 			found = true;
 			sMemRequests.erase(sMemRequests.begin() + i);
