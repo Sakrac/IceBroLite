@@ -17,8 +17,8 @@
 #include "WatchView.h"
 #include "../CodeColoring.h"
 
-WatchView::WatchView() : open(false), rebuildAll(false), recalcAll(false), forceEdit(false), 
-  activeIndex(-1)
+WatchView::WatchView() : activeIndex(-1), open(false), rebuildAll(false),
+	recalcAll(false), forceEdit(false)
 {
 	numExpressions = 0;
 	editExpression = -1;
@@ -180,7 +180,7 @@ void WatchView::ReadConfig(strref config)
 					ConfigParse conf_exp(quote);
 					while (!conf_exp.Empty()) {
 						strref name_exp, value_exp;
-						ConfigParseType type_exp = conf_exp.Next(&name_exp, &value_exp);
+						/*ConfigParseType type_exp =*/ conf_exp.Next(&name_exp, &value_exp);
 						if (name_exp.same_str("Exp")) {
 							value_exp += 1; value_exp.clip(1);
 							expressions[numExpressions].copy(value_exp);
@@ -199,7 +199,6 @@ void WatchView::ReadConfig(strref config)
 void WatchView::Draw(int index)
 {
 	if (!open) { return; }
-	ImGuiID id = 0;
 	{
 		strown<64> title("Watch");
 		title.append_num(index + 1, 1, 10);
@@ -209,7 +208,6 @@ void WatchView::Draw(int index)
 			ImGui::End();
 			return;
 		}
-		id = ImGui::GetCurrentWindow()->ID;
 	}
 
 	if (ImGui::BeginDragDropTarget()) {
@@ -371,7 +369,6 @@ void WatchView::Draw(int index)
 
 	if (activeIndex >= 0 && GImGui->NavWindow == ImGui::GetCurrentWindow()) {
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
-		ImVec2 winPos = ImGui::GetWindowPos();
 		draw_list->AddRect(ImVec2(activeRowPos.x, activeRowPos.y - ImGui::GetScrollY()),
 			ImVec2(activeRowPos.x + ImGui::GetWindowWidth() - 1.0f,
 				activeRowPos.y - ImGui::GetScrollY() + ImGui::GetTextLineHeightWithSpacing() - 1.0f),

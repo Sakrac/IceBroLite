@@ -80,7 +80,7 @@
 // 15 : $1C00, 1k RAM
 // The character memory always starts at byte 0 of the selected block, while the video memory can be offset by 512 bytes by setting bit 7 of $9002. While these are the values that can be chosen via $9005, in practice, much isn't usable for a variety of reasons:
 
-#define ColHex6( hex ) uint32_t(0xff000000|((hex<<16)&0xff0000)|(hex&0xff00)|((hex>>16)&0xff))
+#define ColHex6( hex ) uint32_t(0xff000000ULL|(((uint64_t)hex<<16)&0xff0000ULL)|((uint64_t)hex&0xff00ULL)|(((uint64_t)hex>>16)&0xffULL))
 
 static const uint32_t vic20pal[16] = {
 	ColHex6(0x000000),
@@ -1631,7 +1631,8 @@ void GfxView::CreateC64ColorTextColumns(CPU6510* cpu, uint32_t* d, const uint32_
 
 
 
-GfxView::GfxView() : open(false), reeval(false), color(false), multicolor(false), useRomFont(true), bitmapWidth(0)
+GfxView::GfxView() : bitmapWidth(0), open(false), reeval(false), color(false),
+	multicolor(false), ecbm(false), vicColors(false), hovering(false), useRomFont(true)
 {
 	VICEEmuType emuType = ViceGetEmuType();
 

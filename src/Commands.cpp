@@ -300,6 +300,8 @@ int CommandGfxSaveC64(strref param) {
 		}
 	}
 
+	chars &= ~(charBaseMask-1);
+
 	strref name = param.after_last_or_full('/', '\\');
 
 	FILE* f;

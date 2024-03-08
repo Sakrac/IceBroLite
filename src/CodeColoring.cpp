@@ -185,7 +185,7 @@ void LoadCustomTheme(const char *themeFile) {
 		memcpy(sCustomTheme, ImGui::GetStyle().Colors, sizeof(sCustomTheme));
 		while (!config.Empty()) {
 			strref name, value;
-			ConfigParseType type = config.Next(&name, &value);
+			/*ConfigParseType type =*/ config.Next(&name, &value);
 			if (name.same_str("CodeColoring")) {
 				sThemeCustomColors.CodeColoringOn = (bool)value.atoi();
 			} else if(name.same_str("SourceColor")) {
@@ -216,7 +216,7 @@ void LoadCustomTheme(const char *themeFile) {
 				sThemeCustomColors.PCHighlightStyle = !!value.atoi();
 			} else {
 				printf("color = " STRREF_FMT "\n", STRREF_ARG(value));
-				for (int i = 0; i < snThemeColors; ++i) {
+				for (uint32_t i = 0; i < snThemeColors; ++i) {
 					int c = saThemeColors[i];
 					if (name.same_str(ImGui::GetStyleColorName(c))) {
 						sCustomTheme[c] = ParseCustomColor(value);
@@ -247,7 +247,6 @@ void SaveCustomTheme(const char* themeFile) {
 	UserData theme;
 	char col[32];
 	const size_t colSize = sizeof(col);
-	strl_t colLen = 0;
 	strovl str(col, colSize);
 	theme.AddValue(strref("CodeColoring"), sCurrentCustomColors.CodeColoringOn ? 1 : 0);
 	theme.AddValue(strref("SourceColor"), strref(col, AppendColorHash(col, colSize, sCurrentCustomColors.SourceColor)));
@@ -267,7 +266,7 @@ void SaveCustomTheme(const char* themeFile) {
 	str.sprintf("%.3f", sCurrentCustomColors.AvoidHueRadius);
 	theme.AddValue(strref("BranchTargetAvoid"), str.get_strref());
 	theme.AddValue(strref("PCHighlightStyle"), sCurrentCustomColors.PCHighlightStyle ? 1 : 0);
-	for (int i = 0; i < snThemeColors; ++i) {
+	for (uint32_t i = 0; i < snThemeColors; ++i) {
 		int c = saThemeColors[i];
 		theme.AddValue(ImGui::GetStyleColorName(c),
 			strref(col, AppendColorHash(col, colSize, sCustomTheme[c])));
@@ -393,7 +392,7 @@ void ThemeColorMenu()
 				if (sCustomThemeActive) { sThemeCustomColors.PCHighlightStyle = sCurrentCustomColors.PCHighlightStyle; }
 			}
 			if (sCurrentCustomColors.CodeColoringOn) {
-				for (int i = 0; i < snCodeColors; ++i) {
+				for (uint32_t i = 0; i < snCodeColors; ++i) {
 					if (sCurrentCustomColors.CodeColoringOn || i == IDX_SOURCE_COLOR) {
 						ImGui::PushID(i);
 						ImVec4 currCol = *saCodeColors[i];
@@ -447,7 +446,7 @@ void ThemeColorMenu()
 		if (ImGui::BeginMenu("ImGui Colors")) {
 			ImGuiStyle& style = ImGui::GetStyle();
 
-			for (int i = 0; i < snThemeColors; i++) {
+			for (uint32_t i = 0; i < snThemeColors; i++) {
 				ImGuiCol c = saThemeColors[i];
 				const char* name = ImGui::GetStyleColorName(c);
 				ImGui::PushID(i);

@@ -755,14 +755,19 @@ void ViceConnection::updateGetMemory(VICEBinMemGetResponse* resp)
 	IBMutexLock(&userRequestMutex);
 	// TODO: Check memory range for end
 	uint32_t id = resp->GetReqID();
-	uint16_t start = 0, bank = 0;
+	uint16_t start = 0;
 	uint8_t space = 0;
+#ifdef VICELOG
+	uint16_t bank = 0;
+#endif
 	bool found = false;
 	for (size_t i = 0; i < sMemRequests.size(); ++i) {
 		if (sMemRequests[i].requestID == id) {
 			start = sMemRequests[i].start;
 			//end = sMemRequests[i].end;
+#ifdef VICELOG
 			bank = sMemRequests[i].bank;
+#endif
 			space = sMemRequests[i].space;
 			found = true;
 			sMemRequests.erase(sMemRequests.begin() + i);

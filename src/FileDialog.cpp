@@ -126,7 +126,9 @@ const char* GetStartFolder() { return sCurrentDir; }
 void ResetStartFolder()
 {
 	if( sCurrentDir[ 0 ] ) {
-		SetCurrentDirectory( sCurrentDir );
+		if(SetCurrentDirectory( sCurrentDir )!=0) {
+			// error?
+		}
 	}
 }
 

@@ -119,7 +119,7 @@ void FVFileView::Draw(const char *title)
 				}
 				ImGui::TableSetColumnIndex(1);
 
-				if (ImGui::Selectable(files[i].name, i == selectIndex, ImGuiSelectableFlags_AllowDoubleClick)) {
+				if (ImGui::Selectable(files[i].name, i == (size_t)selectIndex, ImGuiSelectableFlags_AllowDoubleClick)) {
 					if (ImGui::IsMouseDoubleClicked(0)) {
 						strown<PATH_MAX_LEN> newPath(path);
 						newPath.append(DIR_SEP).append(files[i].name);

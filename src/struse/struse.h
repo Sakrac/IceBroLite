@@ -963,9 +963,11 @@ public:
 #else
 	int sprintf(const char *format, ...) { va_list args; va_start(args, format);
 		set_len_int(vsnprintf(charstr(), cap(), format, args)); va_end(args); return len(); }
-	int sprintf_at(strl_t pos, const char *format, ...) { va_list args; va_start(args, format);
+	int sprintf_at(strl_t pos, const char *format, ...) {
+		va_list args; va_start(args, format);
 		int l = vsnprintf(charstr()+pos, cap()-pos, format, args);
-        if (l+pos>len()) set_len(l+pos); va_end(args); return l; }
+        if (l+pos>len()) { set_len(l+pos); }
+		va_end(args); return l; }
 	int sprintf_append(const char *format, ...) { va_list args; va_start(args, format);
 		int l = vsnprintf(end(), cap()-len(), format, args); va_end(args); add_len_int(l); return l; }
 #endif

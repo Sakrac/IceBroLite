@@ -754,6 +754,7 @@ bool GetWatchRef(CPU6510* cpu, uint16_t addr, int style, char *buf, size_t bufCa
 				o.append("*$").append_num(a, 4, 16).append("").c_str();
 				break;
 			}
+			default: break;
 		}
 		return true;
 	}

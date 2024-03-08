@@ -12,7 +12,8 @@
 
 constexpr auto CursorFlashPeriod = 64.0f/50.0f;
 
-RegisterView::RegisterView() : cursorTime(0.0f), open(true), wasActive(false), editing(false)
+RegisterView::RegisterView() : cursorTime(0.0f), open(true),
+	editing(false), wasActive(false)
 {
 	cursor = -1;
 }
