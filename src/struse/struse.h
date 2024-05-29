@@ -1120,7 +1120,7 @@ template <strl_t S> class strcol {
 public:
 	strcol() : end_buf(0) { }
 	bool empty() const { return end_buf == 0; }
-	void clear() const { end_buf = 0; }
+	void clear() { end_buf = 0; }
 	bool end(strl_t curr) const { return curr>=end_buf; }
 	bool last(strl_t curr) const { return end(next(curr)); }
 	strl_t get_len(strl_t curr) { strl_t o = 0, s = 0; char c; do { c = _buffer[curr++]; o += strl_t(c&0x7f)<<s; s += 7; } while (c<0); return lim_len(c, o); }
