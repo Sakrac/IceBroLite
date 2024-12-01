@@ -145,8 +145,6 @@ void BreakpointView::Draw()
 		ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV |
 		ImGuiTableFlags_ScrollY;
 
-	ImVec2 outer_size(-FLT_MIN, 0.0f);
-
 	ImVec2 mousePos = ImGui::GetMousePos();
 	ImVec2 winPos = ImGui::GetWindowPos();
 	ImVec2 winSize = ImGui::GetWindowSize();

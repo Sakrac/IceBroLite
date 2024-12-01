@@ -51,11 +51,11 @@ endif
 ifeq ($(UNAME_S), Darwin) #APPLE
 	ECHO_MESSAGE = "Mac OS X"
 	LIBS += -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo
-	LIBS += -L/usr/local/lib -L/opt/local/lib
+	LIBS += -L/opt/homebrew/lib
 	#LIBS += -lglfw3
 	LIBS += -lglfw
 
-	CXXFLAGS += -I/usr/local/include -I/opt/local/include
+	CXXFLAGS += -I/opt/homebrew/include -std=c++11
 	CFLAGS = $(CXXFLAGS)
 endif
 

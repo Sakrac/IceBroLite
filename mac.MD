@@ -14,11 +14,21 @@ https://developers.google.com/j2objc/guides/external-build-projects, https://ace
 
 ## Prerequisites
 
-GLFW is required but uncertain which. Linux uses glfw3-dev
+Install command-line tools:
+
+```
+xcode-select --install
+```
+
+Install glfw:
 
 ```
 brew install glfw
-brew install glfw3
-brew install glfw-dev
-brew install glfw3-dev
+```
+
+## Build
+
+```
+cd src
+make
 ```

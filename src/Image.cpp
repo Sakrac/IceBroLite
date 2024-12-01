@@ -1,3 +1,4 @@
+#define GL_SILENCE_DEPRECATION
 #include <stdint.h>
 #include "imgui/imgui.h"
 #include "GLFW/glfw3.h"
@@ -236,8 +237,6 @@ struct sTexArea {
 	{ 36 * 2, 48 * 2, 12 * 2, 12 * 2 },
 	{ 48 * 2, 48 * 2, 12 * 2, 16 * 2 },
 };
-
-const int nIcons = sizeof(aIcons) / sizeof(aIcons[0]);
 
 static ImTextureID aIconID = {};
 static int sIconTexWidth = 0;

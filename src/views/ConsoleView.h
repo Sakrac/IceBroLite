@@ -1,7 +1,7 @@
 #pragma once
 #include "../imgui/imgui.h"
 #include "../struse/struse.h"
-#include <malloc.h>
+#include <stdlib.h>
 struct UserData;
 
 struct IceConsole

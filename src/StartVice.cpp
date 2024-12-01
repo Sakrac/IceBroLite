@@ -92,7 +92,7 @@ void* LoadViceEXEThread(void* param)
 	return true;// nullptr;
 }
 
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__APPLE__)
 
 // The standard UNIX way is to use fork(2) followed by an exec(3)
 // call(there's a whole family of them�choose whichever suits

@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include "Files.h"
 
 bool SaveFile(const char *filename, void* data, size_t size)

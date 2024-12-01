@@ -1,8 +1,8 @@
 #pragma once
 
 #include <vector>
-#ifdef __linux__
-#include <linux/limits.h>
+#if defined(__linux__) || defined(__APPLE__)
+#include <limits.h>
 #define PATH_MAX_LEN PATH_MAX
 #elif _WIN32
 #define PATH_MAX_LEN _MAX_PATH

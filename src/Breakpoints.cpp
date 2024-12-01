@@ -1,7 +1,7 @@
 // breakpoints are added in bulk when VICE stops
 // breakpoints can be added by the debugger
 
-#include <malloc.h>
+#include <stdlib.h>
 #include "platform.h"
 #include "Breakpoints.h"
 #include "HashTable.h"

@@ -90,7 +90,6 @@ void SymbolView::Draw()
         ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV |
         ImGuiTableFlags_ScrollY;
 
-    ImVec2 outer_size(-FLT_MIN, 0.0f);
     if (ImGui::BeginTable("##symbolstable", 3, flags)) {
         ImGui::TableSetupColumn("Addr", ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_WidthStretch, -1.0f, SymbolColumnID_Address);
         ImGui::TableSetupColumn("Symbol", ImGuiTableColumnFlags_WidthStretch, -1.0f, SymbolColumnID_Symbol);

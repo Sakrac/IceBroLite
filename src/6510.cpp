@@ -2,7 +2,7 @@
 #include "struse/struse.h"
 #include "6510.h"
 #include "Files.h"
-#include <malloc.h>
+#include <stdlib.h>
 
 // for now support 1 CPU
 

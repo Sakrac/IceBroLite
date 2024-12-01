@@ -897,13 +897,11 @@ int Disassemble(CPU6510* cpu, uint16_t addr, char* dest, int left, int& argOffs,
 {
 	strovl str(dest, left);
 	const dismnm* opcodes = a6502_ops;
-	int bytes = 1;
 	unsigned char op = cpu->GetByte(addr);
 	bool not_valid = opcodes[op].mnemonic == mnm_inv || (!illegals && opcodes[op].mnemonic >= mnm_wdc_and_illegal_instructions);
 
 	int arg_size = not_valid ? 0 : opcodes[op].arg_size;;
 	int mode = not_valid ? AM_NON : opcodes[op].addrMode;
-	bytes += arg_size;
 
 	if (showBytes) {
 		for (uint16_t b = 0; b <= (uint16_t)arg_size; b++) {
@@ -992,12 +990,10 @@ int Assemble(CPU6510* cpu, char* cmd, uint16_t addr)
 		return 0;	// instruction not found
 
 	// get valid address modes
-	int addr_modes = 0;
 	int addr_mode_mask = 0;
 	uint8_t op_code_instr[AM_COUNT] = { (uint8_t)0xff };
 	for (int i = 0; i < 256; i++) {
 		if (a6502_ops[i].mnemonic == mnm) {
-			addr_modes++;
 			addr_mode_mask |= 1 << a6502_ops[i].addrMode;
 			op_code_instr[a6502_ops[i].addrMode] = (uint8_t)i;
 		}

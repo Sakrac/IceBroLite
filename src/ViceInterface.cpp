@@ -10,7 +10,7 @@
 #endif
 #include <inttypes.h>
 #include <stdio.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <queue>
 #include <vector>
 #include <assert.h>
