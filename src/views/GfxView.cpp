@@ -1,7 +1,7 @@
 // example for creating a texture:
 // static void ImGui_ImplDX11_CreateFontsTexture()
 #include <stdio.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <inttypes.h>
 #include "../imgui/imgui.h"
 #include "../imgui/imgui_internal.h"

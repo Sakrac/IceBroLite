@@ -10,7 +10,7 @@
 #include <netdb.h>
 #endif
 #include <inttypes.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <assert.h>
 #include "platform.h"
 #include "struse/struse.h"

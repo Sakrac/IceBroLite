@@ -1,7 +1,7 @@
 #include "CodeView.h"
 #include "../imgui/imgui.h"
 #include "../struse/struse.h"
-#include <malloc.h>
+#include <stdlib.h>
 #include "Views.h"
 #include "../Expressions.h"
 #include "../C64Colors.h"

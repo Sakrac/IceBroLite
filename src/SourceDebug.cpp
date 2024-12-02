@@ -2,7 +2,7 @@
 #include "../struse/xml.h"
 #include "Sym.h"
 #include "Files.h"
-#include <malloc.h>
+#include <stdlib.h>
 #include <vector>
 #include <assert.h>
 #include "ViceInterface.h"

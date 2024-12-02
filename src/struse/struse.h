@@ -2794,13 +2794,11 @@ int strref::find_case_esc_range(const strref str, const strref range, strl_t pos
 		if (b == c) {
 			const uint8_t *chk_scan = scan;
 			const uint8_t *chk_compare = compare;
-			strl_t chk_scan_left = scan_left;
 			strl_t chk_compare_left = compare_left;
 			while (chk_compare_left) {
 				uint8_t d = *chk_compare++;
 				chk_compare_left--;
 				uint8_t e = *chk_scan++;
-				chk_scan_left--;
 				if (d=='\\' && compare_left) {
 					strl_t skip = int_get_esc_code(compare, compare_left, d);
 					compare += skip;
@@ -2860,13 +2858,11 @@ int strref::find_esc_range(const strref str, const strref range, strl_t pos) con
 		if (b == c) {
 			const uint8_t *chk_scan = scan;
 			const uint8_t *chk_compare = compare;
-			strl_t chk_scan_left = scan_left;
 			strl_t chk_compare_left = compare_left;
 			while (chk_compare_left) {
 				uint8_t d = int_tolower_ascii7(*chk_compare++);
 				chk_compare_left--;
 				uint8_t e = int_tolower_ascii7(*chk_scan++);
-				chk_scan_left--;
 				if (d=='\\' && compare_left) {
 					strl_t skip = int_get_esc_code(compare, compare_left, d);
 					compare += skip;

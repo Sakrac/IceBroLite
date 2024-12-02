@@ -1,5 +1,5 @@
 // attempting a home made file dialog in ImGui for a little more portability
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 #include <dirent.h>
 #include <sys/stat.h>
 #elif _WIN32
@@ -10,7 +10,7 @@
 #include "../struse/struse.h"
 #include "FilesView.h"
 #include <string.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include "imgui.h"
 #include "imgui_internal.h"
 
@@ -113,7 +113,7 @@ void FVFileView::Draw(const char *title)
 				if (files[i].fileType == FVFileInfo::dir) {
 					ImGui::Text("(dir)");
 				} else {
-					if (files[i].size < (10 * 1024)) { ImGui::Text("%ld", files[i].size); }
+					if (files[i].size < (10 * 1024)) { ImGui::Text("%llu", files[i].size); }
 					else  if (files[i].size < (1024 * 1024)) { ImGui::Text("%.1fkb", (float)(files[i].size/1024.0f)); }
 					else { ImGui::Text("%.2fMb", (float)(files[i].size / (1024.0f*1024.0f))); }
 				}
@@ -178,7 +178,7 @@ static bool CheckFileFilter(strref name, strref filters)
 	return false;
 }
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 
 void FVFileList::ReadDir(const char *full_path, const char*file_filter)
 {

@@ -10,9 +10,9 @@
 #include "views/Views.h"
 #include "struse/struse.h"
 #include "imgui/imgui.h"
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 #include <unistd.h>
-#include <linux/limits.h>
+#include <limits.h>
 #define PATH_MAX_LEN PATH_MAX
 #define sprintf_s sprintf
 #define GetCurrentDirectory(size, buf) getcwd(buf, size)

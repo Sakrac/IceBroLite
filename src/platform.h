@@ -17,7 +17,7 @@ typedef HANDLE IBMutex;
 typedef HANDLE IBThread;
 typedef IBThreadRet(WINAPI* IBThreadFunc)(void* data);
 
-#elif __linux__
+#elif defined(__linux__) || defined(__APPLE__)
 
 #define IBMutex_Clear 0
 #define IBThread_Clear 0

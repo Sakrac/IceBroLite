@@ -1,7 +1,7 @@
 #include "MemView.h"
 #include "../imgui/imgui.h"
 #include "../struse/struse.h"
-#include <malloc.h>
+#include <stdlib.h>
 #include "Views.h"
 #include "../6510.h"
 #include "../Expressions.h"
@@ -108,7 +108,7 @@ void MemView::Draw(int index)
 
 	if (evalAddress||(fixedAddress && cpu->MemoryChange())) {
 		SetAddr(ValueFromExpression(address+(fixedAddress ? 1 : 0)));
-		spanValue = span ? ValueFromExpression(span) : 0;
+		spanValue = ValueFromExpression(span);
 		evalAddress = false;
 	}
 
