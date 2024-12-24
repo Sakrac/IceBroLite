@@ -158,6 +158,7 @@ struct ParseDebugText {
 	strref segment;
 	std::vector<ParseDebugSource*> files;
 	std::vector<ParseDebugSegment*> segments;
+	bool leaveExistingSymbols;
 };
 
 bool C64DbgXMLCB(void* user, strref tag_or_data, const strref* tag_stack, int size_stack, XML_TYPE type)
@@ -245,7 +246,7 @@ bool C64DbgXMLCB(void* user, strref tag_or_data, const strref* tag_stack, int si
 			tag_or_data.trim_whitespace();
 			if (tag_or_data) {
 				//ViceSetUpdateSymbols(false);
-				ClearSymbols();
+				if (!parse->leaveExistingSymbols) { ClearSymbols(); }
 				while (strref label = tag_or_data.line()) {
 					strref seg = label.split_token_trim(',');
 					strref addr = label.split_token_trim(',');
@@ -281,110 +282,90 @@ bool C64DbgXMLCB(void* user, strref tag_or_data, const strref* tag_stack, int si
 	return true;
 }
 
+bool ReadC64DbgInternal(SourceDebug *dbg, ParseDebugText &parse) {
+	// remember the file pointers for later cleanup
+	dbg->files.reserve(parse.files.size());
+	for (size_t f = 0; f < parse.files.size(); ++f) {
+		dbg->files.push_back(parse.files[f]->file);
+	}
+
+	// segments depend on if they have data or not, could be empty.
+	for (size_t s = 0; s < parse.segments.size(); ++s) {
+		ParseDebugSegment* seg = parse.segments[s];
+
+		// determine address range of segment
+		uint16_t addrFirst = 0xffff, addrLast = 0x0000;
+		for (size_t b = 0; b < seg->blocks.size(); ++b) {
+			ParseDebugBlock* blk = seg->blocks[b];
+			for (size_t l = 0; l < blk->lines.size(); ++l) {
+				ParseDebugLine* lin = &blk->lines[l];
+				if (addrFirst > lin->first) { addrFirst = lin->first; }
+				if (addrLast < lin->last) { addrLast = lin->last; }
+			}
+		}
+
+		// segment not empty -> add it!
+		if (addrFirst <= addrLast) {
+			dbg->segments.push_back(SourceDebugSegment());
+			SourceDebugSegment* segSrc = &dbg->segments[dbg->segments.size() - 1];
+			segSrc->addrFirst = addrFirst;
+			segSrc->addrLast = addrLast;
+			segSrc->lines = (SourceDebugLine*)calloc((size_t)addrLast + 1 - (size_t)addrFirst, sizeof(SourceDebugLine));
+			segSrc->blockNames = (strref*)calloc(seg->blocks.size(), sizeof(strref));
+			segSrc->name = seg->name;
+			for (size_t b = 0; b < seg->blocks.size(); ++b) {
+				ParseDebugBlock* blk = seg->blocks[b];
+				// copy block name
+				segSrc->blockNames[b] = blk->name;
+				// fill in addresses with line info
+				for (size_t l = 0; l < blk->lines.size(); ++l) {
+					ParseDebugLine* lin = &blk->lines[l];
+					uint16_t ft = lin->first, lt = lin->last;
+					if (ft <= lt) {
+						for (uint16_t a = ft; a <= lt; ++a) {
+							assert(a <= addrLast);
+							SourceDebugLine* ln = segSrc->lines + (a-addrFirst);
+							ln->block = (uint8_t)b;
+							strref lineStr = lin->line;
+							uint8_t spaces = 0;
+							while (lineStr.get_first() <= 0x20 && spaces < 255) {
+								if (lineStr.get_first() == '\t') { spaces += 4; }
+								else { ++spaces; }
+								++lineStr;
+							}
+							ln->spaces = spaces;
+							ln->line = lineStr.get();
+							ln->len = lineStr.get_len() < 256 ? lineStr.get_len() : 255;
+						}
+					}
+				}
+			}
+		}
+	}
+	return true;
+
+}
+
 // Load a source debug file without clearing out the current one
 bool ReadC64DbgSrcExtra(const char* filename) {
 	ParseDebugText parse;
 	parse.path = strref(filename).before_last('/', '\\');
 	parse.segment.clear(); // just in case there are blocks without segments I guess
+	parse.leaveExistingSymbols = true;
 	if (parse.path.get_len()) { parse.path = strref(parse.path.get(), parse.path.get_len() + 1); }
 	size_t size;
 	bool success = false;
 	if (void* voidbuf = LoadBinary(filename, size)) {
-		IBMutexLock(&sSrcDbgMutex);
-		SourceDebug* dbg = sSourceDebug;
-		if(!dbg) {
-			SourceDebug* dbg = new SourceDebug;
-			sSourceDebug = dbg;
-		}
-		if (dbg) {
-			// add all the referenced files for later deletion
-			for (size_t f = 0; f < parse.files.size(); ++f) {
-				dbg->files.push_back(parse.files[f]->file);
-			}
-
-			// 
-		}
-		IBMutexRelease(&sSrcDbgMutex);
-	}
-	return false;
-}
-
-bool ReadC64DbgSrc(const char* filename)
-{
-	ParseDebugText parse;
-	parse.path = strref(filename).before_last('/', '\\');
-	parse.segment.clear(); // just in case there are blocks without segments I guess
-	if (parse.path.get_len()) { parse.path = strref(parse.path.get(), parse.path.get_len() + 1); }
-	size_t size;
-	bool success = false;
-	if (void* voidbuf = LoadBinary(filename, size)) {
-		ClearSourceDebug();
-		ClearSymbols();
 		IBMutexLock(&sSrcDbgMutex);
 		if (ParseXML(strref((const char*)voidbuf, (strl_t)size), C64DbgXMLCB, &parse)) {
-			SourceDebug* dbg = new SourceDebug;
-			sSourceDebug = dbg;
-
-			// remember the file pointers for later cleanup
-			dbg->files.reserve(parse.files.size());
-			for (size_t f = 0; f < parse.files.size(); ++f) {
-				dbg->files.push_back(parse.files[f]->file);
+			SourceDebug* dbg = sSourceDebug;
+			if (!dbg) {
+				SourceDebug* dbg = new SourceDebug;
+				sSourceDebug = dbg;
 			}
-
-			// segments depend on if they have data or not, could be empty.
-			for (size_t s = 0; s < parse.segments.size(); ++s) {
-				ParseDebugSegment* seg = parse.segments[s];
-
-				// determine address range of segment
-				uint16_t addrFirst = 0xffff, addrLast = 0x0000;
-				for (size_t b = 0; b < seg->blocks.size(); ++b) {
-					ParseDebugBlock* blk = seg->blocks[b];
-					for (size_t l = 0; l < blk->lines.size(); ++l) {
-						ParseDebugLine* lin = &blk->lines[l];
-						if (addrFirst > lin->first) { addrFirst = lin->first; }
-						if (addrLast < lin->last) { addrLast = lin->last; }
-					}
-				}
-
-				// segment not empty -> add it!
-				if (addrFirst <= addrLast) {
-					dbg->segments.push_back(SourceDebugSegment());
-					SourceDebugSegment* segSrc = &dbg->segments[dbg->segments.size() - 1];
-					segSrc->addrFirst = addrFirst;
-					segSrc->addrLast = addrLast;
-					segSrc->lines = (SourceDebugLine*)calloc((size_t)addrLast + 1 - (size_t)addrFirst, sizeof(SourceDebugLine));
-					segSrc->blockNames = (strref*)calloc(seg->blocks.size(), sizeof(strref));
-					segSrc->name = seg->name;
-					for (size_t b = 0; b < seg->blocks.size(); ++b) {
-						ParseDebugBlock* blk = seg->blocks[b];
-						// copy block name
-						segSrc->blockNames[b] = blk->name;
-						// fill in addresses with line info
-						for (size_t l = 0; l < blk->lines.size(); ++l) {
-							ParseDebugLine* lin = &blk->lines[l];
-							uint16_t ft = lin->first, lt = lin->last;
-							if (ft <= lt) {
-								for (uint16_t a = ft; a <= lt; ++a) {
-									assert(a <= addrLast);
-									SourceDebugLine* ln = segSrc->lines + (a-addrFirst);
-									ln->block = (uint8_t)b;
-									strref lineStr = lin->line;
-									uint8_t spaces = 0;
-									while (lineStr.get_first() <= 0x20 && spaces < 255) {
-										if (lineStr.get_first() == '\t') { spaces += 4; }
-										else { ++spaces; }
-										++lineStr;
-									}
-									ln->spaces = spaces;
-									ln->line = lineStr.get();
-									ln->len = lineStr.get_len() < 256 ? lineStr.get_len() : 255;
-								}
-							}
-						}
-					}
-				}
+			if (dbg) {
+				success = ReadC64DbgInternal(dbg, parse);
 			}
-			success = true;
 		}
 		// clear up ParseDebugText
 		while (parse.files.size()) {
@@ -399,6 +380,44 @@ bool ReadC64DbgSrc(const char* filename)
 			}
 			parse.segments.pop_back();
 		}
+		IBMutexRelease(&sSrcDbgMutex);
+	}
+	return success;
+}
+
+bool ReadC64DbgSrc(const char* filename)
+{
+	ParseDebugText parse;
+	parse.path = strref(filename).before_last('/', '\\');
+	parse.segment.clear(); // just in case there are blocks without segments I guess
+	parse.leaveExistingSymbols = false;
+	if (parse.path.get_len()) { parse.path = strref(parse.path.get(), parse.path.get_len() + 1); }
+	size_t size;
+	bool success = false;
+	if (void* voidbuf = LoadBinary(filename, size)) {
+		ClearSourceDebug();
+		ClearSymbols();
+		IBMutexLock(&sSrcDbgMutex);
+		if (ParseXML(strref((const char*)voidbuf, (strl_t)size), C64DbgXMLCB, &parse)) {
+			SourceDebug* dbg = new SourceDebug;
+			sSourceDebug = dbg;
+
+			success = ReadC64DbgInternal(dbg, parse);
+		}
+		// clear up ParseDebugText
+		while (parse.files.size()) {
+			delete parse.files[parse.files.size() - 1];
+			parse.files.pop_back();
+		}
+		while (parse.segments.size()) {
+			ParseDebugSegment* segment = parse.segments[parse.segments.size() - 1];
+			while (segment->blocks.size()) {
+				delete segment->blocks[segment->blocks.size() - 1];
+				segment->blocks.pop_back();
+			}
+			parse.segments.pop_back();
+		}
+
 		IBMutexRelease(&sSrcDbgMutex);
 	}
 	return success;
