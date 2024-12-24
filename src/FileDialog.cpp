@@ -35,6 +35,7 @@ static bool sFileDialogOpen = false;
 static bool sLoadProgramReady = false;
 static bool sLoadListingReady = false;
 static bool sLoadKickDbgReady = false;
+static bool sLoadKickDbgExtraReady = false;
 static bool sLoadSymbolsReady = false;
 static bool sLoadViceCmdReady = false;
 static bool sSetViceEXEPathReady = false;
@@ -45,6 +46,7 @@ static bool sSaveThemeReady = false;
 static char sLoadPrgFileName[PATH_MAX_LEN] = {};
 static char sLoadLstFileName[PATH_MAX_LEN] = {};
 static char sLoadDbgFileName[PATH_MAX_LEN] = {};
+static char sLoadDbgExtraFileName[PATH_MAX_LEN] = {};
 static char sLoadSymFileName[PATH_MAX_LEN] = {};
 static char sLoadViceFileName[PATH_MAX_LEN] = {};
 static char sViceEXEPath[PATH_MAX_LEN] = {};
@@ -192,6 +194,15 @@ const char* LoadKickDbgReady()
 	if (sLoadKickDbgReady) {
 		sLoadKickDbgReady = false;
 		return sLoadDbgFileName;
+	}
+	return nullptr;
+}
+
+const char* LoadKickDbgExtraReady()
+{
+	if (sLoadKickDbgExtraReady) {
+		sLoadKickDbgExtraReady = false;
+		return sLoadDbgExtraFileName;
 	}
 	return nullptr;
 }
@@ -390,6 +401,22 @@ void LoadKickDbgDialog()
 	FVFileView* filesView = GetFileView();
 	if (filesView && !filesView->IsOpen()) {
 		filesView->Show(strown<PATH_MAX_LEN>(StartFolder(sLoadDbgFileName)).c_str(), &sLoadKickDbgReady, sLoadDbgFileName, sizeof(sLoadDbgFileName), sLoadKickDbgParams);
+	}
+#endif
+}
+
+void LoadKickDbgExtraDialog()
+{
+	sLoadKickDbgExtraReady = false;
+	sFileDialogOpen = true;
+
+#if defined(_WIN32) && !defined(CUSTOM_FILEVIEWER)
+	hThreadFileDialog = CreateThread(NULL, FILE_LOAD_THREAD_STACK, (LPTHREAD_START_ROUTINE)FileLoadDialogThreadRun, &aLoadGrabInfo,
+		0, NULL);
+#else
+	FVFileView* filesView = GetFileView();
+	if (filesView && !filesView->IsOpen()) {
+		filesView->Show(strown<PATH_MAX_LEN>(StartFolder(sLoadDbgFileName)).c_str(), &sLoadKickDbgExtraReady, sLoadDbgExtraFileName, sizeof(sLoadDbgExtraFileName), sLoadKickDbgParams);
 	}
 #endif
 }

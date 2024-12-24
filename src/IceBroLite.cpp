@@ -365,6 +365,9 @@ int main(int argc, char* argv[])
 		if (const char* kickDbgFile = LoadKickDbgReady()) {
 			ReadC64DbgSrc(kickDbgFile);
 		}
+		if (const char* kickDbgExtraFile = LoadKickDbgExtraReady()) {
+			ReadC64DbgSrcExtra(kickDbgExtraFile);
+		}
 		if (const char* viceMonCmdFile = LoadViceCMDReady()) {
 			ReadViceCommandFile(viceMonCmdFile);
 		}

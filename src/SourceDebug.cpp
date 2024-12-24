@@ -42,7 +42,6 @@ char* sListing = nullptr;
 size_t sListingSize = 0;
 static IBMutex sSrcDbgMutex;
 
-
 strref GetSourceAt(uint16_t addr, int &spaces)
 {
 	if (sSourceDebug) {
@@ -280,6 +279,34 @@ bool C64DbgXMLCB(void* user, strref tag_or_data, const strref* tag_stack, int si
 		}
 	}
 	return true;
+}
+
+// Load a source debug file without clearing out the current one
+bool ReadC64DbgSrcExtra(const char* filename) {
+	ParseDebugText parse;
+	parse.path = strref(filename).before_last('/', '\\');
+	parse.segment.clear(); // just in case there are blocks without segments I guess
+	if (parse.path.get_len()) { parse.path = strref(parse.path.get(), parse.path.get_len() + 1); }
+	size_t size;
+	bool success = false;
+	if (void* voidbuf = LoadBinary(filename, size)) {
+		IBMutexLock(&sSrcDbgMutex);
+		SourceDebug* dbg = sSourceDebug;
+		if(!dbg) {
+			SourceDebug* dbg = new SourceDebug;
+			sSourceDebug = dbg;
+		}
+		if (dbg) {
+			// add all the referenced files for later deletion
+			for (size_t f = 0; f < parse.files.size(); ++f) {
+				dbg->files.push_back(parse.files[f]->file);
+			}
+
+			// 
+		}
+		IBMutexRelease(&sSrcDbgMutex);
+	}
+	return false;
 }
 
 bool ReadC64DbgSrc(const char* filename)
