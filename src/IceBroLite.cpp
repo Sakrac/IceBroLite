@@ -127,6 +127,7 @@ static void glfw_error_callback(int error, const char* description)
 
 static char forceLoadProgram[PATH_MAX_LEN];
 static char forceLoadSymbols[PATH_MAX_LEN];
+static char forceLoadExtraDebug[PATH_MAX_LEN];
 
 // Global Variables:
 #ifdef _WIN32
@@ -159,6 +160,33 @@ int main(int argc, char* argv[])
 		wcstombs_s(&count, argv[i], len+1, szArglist[i-1], len);
 	}
 #endif
+
+	for (int i = 1; i < argc; ++i) {
+		strref line = argv[i];
+		if (line[0] == '-') {
+			++line;
+			if(line.same_str("?") || line.same_str("help") || line.same_str("info")) {
+#ifdef WIN32
+				MessageBoxA(0,
+#else
+				printf(
+#endif
+					"IceBroLite optional parameters:\n"
+					"* -load=<file>: automatically load a prg/d64/crt etc. and associated debug info when connected to VICE\n"
+					" * -symbols=<file>: autoload symbols from file\n"
+					" * -connect: connect to an existing instance of VICE\n"
+					" * -extradebug=<file>: attempt to load an additional debug XML file (kickasm) in addition to the program debug\n"
+					" * -start: start the previously loaded VICE executable on startup\n"
+					" * -start:<file>: start a VICE executable specified as the file\n"
+					" * -emu=<type>: start a VICE emulator where type is one of: c64, vic20 or plus4\n"
+#ifdef WIN32
+					, "IceBroLite Info", 0
+#endif
+				);
+				return 0;
+			}
+		}
+	}
 
 	GetStartFolder();
 
@@ -235,14 +263,14 @@ int main(int argc, char* argv[])
 			if (cmd.same_str("load")) { strovl ovl(forceLoadProgram, sizeof(forceLoadProgram)); ovl.copy(line); ovl.c_str(); }
 			else if (cmd.same_str("symbols")) { strovl ovl(forceLoadSymbols, sizeof(forceLoadSymbols)); ovl.copy(line); ovl.c_str(); }
 			else if (cmd.same_str("connect")) { ViceConnect("127.0.0.1", 6502); }
+			else if (cmd.same_str("extradebug")) { strovl ovl(forceLoadExtraDebug, sizeof(forceLoadExtraDebug)); ovl.copy(line); ovl.c_str(); }
 			else if (cmd.same_str("start")) { if (line) { SetViceEXEPath(line); } LoadViceEXE(); }
 			else if (cmd.same_str("font")) {
 				if (line) {
 					strref file = line.split_token(',');
 					ForceUserFont(file, line.atoi() ? (int)line.atoi() : 13);
 				}
-			}
-			else if (cmd.same_str("emu")) {
+			} else if (cmd.same_str("emu")) {
 				if(line.same_str("c64")) {
 					ViceSetEmuType(VICEEmuType::C64);
 				} else if(line.same_str("vic20")) {
@@ -357,6 +385,9 @@ int main(int argc, char* argv[])
 				ReadSymbolsFile(forceLoadSymbols);
 			} else {
 				ReadSymbolsForBinary(forceLoadProgram);
+				if(forceLoadExtraDebug[0]) {
+					ReadC64DbgSrcExtra(forceLoadExtraDebug);
+				}
 			}
 			forceLoadProgram[0] = 0;
 			forceLoadSymbols[0] = 0;
