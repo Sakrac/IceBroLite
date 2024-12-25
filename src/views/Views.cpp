@@ -306,6 +306,7 @@ void ViewContext::Draw()
 		if (ImGui::BeginMainMenuBar()) {
 			if (ImGui::BeginMenu("File")) {
 				if (ImGui::MenuItem("Load KickAsm Debug")) { LoadKickDbgDialog(); }
+				if (ImGui::MenuItem("Load Additional KickAsm Debug")) { LoadKickDbgExtraDialog(); }
 				if (ImGui::MenuItem("Load Listing")) { LoadListingDialog(); }
 				if (ImGui::MenuItem("Load Sym File")) { LoadSymbolsDialog(); }
 				if (ImGui::MenuItem("Load Vice Command Symbols")) { LoadViceCmdDialog(); }
