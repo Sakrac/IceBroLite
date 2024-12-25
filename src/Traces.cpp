@@ -29,7 +29,7 @@ struct TraceArray {
 };
 
 static const uint32_t cycles_per_frame_pal = 19656;
-[[ maybe_unused ]] static const uint32_t cycles_per_frame_ntsc = 17095;
+//[[ maybe_unused ]] static const uint32_t cycles_per_frame_ntsc = 17095;
 
 static bool sTraceStart = false;
 static int sTracePointIdx = 0;
