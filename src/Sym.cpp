@@ -39,6 +39,8 @@ struct SymbolInfo {
 	char* label;
 };
 
+void CheckForceLoadExtraDebug();
+
 static SymEntry* sLabelCount = nullptr;
 static SymRef* sLabelEntries = nullptr;
 static std::vector<uint16_t> sortedSymAddrs;
@@ -594,7 +596,10 @@ void ReadSymbolsForBinary(const char *binname)
 	strown<PATH_MAX_LEN> symFile(origname);
 
 	symFile.append(".dbg");
-	if (ReadC64DbgSrc(symFile.c_str())) { return; }
+	if (ReadC64DbgSrc(symFile.c_str())) {
+		CheckForceLoadExtraDebug();
+		return;
+	}
 
 	symFile.copy(origname);
 	symFile.append(".sym");

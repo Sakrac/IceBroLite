@@ -129,6 +129,14 @@ static char forceLoadProgram[PATH_MAX_LEN];
 static char forceLoadSymbols[PATH_MAX_LEN];
 static char forceLoadExtraDebug[PATH_MAX_LEN];
 
+// If extra debug is specified on the command line then reload extra debug info
+// when "Reload" button is pressed as well
+void CheckForceLoadExtraDebug() {
+	if(forceLoadExtraDebug[0]) {
+		ReadC64DbgSrcExtra(forceLoadExtraDebug);
+	}
+}
+
 // Global Variables:
 #ifdef _WIN32
 HWND hWnd;
@@ -161,6 +169,7 @@ int main(int argc, char* argv[])
 	}
 #endif
 
+	// Check if -? / -help or -info is on the command line, then stop and print command line info
 	for (int i = 1; i < argc; ++i) {
 		strref line = argv[i];
 		if (line[0] == '-') {
@@ -385,9 +394,7 @@ int main(int argc, char* argv[])
 				ReadSymbolsFile(forceLoadSymbols);
 			} else {
 				ReadSymbolsForBinary(forceLoadProgram);
-				if(forceLoadExtraDebug[0]) {
-					ReadC64DbgSrcExtra(forceLoadExtraDebug);
-				}
+				CheckForceLoadExtraDebug();
 			}
 			forceLoadProgram[0] = 0;
 			forceLoadSymbols[0] = 0;
