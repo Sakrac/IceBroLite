@@ -208,7 +208,7 @@ void FVFileList::ReadDir(const char *full_path, const char*file_filter)
 
 	if (dp != nullptr) {
 		while ((entry = readdir(dp))) {
-			if( entry->d_type == DT_DIR || entry->d_type == DT_REG) {
+			if( entry->d_type == DT_DIR || entry->d_type == DT_REG || entry->d_type == DT_LNK) {
 				FVFileInfo info;
 				info.name = nullptr;
 				info.size = 0;
