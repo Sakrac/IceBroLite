@@ -547,8 +547,8 @@ void SetMemoryViewAddr(uint16_t addr, int index)
 
 uint8_t InputHex()
 {
-	for (int num = 0; num < 10; ++num) { if (ImGui::IsKeyPressed((ImGuiKey)(num + '0'))) return num; }
-	for (int num = 10; num < 16; ++num) { if (ImGui::IsKeyPressed((ImGuiKey)(num + 'A' - 10))) return num; }
+	for (int num = 0; num < 10; ++num) { if (ImGui::IsKeyPressed((ImGuiKey)(ImGuiKey_0 + num))) return num; }
+	for (int num = 10; num < 16; ++num) { if (ImGui::IsKeyPressed((ImGuiKey)(ImGuiKey_A + (num-10)))) return num; }
 	return 0xff;
 }
 
