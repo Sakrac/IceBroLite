@@ -32,6 +32,7 @@ CodeView::CodeView() : open(false), evalAddress(false)
 	showLabels = true;
 	trackPC = false;
 	editAsmFocusRequested = false;
+	editingAsm = false;
 	editAsmAddr = -1;
 	mouseWheelDiff = 0.0f;
 	SetAddr(0xea31);
@@ -98,9 +99,12 @@ bool CodeView::EditAssembly() {
 		ImGui::SetKeyboardFocusHere();
 		editAsmFocusRequested = false;
 	}
-	strown<32> editID("Edit Asm##");
+	strown<32> editID("##Edit Asm");
 	editID.append_num(editAsmAddr, 4, 16);
-	if (ImGui::InputText(editID.c_str(), editAsmStr, sizeof(editAsmStr), ImGuiInputTextFlags_EnterReturnsTrue)) {
+
+
+	if (ImGui::InputTextEx(editID.c_str(), "Asm Expression", editAsmStr, sizeof(editAsmStr),
+		ImVec2(ImGui::GetColumnWidth(), CurrFontSize()), ImGuiInputTextFlags_EnterReturnsTrue)) {
 		int size = Assemble(GetCurrCPU(), editAsmStr, editAsmAddr);
 		if (!size) {
 			editAsmAddr = -1;
@@ -113,6 +117,9 @@ bool CodeView::EditAssembly() {
 		}
 		return true;
 	}
+
+	editingAsm = GImGui->ActiveId == ImGui::GetCurrentWindow()->GetID(editID.c_str());
+
 	return false;
 }
 
@@ -243,7 +250,7 @@ void CodeView::Draw(int index)
 		ImGui::BeginChild(ImGui::GetID("codeEdit"), content_avail);
 	}
 
-	bool active = KeyboardCanvas("DisAsmView");// IsItemActive();
+	bool active = editingAsm ? false : KeyboardCanvas("DisAsmView");
 
 	ImVec2 mousePos = ImGui::GetMousePos();
 	ImVec2 curPos = ImGui::GetCursorScreenPos();

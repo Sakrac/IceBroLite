@@ -43,7 +43,7 @@ void ParseState(SaveStateFile file)
 				StateLoadViews(value);
 			} else if (name.same_str("HiddenSections") && type == ConfigParseType::CPT_Array) {
 				StateLoadHiddenSections(value);
-			} else if (name.same_str("ImGui") && type == ConfigParseType::CPT_Struct) {
+			} else if (name.same_str("DearImGui") && type == ConfigParseType::CPT_Struct) {
 				ImGui::LoadIniSettingsFromMemory(value.get(), value.get_len());
 				ImGuiStateLoaded();
 			}
@@ -73,7 +73,7 @@ void SaveState()
 	StateSaveHiddenSections(conf);
 	conf.EndArray();
 
-	conf.BeginStruct(strref("ImGui"));
+	conf.BeginStruct(strref("DearImGui"));
 	size_t ImGuiSize;
 	const char* ImGuiData = ImGui::SaveIniSettingsToMemory(&ImGuiSize);
 	conf.Append(strref(ImGuiData, (strl_t)ImGuiSize));
