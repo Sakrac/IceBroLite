@@ -136,7 +136,7 @@ void FVFileView::Draw(const char *title)
 			}
 			ImGui::EndTable();
 		}
-		if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_ESCAPE)) {
+		if (ImGui::IsKeyPressed(ImGuiKey_Escape)) {
 			open = false;
 		}
 

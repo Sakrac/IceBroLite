@@ -260,14 +260,14 @@ void BreakpointView::Draw()
 			SetSelected((int)selected_row);
 		}
 		if (selected_row != 0xffffffff && g->CurrentWindow == g->NavWindow) {
-			if (prior_valid != 0xffffffff && ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_UP)) {
+			if (prior_valid != 0xffffffff && ImGui::IsKeyPressed(ImGuiKey_UpArrow)) {
 				selected_row = prior_valid; 
 				SetSelected((int)selected_row);
-			} else if (next_valid != 0xffffffff && ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_DOWN)) {
+			} else if (next_valid != 0xffffffff && ImGui::IsKeyPressed(ImGuiKey_DownArrow)) {
 				selected_row = next_valid;
 				SetSelected((int)selected_row);
 			}
-			if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_DELETE)) {
+			if (ImGui::IsKeyPressed(ImGuiKey_Delete)) {
 				Breakpoint bp = GetBreakpoint(selected_row);
 				ViceRemoveBreakpoint(bp.number);
 			}
