@@ -473,25 +473,25 @@ void ViewContext::GlobalKeyCheck()
 {
 //	CheckRegChange();
 
-	bool shift = ImGui::IsKeyDown((ImGuiKey)GLFW_KEY_LEFT_SHIFT) || ImGui::IsKeyDown((ImGuiKey)GLFW_KEY_RIGHT_SHIFT);
-	bool ctrl = ImGui::IsKeyDown((ImGuiKey)GLFW_KEY_LEFT_CONTROL) || ImGui::IsKeyDown((ImGuiKey)GLFW_KEY_RIGHT_CONTROL);
-	bool alt = ImGui::IsKeyDown((ImGuiKey)GLFW_KEY_LEFT_ALT) || ImGui::IsKeyDown((ImGuiKey)GLFW_KEY_RIGHT_ALT);
+	bool shift = ImGui::IsKeyDown(ImGuiKey_LeftShift) || ImGui::IsKeyDown(ImGuiKey_RightShift);
+	bool ctrl = ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_RightCtrl);
+	bool alt = ImGui::IsKeyDown(ImGuiKey_LeftAlt) || ImGui::IsKeyDown(ImGuiKey_RightAlt);
 
 	// mimic vice monitor key combo
-	if (alt && ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_H)) {
+	if (alt && ImGui::IsKeyPressed(ImGuiKey_H)) {
 		ViceBreak();
 	}
 
-	if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_F5, false)) {
+	if (ImGui::IsKeyPressed(ImGuiKey_F5, false)) {
 		if (shift) { ViceBreak(); }
 		else { ViceGo(); }
 //		if (ctrl) {} else if (shift) { CPUReverse(); } else { CPUGo(); }
 	}
-	if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_F10, false)) {
+	if (ImGui::IsKeyPressed(ImGuiKey_F10, false)) {
 		ViceStepOver();
 //		if (ctrl) { StepOverVice(); } else if (shift) { StepOverBack(); } else { StepOver(); }
 	}
-	if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_F11, false)) {
+	if (ImGui::IsKeyPressed(ImGuiKey_F11, false)) {
 		if (ctrl) { /*StepInstructionVice();*/ } else if (shift) { ViceStepOut(); } else { ViceStep(); }
 	}
 }
@@ -547,8 +547,8 @@ void SetMemoryViewAddr(uint16_t addr, int index)
 
 uint8_t InputHex()
 {
-	for (int num = 0; num < 10; ++num) { if (ImGui::IsKeyPressed((ImGuiKey)(num + '0'))) return num; }
-	for (int num = 10; num < 16; ++num) { if (ImGui::IsKeyPressed((ImGuiKey)(num + 'A' - 10))) return num; }
+	for (int num = 0; num < 10; ++num) { if (ImGui::IsKeyPressed((ImGuiKey)(ImGuiKey_0 + num))) return num; }
+	for (int num = 10; num < 16; ++num) { if (ImGui::IsKeyPressed((ImGuiKey)(ImGuiKey_A + (num-10)))) return num; }
 	return 0xff;
 }
 

@@ -8,6 +8,7 @@ on:
     # "scheduled" workflow, while maintaining ability to perform local CI builds.
     workflows:
       - scheduled
+      - manual
     branches:
       - master
       - docking
@@ -21,14 +22,14 @@ jobs:
       VS_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\
       MSBUILD_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Install Dependencies
         shell: powershell
         run: |
-          Invoke-WebRequest -Uri "https://www.libsdl.org/release/SDL2-devel-2.0.10-VC.zip" -OutFile "SDL2-devel-2.0.10-VC.zip"
-          Expand-Archive -Path SDL2-devel-2.0.10-VC.zip
-          echo "SDL2_DIR=$(pwd)\SDL2-devel-2.0.10-VC\SDL2-2.0.10\" >>${env:GITHUB_ENV}
+          Invoke-WebRequest -Uri "https://www.libsdl.org/release/SDL2-devel-2.26.3-VC.zip" -OutFile "SDL2-devel-2.26.3-VC.zip"
+          Expand-Archive -Path SDL2-devel-2.26.3-VC.zip
+          echo "SDL2_DIR=$(pwd)\SDL2-devel-2.26.3-VC\SDL2-2.26.3\" >>${env:GITHUB_ENV}
 
           Invoke-WebRequest -Uri "https://github.com/ocornut/imgui/files/3789205/vulkan-sdk-1.1.121.2.zip" -OutFile vulkan-sdk-1.1.121.2.zip
           Expand-Archive -Path vulkan-sdk-1.1.121.2.zip
@@ -123,23 +124,28 @@ jobs:
         run: '"%MSBUILD_PATH%\MSBuild.exe" examples/example_glfw_vulkan/example_glfw_vulkan.vcxproj /p:Platform=Win32 /p:Configuration=Release'
         if: github.event_name == 'workflow_run'
 
-      - name: Build Win32 example_sdl_vulkan
+      - name: Build Win32 example_sdl2_sdlrenderer2
         shell: cmd
-        run: '"%MSBUILD_PATH%\MSBuild.exe" examples/example_sdl_vulkan/example_sdl_vulkan.vcxproj /p:Platform=Win32 /p:Configuration=Release'
+        run: '"%MSBUILD_PATH%\MSBuild.exe" examples/example_sdl2_sdlrenderer2/example_sdl2_sdlrenderer2.vcxproj /p:Platform=Win32 /p:Configuration=Release'
         if: github.event_name == 'workflow_run'
 
-      - name: Build Win32 example_sdl_opengl2
+      - name: Build Win32 example_sdl2_vulkan
         shell: cmd
-        run: '"%MSBUILD_PATH%\MSBuild.exe" examples/example_sdl_opengl2/example_sdl_opengl2.vcxproj /p:Platform=Win32 /p:Configuration=Release'
+        run: '"%MSBUILD_PATH%\MSBuild.exe" examples/example_sdl2_vulkan/example_sdl2_vulkan.vcxproj /p:Platform=Win32 /p:Configuration=Release'
         if: github.event_name == 'workflow_run'
 
-      - name: Build Win32 example_sdl_opengl3
+      - name: Build Win32 example_sdl2_opengl2
         shell: cmd
-        run: '"%MSBUILD_PATH%\MSBuild.exe" examples/example_sdl_opengl3/example_sdl_opengl3.vcxproj /p:Platform=Win32 /p:Configuration=Release'
+        run: '"%MSBUILD_PATH%\MSBuild.exe" examples/example_sdl2_opengl2/example_sdl2_opengl2.vcxproj /p:Platform=Win32 /p:Configuration=Release'
+        if: github.event_name == 'workflow_run'
 
-      - name: Build Win32 example_sdl_directx11
+      - name: Build Win32 example_sdl2_opengl3
         shell: cmd
-        run: '"%MSBUILD_PATH%\MSBuild.exe" examples/example_sdl_directx11/example_sdl_directx11.vcxproj /p:Platform=Win32 /p:Configuration=Release'
+        run: '"%MSBUILD_PATH%\MSBuild.exe" examples/example_sdl2_opengl3/example_sdl2_opengl3.vcxproj /p:Platform=Win32 /p:Configuration=Release'
+
+      - name: Build Win32 example_sdl2_directx11
+        shell: cmd
+        run: '"%MSBUILD_PATH%\MSBuild.exe" examples/example_sdl2_directx11/example_sdl2_directx11.vcxproj /p:Platform=Win32 /p:Configuration=Release'
         if: github.event_name == 'workflow_run'
 
       - name: Build Win32 example_win32_directx9
@@ -168,24 +174,29 @@ jobs:
         shell: cmd
         run: '"%MSBUILD_PATH%\MSBuild.exe" examples/example_glfw_vulkan/example_glfw_vulkan.vcxproj /p:Platform=x64 /p:Configuration=Release'
 
-      - name: Build x64 example_sdl_vulkan
+      - name: Build x64 example_sdl2_sdlrenderer2
         shell: cmd
-        run: '"%MSBUILD_PATH%\MSBuild.exe" examples/example_sdl_vulkan/example_sdl_vulkan.vcxproj /p:Platform=x64 /p:Configuration=Release'
+        run: '"%MSBUILD_PATH%\MSBuild.exe" examples/example_sdl2_sdlrenderer2/example_sdl2_sdlrenderer2.vcxproj /p:Platform=x64 /p:Configuration=Release'
         if: github.event_name == 'workflow_run'
 
-      - name: Build x64 example_sdl_opengl2
+      - name: Build x64 example_sdl2_vulkan
         shell: cmd
-        run: '"%MSBUILD_PATH%\MSBuild.exe" examples/example_sdl_opengl2/example_sdl_opengl2.vcxproj /p:Platform=x64 /p:Configuration=Release'
+        run: '"%MSBUILD_PATH%\MSBuild.exe" examples/example_sdl2_vulkan/example_sdl2_vulkan.vcxproj /p:Platform=x64 /p:Configuration=Release'
         if: github.event_name == 'workflow_run'
 
-      - name: Build x64 example_sdl_opengl3
+      - name: Build x64 example_sdl2_opengl2
         shell: cmd
-        run: '"%MSBUILD_PATH%\MSBuild.exe" examples/example_sdl_opengl3/example_sdl_opengl3.vcxproj /p:Platform=x64 /p:Configuration=Release'
+        run: '"%MSBUILD_PATH%\MSBuild.exe" examples/example_sdl2_opengl2/example_sdl2_opengl2.vcxproj /p:Platform=x64 /p:Configuration=Release'
         if: github.event_name == 'workflow_run'
 
-      - name: Build x64 example_sdl_directx11
+      - name: Build x64 example_sdl2_opengl3
         shell: cmd
-        run: '"%MSBUILD_PATH%\MSBuild.exe" examples/example_sdl_directx11/example_sdl_directx11.vcxproj /p:Platform=x64 /p:Configuration=Release'
+        run: '"%MSBUILD_PATH%\MSBuild.exe" examples/example_sdl2_opengl3/example_sdl2_opengl3.vcxproj /p:Platform=x64 /p:Configuration=Release'
+        if: github.event_name == 'workflow_run'
+
+      - name: Build x64 example_sdl2_directx11
+        shell: cmd
+        run: '"%MSBUILD_PATH%\MSBuild.exe" examples/example_sdl2_directx11/example_sdl2_directx11.vcxproj /p:Platform=x64 /p:Configuration=Release'
 
       - name: Build x64 example_win32_directx9
         shell: cmd
@@ -207,9 +218,9 @@ jobs:
         run: '"%MSBUILD_PATH%\MSBuild.exe" examples/example_win32_directx12/example_win32_directx12.vcxproj /p:Platform=x64 /p:Configuration=Release'
 
   Linux:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Install Dependencies
       run: |
@@ -313,6 +324,18 @@ jobs:
         EOF
         g++ -I. -std=c++11 -Wall -Wformat -o example_single_file example_single_file.cpp
 
+    - name: Build example_null (with C++20)
+      run: |
+        cat > example_single_file.cpp <<'EOF'
+
+        #define IMGUI_DISABLE_OBSOLETE_KEYIO
+        #define IMGUI_IMPLEMENTATION
+        #include "misc/single_file/imgui_single_file.h"
+        #include "examples/example_null/main.cpp"
+
+        EOF
+        g++ -I. -std=c++20 -Wall -Wformat -o example_single_file example_single_file.cpp
+
     - name: Build example_null (with IMGUI_DISABLE_DEMO_WINDOWS and IMGUI_DISABLE_DEBUG_TOOLS)
       run: |
         cat > example_single_file.cpp <<'EOF'
@@ -370,6 +393,18 @@ jobs:
         EOF
         g++ -I. -std=c++11 -Wall -Wformat -o example_single_file example_single_file.cpp
 
+    - name: Build example_null (C++26, Clang)
+      run: |
+        cat > example_single_file.cpp <<'EOF'
+
+        #define IMGUI_IMPLEMENTATION
+        #define IMGUI_DISABLE_DEMO_WINDOWS
+        #include "misc/single_file/imgui_single_file.h"
+        #include "examples/example_null/main.cpp"
+
+        EOF
+        clang++ -I. -std=c++26 -Wall -Wformat -fno-exceptions -fno-threadsafe-statics -lc -lm -o example_single_file example_single_file.cpp
+
     - name: Build example_null (without c++ runtime, Clang)
       run: |
         cat > example_single_file.cpp <<'EOF'
@@ -389,12 +424,12 @@ jobs:
       run: make -C examples/example_glfw_opengl3
       if: github.event_name == 'workflow_run'
 
-    - name: Build example_sdl_opengl2
-      run: make -C examples/example_sdl_opengl2
+    - name: Build example_sdl2_opengl2
+      run: make -C examples/example_sdl2_opengl2
       if: github.event_name == 'workflow_run'
 
-    - name: Build example_sdl_opengl3
-      run: make -C examples/example_sdl_opengl3
+    - name: Build example_sdl2_opengl3
+      run: make -C examples/example_sdl2_opengl3
 
     - name: Build with IMGUI_IMPL_VULKAN_NO_PROTOTYPES
       run: g++ -c -I. -std=c++11 -DIMGUI_IMPL_VULKAN_NO_PROTOTYPES=1 backends/imgui_impl_vulkan.cpp
@@ -402,7 +437,7 @@ jobs:
   MacOS:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Install Dependencies
       run: |
@@ -421,6 +456,17 @@ jobs:
 
         EOF
         clang++ -I. -std=c++11 -Wall -Wformat -o example_single_file example_single_file.cpp
+
+    - name: Build example_null (single file build, c++20)
+      run: |
+        cat > example_single_file.cpp <<'EOF'
+
+        #define IMGUI_IMPLEMENTATION
+        #include "misc/single_file/imgui_single_file.h"
+        #include "examples/example_null/main.cpp"
+
+        EOF
+        clang++ -I. -std=c++20 -Wall -Wformat -o example_single_file example_single_file.cpp
 
     - name: Build example_null (without c++ runtime)
       run: |
@@ -443,15 +489,15 @@ jobs:
     - name: Build example_glfw_metal
       run: make -C examples/example_glfw_metal
 
-    - name: Build example_sdl_metal
-      run: make -C examples/example_sdl_metal
+    - name: Build example_sdl2_metal
+      run: make -C examples/example_sdl2_metal
 
-    - name: Build example_sdl_opengl2
-      run: make -C examples/example_sdl_opengl2
+    - name: Build example_sdl2_opengl2
+      run: make -C examples/example_sdl2_opengl2
       if: github.event_name == 'workflow_run'
 
-    - name: Build example_sdl_opengl3
-      run: make -C examples/example_sdl_opengl3
+    - name: Build example_sdl2_opengl3
+      run: make -C examples/example_sdl2_opengl3
 
     - name: Build example_apple_metal
       run: xcodebuild -project examples/example_apple_metal/example_apple_metal.xcodeproj -target example_apple_metal_macos
@@ -462,7 +508,7 @@ jobs:
   iOS:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Build example_apple_metal
       run: |
@@ -470,9 +516,9 @@ jobs:
         xcodebuild -project examples/example_apple_metal/example_apple_metal.xcodeproj -target example_apple_metal_ios CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
   Emscripten:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Install Dependencies
       run: |
@@ -481,27 +527,41 @@ jobs:
         emsdk-master/emsdk update
         emsdk-master/emsdk install latest
         emsdk-master/emsdk activate latest
+        sudo apt-get install build-essential
 
-    - name: Build example_emscripten_opengl3
+    - name: Build example_sdl2_opengl3 with Emscripten
       run: |
         pushd emsdk-master
         source ./emsdk_env.sh
         popd
-        make -C examples/example_emscripten_opengl3
+        make -C examples/example_sdl2_opengl3 -f Makefile.emscripten
 
-    - name: Build example_emscripten_wgpu
+    # This build compiles example_glfw_wgpu using Makefile.emscripten and Emscripten GLFW built-in implementation (-sUSE_GLFW=3)
+    # This ensures 2 things: the make build works, and the GLFW built-in implementation is tested
+    - name: Build example_glfw_wgpu with Emscripten/Makefile
       run: |
         pushd emsdk-master
         source ./emsdk_env.sh
         popd
-        make -C examples/example_emscripten_wgpu
+        make -C examples/example_glfw_wgpu -f Makefile.emscripten
+
+    # This build compiles example_glfw_wgpu using CMakeLists.txt and Emscripten GLFW contrib port (--use-port=contrib.glfw3)
+    # This ensures 2 things: the CMake build works, and the GLFW contrib port is tested
+    - name: Build example_glfw_wgpu with Emscripten/CMake
+      run: |
+        pushd emsdk-master
+        source ./emsdk_env.sh
+        popd
+        emcc -v
+        emcmake cmake -B build -DCMAKE_BUILD_TYPE=Release examples/example_glfw_wgpu
+        cmake --build build
 
   Android:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Build example_android_opengl3
       run: |
         cd examples/example_android_opengl3/android
-        gradle assembleDebug
+        gradle assembleDebug --stacktrace

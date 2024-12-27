@@ -47,6 +47,7 @@ struct CodeView
 	bool focusPC;
 	bool editAsmFocusRequested;
 	bool dragging;
+	bool editingAsm;
 
 	void Draw( int index );
 

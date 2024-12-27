@@ -32,6 +32,7 @@ CodeView::CodeView() : open(false), evalAddress(false)
 	showLabels = true;
 	trackPC = false;
 	editAsmFocusRequested = false;
+	editingAsm = false;
 	editAsmAddr = -1;
 	mouseWheelDiff = 0.0f;
 	SetAddr(0xea31);
@@ -90,7 +91,7 @@ void CodeView::ReadConfig(strref config)
 }
 
 bool CodeView::EditAssembly() {
-	if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_ESCAPE)) {
+	if (ImGui::IsKeyPressed(ImGuiKey_Escape)) {
 		editAsmAddr = -1;
 		ForceKeyboardCanvas("DisAsmView");
 	}
@@ -98,9 +99,12 @@ bool CodeView::EditAssembly() {
 		ImGui::SetKeyboardFocusHere();
 		editAsmFocusRequested = false;
 	}
-	strown<32> editID("Edit Asm##");
+	strown<32> editID("##Edit Asm");
 	editID.append_num(editAsmAddr, 4, 16);
-	if (ImGui::InputText(editID.c_str(), editAsmStr, sizeof(editAsmStr), ImGuiInputTextFlags_EnterReturnsTrue)) {
+
+
+	if (ImGui::InputTextEx(editID.c_str(), "Asm Expression", editAsmStr, sizeof(editAsmStr),
+		ImVec2(ImGui::GetColumnWidth(), CurrFontSize()), ImGuiInputTextFlags_EnterReturnsTrue)) {
 		int size = Assemble(GetCurrCPU(), editAsmStr, editAsmAddr);
 		if (!size) {
 			editAsmAddr = -1;
@@ -113,6 +117,9 @@ bool CodeView::EditAssembly() {
 		}
 		return true;
 	}
+
+	editingAsm = GImGui->ActiveId == ImGui::GetCurrentWindow()->GetID(editID.c_str());
+
 	return false;
 }
 
@@ -243,7 +250,7 @@ void CodeView::Draw(int index)
 		ImGui::BeginChild(ImGui::GetID("codeEdit"), content_avail);
 	}
 
-	bool active = KeyboardCanvas("DisAsmView");// IsItemActive();
+	bool active = editingAsm ? false : KeyboardCanvas("DisAsmView");
 
 	ImVec2 mousePos = ImGui::GetMousePos();
 	ImVec2 curPos = ImGui::GetCursorScreenPos();
@@ -289,13 +296,13 @@ void CodeView::Draw(int index)
 
 	// Handle keyboard input
 	if (active) {
-		if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_UP)) { dY--; }
-		if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_DOWN)) { dY++; }
-		if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_TAB)) {
-			if (ImGui::IsKeyDown((ImGuiKey)GLFW_KEY_LEFT_SHIFT) || ImGui::IsKeyDown((ImGuiKey)GLFW_KEY_RIGHT_SHIFT)) { setPCAtCursor = true; } else { goToPC = true; addrCursor = pc; }
+		if (ImGui::IsKeyPressed(ImGuiKey_UpArrow)) { dY--; }
+		if (ImGui::IsKeyPressed(ImGuiKey_DownArrow)) { dY++; }
+		if (ImGui::IsKeyPressed(ImGuiKey_Tab)) {
+			if (ImGui::IsKeyDown(ImGuiKey_LeftShift) || ImGui::IsKeyDown(ImGuiKey_RightShift)) { setPCAtCursor = true; } else { goToPC = true; addrCursor = pc; }
 		}
-		if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_PAGE_UP)) { sY = -lines / 3; }
-		if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_PAGE_DOWN)) { sY = lines / 3; }
+		if (ImGui::IsKeyPressed(ImGuiKey_PageUp)) { sY = -lines / 3; }
+		if (ImGui::IsKeyPressed(ImGuiKey_PageDown)) { sY = lines / 3; }
 		if (ImGui::IsMouseClicked(0)) {
 //			ImVec2 mousePos = ImGui::GetMousePos();
 //			ImVec2 winPos = ImGui::GetWindowPos();
@@ -370,7 +377,7 @@ void CodeView::Draw(int index)
 //		int chars = 0;
 		if (read == pc && !trackPC) { lastShownPCRow = lineNum; }
 		if (lineNum==cursorLine) { addrCursor = read; }
-		if (addrCursor==read && active && !editAsmDone && ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_ENTER)) {
+		if (addrCursor==read && active && !editAsmDone && ImGui::IsKeyPressed(ImGuiKey_Enter)) {
 			editAsmStr[0] = 0;
 			editAsmAddr = read;
 			editAsmFocusRequested = true;
@@ -468,7 +475,7 @@ void CodeView::Draw(int index)
 			}
 			if (srcLine && line.get_len() > srcColClip) { line.set_len(srcColClip); }
 			if (addrCursor>=read && addrCursor<(read+bytes)) {
-				if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_F6)) {
+				if (ImGui::IsKeyPressed(ImGuiKey_F6)) {
 					ViceRunTo(addrCursor);
 				}
 				ImVec2 ps = ImGui::GetCursorScreenPos();
@@ -509,11 +516,11 @@ void CodeView::Draw(int index)
 				ImGui::SetCursorPos(linePos);
 				DrawTexturedIcon((bp.flags & Breakpoint::Enabled) ? ViceMonIcons::VMI_BreakPoint : ViceMonIcons::VMI_DisabledBreakPoint, false, fontCharWidth);
 				ImGui::SetCursorPos(savePos);
-				if (active && addrCursor == read && ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_F9, false)) {
+				if (active && addrCursor == read && ImGui::IsKeyPressed(ImGuiKey_F9, false)) {
 					// remove breakpoint
 					ViceRemoveBreakpoint(bp.number);
 				}
-			} else if (active && addrCursor == read && ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_F9, false)) {
+			} else if (active && addrCursor == read && ImGui::IsKeyPressed(ImGuiKey_F9, false)) {
 				// add exec breakpoint
 				ViceAddBreakpoint(read);
 			}

@@ -488,8 +488,8 @@ void GfxView::Draw(int index)
 
 	ImGuiContext* g = ImGui::GetCurrentContext();
 	if (g->CurrentWindow == g->NavWindow) {
-		if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_C) &&
-			(ImGui::IsKeyDown((ImGuiKey)GLFW_KEY_LEFT_CONTROL) || ImGui::IsKeyDown((ImGuiKey)GLFW_KEY_RIGHT_CONTROL))) {
+		if (ImGui::IsKeyPressed(ImGuiKey_C) &&
+			(ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_RightCtrl))) {
 			CopyBitmapToClipboard(bitmap, bitmapWidth, bitmapHeight);
 		}
 	}

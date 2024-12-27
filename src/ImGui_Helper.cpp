@@ -43,7 +43,7 @@ bool KeyboardCanvas( const char* label )
 
 	const bool user_focused = sCanvasID == id;
 	const bool user_clicked = hovered && clicked;
-	const bool user_nav_input_start = (g.ActiveId != id) && ((g.NavActivateInputId == id) || (g.NavActivateId == id && g.NavInputSource == ImGuiInputSource_Keyboard));
+	const bool user_nav_input_start = (g.ActiveId != id) && ((g.NavActivatePressedId == id) || (g.NavActivateId == id && g.NavInputSource == ImGuiInputSource_Keyboard));
 
 	if(user_focused || user_clicked || user_nav_input_start)
 	{
@@ -54,7 +54,7 @@ bool KeyboardCanvas( const char* label )
 			ImGui::FocusWindow( window );
 		}
 	} else if (g.ActiveId == id) {
-		if ((!hovered && io.MouseClicked[0]) || ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_ESCAPE))
+		if ((!hovered && io.MouseClicked[0]) || ImGui::IsKeyPressed(ImGuiKey_Escape))
 			ImGui::ClearActiveID();
 	}
 

@@ -110,10 +110,10 @@ void TraceView::Draw()
 			mouseWheelDiff = 0.0f;
 		}
 
-		if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_PAGE_UP)) {
+		if (ImGui::IsKeyPressed(ImGuiKey_PageUp)) {
 			row = row > (lastDrawnRows / 2) ? (row - lastDrawnRows / 2) : 0;
 		}
-		if (ImGui::IsKeyPressed((ImGuiKey)GLFW_KEY_PAGE_DOWN)) {
+		if (ImGui::IsKeyPressed(ImGuiKey_PageDown)) {
 			row += lastDrawnRows / 2;
 		}
 
