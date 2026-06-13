@@ -8,6 +8,7 @@ if(CMAKE_BUILD_TYPE EQUAL "Debug")
     add_compile_definitions("_DEBUG")
 endif()
 
+# Currently needed to distinguish between wWinMain (MSVC) and WinMain (CMake)
 add_compile_definitions("_CMAKE_BUILD")
 
 #list( APPEND LIBRARY_INCLUDES ${CMAKE_SOURCE_DIR}/imgui/examples/libs/glfw/lib-vc2010-64/glfw3.lib )

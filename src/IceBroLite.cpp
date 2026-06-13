@@ -161,11 +161,7 @@ int main(int argc, char* argv[])
 {
 #ifdef _WIN32
 	int argc;
-#ifdef _CMAKE_BUILD
 	LPWSTR* szArglist = CommandLineToArgvW(GetCommandLineW(), &argc);
-#else
-	LPWSTR* szArglist = CommandLineToArgvW(lpCmdLine, &argc);
-#endif
 	char** argv = nullptr;
 
 	argc += 1;

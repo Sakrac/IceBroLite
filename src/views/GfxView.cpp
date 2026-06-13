@@ -1651,6 +1651,20 @@ GfxView::GfxView() : bitmapWidth(0), open(false), reeval(false), color(false),
 	v20Columns = 22;
 	v20Rows = 23;
 
+	// Initialize all string fields
+	memset( address_screen, 0, sizeof( address_screen ) );
+	memset( address_gfx, 0, sizeof( address_gfx ) );
+	memset( address_col, 0, sizeof( address_col ) );
+	memset( columns_str, 0, sizeof( columns_str ) );
+	memset( rows_str, 0, sizeof( rows_str ) );
+	memset( columns_spr_str, 0, sizeof( columns_spr_str ) );
+	memset( rows_spr_str, 0, sizeof( rows_spr_str ) );
+	memset( v20_addr_screen_str, 0, sizeof( v20_addr_screen_str ) );
+	memset( v20_addr_gfx_str, 0, sizeof( v20_addr_gfx_str ) );
+	memset( v20_addr_col_str, 0, sizeof( v20_addr_col_str ) );
+	memset( v20_columns_str, 0, sizeof( v20_columns_str ) );
+	memset( v20_rows_str, 0, sizeof( v20_rows_str ) );
+
 	columns_sprite = 8;
 	rows_sprite = 6;
 	zoom = Zoom_FitWindow;
