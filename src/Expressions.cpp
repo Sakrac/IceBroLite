@@ -170,6 +170,7 @@ ExpOp ParseOp(ExpStr &str, uint32_t &v)
 						case 'V': return EO_V;
 						case 'N': return EO_N;
 						case 'P': return EO_FL;
+						default: break;
 					}
 				} else if ((c=='P' || c=='p') && (*str=='C' || *str=='c') && !IsAlphaNumeric(str[1])) {
 					++str;

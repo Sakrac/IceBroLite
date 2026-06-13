@@ -35,7 +35,7 @@ BreakpointView::BreakpointView() : selected_row(-1), open(true)
 	addCheckpointType = (int)CheckpointType::WatchStore;
 }
 
-void BreakpointView::WriteConfig(UserData& config)
+void BreakpointView::WriteConfig(UserData& config) const
 {
 	config.AddValue(strref("open"), config.OnOff(open));
 }
@@ -219,7 +219,7 @@ void BreakpointView::Draw()
 				}
 				ImGui::Text("%s", num.c_str());
 				if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-					SymbolDragDrop drag;
+					SymbolDragDrop drag = {};
 					drag.address = bp.start;
 					strovl lblStr(drag.symbol, sizeof(drag.symbol));
 					lblStr.copy(num); lblStr.c_str();
@@ -236,7 +236,7 @@ void BreakpointView::Draw()
 					ImGui::Text("%s", num.c_str());
 
 					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-						SymbolDragDrop drag;
+						SymbolDragDrop drag = {};
 						drag.address = bp.start;
 						strovl lblStr(drag.symbol, sizeof(drag.symbol));
 						lblStr.copy(num); lblStr.c_str();

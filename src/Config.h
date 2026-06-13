@@ -27,7 +27,7 @@ struct UserData {
 	void EndStruct();
 	void BeginArray( strref name = strref() );
 	void EndArray();
-	strref OnOff( bool on );
+	static strref OnOff( bool on );
 };
 
 

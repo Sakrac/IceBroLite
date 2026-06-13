@@ -139,6 +139,7 @@ void CheckForceLoadExtraDebug() {
 
 // Global Variables:
 #ifdef _WIN32
+
 HWND hWnd;
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
@@ -146,17 +147,25 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 
 HWND GetHWnd() { return hWnd; }
 
+#ifdef _CMAKE_BUILD
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nCmdShow)
+#else
 int __stdcall wWinMain(_In_ HINSTANCE hInstance,
 					  _In_opt_ HINSTANCE hPrevInstance,
 					  _In_ LPWSTR    lpCmdLine,
 					  _In_ int       nCmdShow)
+#endif
 #else
 int main(int argc, char* argv[])
 #endif
 {
 #ifdef _WIN32
 	int argc;
+#ifdef _CMAKE_BUILD
+	LPWSTR* szArglist = CommandLineToArgvW(GetCommandLineW(), &argc);
+#else
 	LPWSTR* szArglist = CommandLineToArgvW(lpCmdLine, &argc);
+#endif
 	char** argv = nullptr;
 
 	argc += 1;

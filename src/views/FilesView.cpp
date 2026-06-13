@@ -260,7 +260,7 @@ void FVFileList::ReadDir(const char* full_path, const char* file_filter)
 	filter = file_filter ? _strdup(file_filter) : nullptr;
 	if (!prev_filter) { free(prev_filter); }
 
-	FVFileInfo back;
+	FVFileInfo back = {};
 	back.name = _strdup("..");
 	back.fileType = FVFileInfo::dir;
 	back.size = 0;

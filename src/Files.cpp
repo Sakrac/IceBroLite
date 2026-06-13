@@ -39,7 +39,7 @@ uint8_t* LoadBinary(const char* name, size_t& size)
 	return nullptr;
 }
 
-#ifndef _MSC_VER
+#ifndef _WIN32
 int fopen_s(FILE **f, const char* filename, const char* options)
 {
 	*f = fopen(filename, options);

@@ -9,7 +9,7 @@
 static CPU6510* sp6510 = nullptr;
 
 
-CPU6510::CPU6510() : space(VICEMemSpaces::MainMemory), memoryChanged(false)
+CPU6510::CPU6510() : space(VICEMemSpaces::MainMemory), memoryChanged(false), memoryUpdateMutex(INVALID_HANDLE_VALUE)
 {
 	IBMutexInit(&memoryUpdateMutex, "CPU memory sync");
 	ram = (uint8_t*)calloc(1, 64 * 1024);
@@ -24,12 +24,12 @@ void CPU6510::MemoryFromVICE(uint16_t start, uint16_t end, uint8_t *bytes)
 	IBMutexRelease(&memoryUpdateMutex);
 }
 
-uint8_t CPU6510::GetByte(uint16_t addr)
+uint8_t CPU6510::GetByte(uint16_t addr) const
 {
 	return ram[addr];
 }
 
-const uint8_t* CPU6510::GetMem(uint16_t addr)
+const uint8_t* CPU6510::GetMem(uint16_t addr) const
 {
 	return ram + addr;
 }

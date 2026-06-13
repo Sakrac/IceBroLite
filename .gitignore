@@ -8,6 +8,9 @@ IceBroLite.exe
 
 src/x64
 src/x86
+src/.idea
+src/glfw
+
 imgui.ini
 IceBro.cfg
 src/imgui.ini

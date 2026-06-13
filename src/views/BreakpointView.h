@@ -10,7 +10,7 @@ struct BreakpointView {
 	bool open;
 
 	BreakpointView();
-	void WriteConfig(UserData& config);
+	void WriteConfig(UserData& config) const;
 	void ReadConfig(strref config);
 	void Draw();
 	void SetSelected(int index);

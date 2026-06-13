@@ -4,7 +4,7 @@
 bool SaveFile(const char* filename, void* data, size_t size);
 uint8_t* LoadBinary(const char* name, size_t& size);
 
-#ifndef _MSC_VER
+#ifndef _WIN32
 int fopen_s(FILE **f, const char* filename, const char *options);
 #endif
 

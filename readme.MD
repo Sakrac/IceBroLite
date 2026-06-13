@@ -2,6 +2,13 @@
 
 New [manual](https://sakrac.github.io/IceBroLite/) using GitHub Pages! ([previous](manual.md))
 
+## Starting CMake project
+
+Trying to make the project smoother to build for linux and mac. To build with CMake GLFW3 source should be downloaded (https://www.glfw.org/) into src/glfw/
+
+At this point I can run in Windows from CLion, testing more as I go. Some code may be in a transitionary phase for a while.
+
+## Other Updates
 
 Also here are the [linux build instructions](linux.MD).
 It should also build fine on Mac using the makefile but I don't have anything to test it with at home.
