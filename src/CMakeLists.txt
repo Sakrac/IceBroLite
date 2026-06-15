@@ -4,6 +4,14 @@ project(src)
 set(CMAKE_CXX_STANDARD 20)
 include_directories("imgui" "imgui/backends" "imgui/examples/libs/glfw/include" )
 
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2")
+
 if(CMAKE_BUILD_TYPE EQUAL "Debug")
     add_compile_definitions("_DEBUG")
 endif()
@@ -18,7 +26,7 @@ list( APPEND LIBRARY_INCLUDES glfw )
 
 add_subdirectory( glfw )
 
-add_executable( src
+add_executable( IceBroLite
         6510.cpp
         Breakpoints.cpp
         C64Colors.cpp
@@ -66,7 +74,9 @@ add_executable( src
         data/C64_Pro_Mono-STYLE.ttf.cpp
         struse/xml.cpp
 )
+if (CMAKE_SYSTEM_NAME STREQUAL Windows)
+    target_link_libraries( IceBroLite opengl32.lib gdi32.lib ${LIBRARY_INCLUDES} ws2_32.lib )
+elseif (CMAKE_SYSTEM_NAME STREQUAL Linux)
+endif()
 
-target_link_libraries( src opengl32.lib gdi32.lib ${LIBRARY_INCLUDES} ws2_32.lib )
-
-set_target_properties( src PROPERTIES WIN32_EXECUTABLE TRUE )
+set_target_properties( IceBroLite PROPERTIES WIN32_EXECUTABLE TRUE )

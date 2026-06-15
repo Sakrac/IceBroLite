@@ -73,7 +73,7 @@ void* LoadViceEXEThread(void* param)
 					   &si,// Pointer to STARTUPINFO structure
 					   &pi) // Pointer to PROCESS_INFORMATION structure
 		) {
-		printf("CreateProcess failed (%d).\n", GetLastError());
+		printf("CreateProcess failed (%d).\n", (int)GetLastError());
 		return false;// nullptr;
 	}
 

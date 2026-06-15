@@ -215,10 +215,8 @@ void LoadCustomTheme(const char *themeFile) {
 			} else if(name.same_str("PCHighlightStyle")) {
 				sThemeCustomColors.PCHighlightStyle = !!value.atoi();
 			} else {
-				printf("color = " STRREF_FMT "\n", STRREF_ARG(value));
-				for (uint32_t i = 0; i < snThemeColors; ++i) {
-					int c = saThemeColors[i];
-					if (name.same_str(ImGui::GetStyleColorName(c))) {
+				for (int c : saThemeColors) {
+						if (name.same_str(ImGui::GetStyleColorName(c))) {
 						sCustomTheme[c] = ParseCustomColor(value);
 					}
 				}
