@@ -57,12 +57,12 @@ add_executable( src
         views/TraceView.cpp
         views/Views.cpp
         views/WatchView.cpp
-        ImGUI/imgui.cpp
-        ImGUI/imgui_draw.cpp
-        ImGUI/imgui_tables.cpp
-        ImGUI/imgui_widgets.cpp
-        ImGUI/backends/imgui_impl_glfw.cpp
-        ImGUI/backends/imgui_impl_opengl2.cpp
+        imgui/imgui.cpp
+        imgui/imgui_draw.cpp
+        imgui/imgui_tables.cpp
+        imgui/imgui_widgets.cpp
+        imgui/backends/imgui_impl_glfw.cpp
+        imgui/backends/imgui_impl_opengl2.cpp
         data/C64_Pro_Mono-STYLE.ttf.cpp
         struse/xml.cpp
 )

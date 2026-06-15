@@ -10,6 +10,8 @@ src/x64
 src/x86
 src/.idea
 src/glfw
+src/build
+build
 
 imgui.ini
 IceBro.cfg
