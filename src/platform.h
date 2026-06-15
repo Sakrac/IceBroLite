@@ -12,6 +12,7 @@
 
 #define IBMutex_Clear INVALID_HANDLE_VALUE
 #define IBThread_Clear INVALID_HANDLE_VALUE
+#define NULL_HANDLE INVALID_HANDLE_VALUE
 typedef DWORD IBThreadRet;
 typedef HANDLE IBMutex;
 typedef HANDLE IBThread;
@@ -25,6 +26,9 @@ typedef void* IBThreadRet;
 typedef pthread_mutex_t IBMutex;
 typedef pthread_t IBThread;
 typedef IBThreadRet(*IBThreadFunc)(void* data);
+
+#define NULL_HANDLE 0
+
 #else
 
 #endif

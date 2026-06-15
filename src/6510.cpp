@@ -9,7 +9,10 @@
 static CPU6510* sp6510 = nullptr;
 
 
-CPU6510::CPU6510() : space(VICEMemSpaces::MainMemory), memoryChanged(false), memoryUpdateMutex(INVALID_HANDLE_VALUE)
+CPU6510::CPU6510() : space(VICEMemSpaces::MainMemory), memoryChanged(false)
+#ifdef _WIN32
+	, memoryUpdateMutex(NULL_HANDLE)
+#endif
 {
 	IBMutexInit(&memoryUpdateMutex, "CPU memory sync");
 	ram = (uint8_t*)calloc(1, 64 * 1024);

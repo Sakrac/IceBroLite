@@ -11,7 +11,7 @@ src/x86
 src/.idea
 src/glfw
 src/build
-build
+build/
 
 imgui.ini
 IceBro.cfg
