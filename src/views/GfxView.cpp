@@ -800,7 +800,7 @@ void GfxView::PrintCurrentInfo(CPU6510* cpu, int* hoverPos) {
 		line.append("Screen: $").append_num(screen, 4, 16).append((d011 & 0x20) ? " Bitmap: $" : " Font: $").append_num(chars, 4, 16);
 		info_text[0] = line;
 
-		PrintHoverInfo(cpu, hoverPos, mode, screen, chars, chars&0xe000, d011&0x40, 2);
+		PrintHoverInfo(cpu, hoverPos, mode, screen, chars, chars&0xe000, d011&0x40);
 	} else if(displayMode == Plus4_Current) {
 		uint8_t ff06 = cpu->GetByte(0xff06);
 		uint8_t ff07 = cpu->GetByte(0xff07);
@@ -816,13 +816,13 @@ void GfxView::PrintCurrentInfo(CPU6510* cpu, int* hoverPos) {
 		line.append("Screen: $").append_num(screen, 4, 16).append((ff06 & 0x20) ? " Bitmap: $" : " Font: $").append_num(chars, 4, 16);
 		info_text[0] = line;
 
-		PrintHoverInfo(cpu, hoverPos, mode, screen, chars, chars, ff06&0x40, 2);
+		PrintHoverInfo(cpu, hoverPos, mode, screen, chars, chars, ff06&0x40);
 	} else {
 		// vic20 unsupported
 	}
 }
 
-void GfxView::PrintHoverInfo(CPU6510* cpu, int *hoverPos, int mode, uint16_t scrnAddr, uint16_t fontAddr, uint16_t bitmAddr, bool _ecbm, int row) {
+void GfxView::PrintHoverInfo(CPU6510* cpu, int *hoverPos, int mode, uint16_t scrnAddr, uint16_t fontAddr, uint16_t bitmAddr, bool _ecbm) {
 	strown<128> line;
 	line.sprintf("x: %d, y: %d", hoverPos[0], hoverPos[1]);
 	if (mode == C64_Sprites) {

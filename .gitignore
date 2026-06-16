@@ -12,6 +12,7 @@ src/.idea
 src/glfw
 src/build
 build/
+.idea/
 
 imgui.ini
 IceBro.cfg

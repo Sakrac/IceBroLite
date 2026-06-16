@@ -776,7 +776,9 @@ void ViceConnection::updateGetMemory(VICEBinMemGetResponse* resp)
 	}
 	IBMutexRelease(&userRequestMutex);
 
-	assert(found);
+	if (!found) {
+		return;
+	}
 	if (CPU6510* cpu = GetCPU((VICEMemSpaces)space)) {
 #ifdef VICELOG
 		strown<128> msg("updating $");
@@ -790,6 +792,7 @@ void ViceConnection::updateGetMemory(VICEBinMemGetResponse* resp)
 
 void ViceConnection::handleCheckpointList(VICEBinCheckpointList* cpList)
 {
+	(void)cpList;
 #ifdef _DEBUG
 	strown<32> msg;
 	msg.sprintf("%d checkpoints found", cpList->GetCount());

@@ -113,7 +113,7 @@ void FVFileView::Draw(const char *title)
 				if (files[i].fileType == FVFileInfo::dir) {
 					ImGui::Text("(dir)");
 				} else {
-					if (files[i].size < (10 * 1024)) { ImGui::Text("%llu", files[i].size); }
+					if (files[i].size < (10 * 1024)) { ImGui::Text( "%" PRIu64, files[i].size); }
 					else  if (files[i].size < (1024 * 1024)) { ImGui::Text("%.1fkb", (float)(files[i].size/1024.0f)); }
 					else { ImGui::Text("%.2fMb", (float)(files[i].size / (1024.0f*1024.0f))); }
 				}

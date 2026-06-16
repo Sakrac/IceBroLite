@@ -97,7 +97,7 @@ CPU6510* GetCurrCPU()
 	return sp6510;
 }
 
-CPU6510* GetCPU(VICEMemSpaces space)
+CPU6510* GetCPU(VICEMemSpaces /*space*/)
 {
 	return sp6510;
 }

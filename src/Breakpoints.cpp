@@ -121,7 +121,7 @@ size_t NumBreakpoints()
 
 Breakpoint GetBreakpoint(size_t index)
 {
-	Breakpoint r = { 0xffffffff, 0, 0, 0 };
+	Breakpoint r = { 0xffffffff, 0, 0, 0, nullptr };
 	IBMutexLock(&sBreakpointMutex);
 	if (index < sBreakpoints.size()) {
 		r = sBreakpoints[index];

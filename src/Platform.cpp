@@ -8,9 +8,11 @@ void IBMutexInit(IBMutex* mutex, const char* name)
 #ifdef _WIN32
 	*mutex = CreateMutex(NULL, false, "Vice connect mutex");
 #else
+	(void)name;
 	if (pthread_mutex_init(mutex, NULL) != 0) {
 		// error
 	}
+
 #endif
 }
 
@@ -57,6 +59,7 @@ bool IBCreateThread(IBThread* thread, size_t stackSize, IBThreadFunc func, void 
 #else
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
+	pthread_attr_setstacksize(&attr, stackSize);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
 //	int pthread_create(pthread_t * thread, const pthread_attr_t * attr,
@@ -124,5 +127,9 @@ void CopyBitmapToClipboard(void* bitmap, int width, int height)
 		SetClipboardData(CF_DIB, hData);
 		CloseClipboard();
 	}
+#else
+	(void)bitmap;
+	(void)width;
+	(void)height;
 #endif
 }

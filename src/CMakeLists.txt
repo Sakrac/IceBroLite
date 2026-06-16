@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 4.2)
+cmake_minimum_required(VERSION 4.1.2)
 project(src)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -7,10 +7,6 @@ include_directories("imgui" "imgui/backends" "imgui/examples/libs/glfw/include" 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
-
-set(CMAKE_CXX_FLAGS "-Wall -Wextra")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 
 if(CMAKE_BUILD_TYPE EQUAL "Debug")
     add_compile_definitions("_DEBUG")
@@ -77,6 +73,8 @@ add_executable( IceBroLite
 if (CMAKE_SYSTEM_NAME STREQUAL Windows)
     target_link_libraries( IceBroLite opengl32.lib gdi32.lib ${LIBRARY_INCLUDES} ws2_32.lib )
 elseif (CMAKE_SYSTEM_NAME STREQUAL Linux)
+    find_package(OpenGL REQUIRED)
+    target_link_libraries( IceBroLite ${LIBRARY_INCLUDES} OpenGL::GL )
 endif()
 
 set_target_properties( IceBroLite PROPERTIES WIN32_EXECUTABLE TRUE )

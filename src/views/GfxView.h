@@ -120,7 +120,7 @@ struct GfxView {
 	void CreateColumnsBitmap(CPU6510* cpu, uint32_t* dst, int lines, uint32_t width, const uint32_t* palette);
 
 	void PrintCurrentInfo(CPU6510* cpu, int* hoverPos);
-	void PrintHoverInfo(CPU6510* cpu, int* hoverPos, int mode, uint16_t scrnAddr, uint16_t fontAddr, uint16_t bitmAddr, bool _ecbm, int row = 1);
+	void PrintHoverInfo(CPU6510* cpu, int* hoverPos, int mode, uint16_t scrnAddr, uint16_t fontAddr, uint16_t bitmAddr, bool _ecbm);
 
 	void CreateC64BitmapBitmap(CPU6510* cpu, uint32_t* dst, const uint32_t* palette, uint16_t bitmap, size_t cl, uint32_t rw);
 	void CreateC64ColorBitmapBitmap(CPU6510* cpu, uint32_t* dst, const uint32_t* palette, uint16_t bitmap, uint16_t screen, size_t cl, uint32_t rw);
