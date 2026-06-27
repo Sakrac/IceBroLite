@@ -314,7 +314,7 @@ void CodeView::Draw(int index)
 		}
 	}
 
-	float fontCharWidth = ImGui::GetFont()->GetCharAdvance('D');// CurrFontSize();
+	float fontCharWidth = ImGui::CalcTextSize("D").x;
 	float lineHeight = ImGui::GetTextLineHeightWithSpacing()-2;
 
 	if (sY<0) {

@@ -149,7 +149,7 @@ void BreakpointView::Draw()
 	ImVec2 winPos = ImGui::GetWindowPos();
 	ImVec2 winSize = ImGui::GetWindowSize();
 
-	float fontHgt = ImGui::GetFont()->FontSize;
+	float fontHgt = ImGui::GetFont()->LegacySize;
 	if (ImGui::BeginTable("##breakpointstable", 5, flags)) {
 		size_t numBreakpoints = NumBreakpoints();
 
@@ -201,7 +201,7 @@ void BreakpointView::Draw()
 					 ((bp.flags & Breakpoint::Enabled) ? ViceMonIcons::VMI_BreakPoint : ViceMonIcons::VMI_DisabledBreakPoint) :
 					 ((bp.flags & Breakpoint::Enabled) ? ViceMonIcons::VMI_WatchPoint : ViceMonIcons::VMI_WatchPointOf)) :
 					 ((bp.flags & Breakpoint::Enabled) ? ViceMonIcons::VMI_TracePoint : ViceMonIcons::VMI_TracePointOf);
-				if (DrawTexturedIcon(bpIcon, false, ImGui::GetFont()->FontSize)) {
+				if (DrawTexturedIcon(bpIcon, false, ImGui::GetFont()->LegacySize)) {
 					ViceToggleBreakpoint(bp.number, !(bp.flags & Breakpoint::Enabled));
 				}
 				ImGui::TableSetColumnIndex(col++);

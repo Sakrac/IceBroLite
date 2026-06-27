@@ -5,7 +5,6 @@
 #include "Views.h"
 #include "../6510.h"
 #include "../Expressions.h"
-//#include "ViceConnect.h"
 #include "../Config.h"
 #include "../ImGui_Helper.h"
 #include "../imgui/imgui_internal.h"
@@ -147,8 +146,8 @@ void MemView::Draw(int index)
 		wasActive = active;
 
 		// force font spacing
-		float fontWidth = ImGui::GetFont()->GetCharAdvance('D');
-		float fontHgt = ImGui::GetFont()->FontSize;
+		float fontWidth = ImGui::CalcTextSize("D").x;
+		float fontHgt = ImGui::GetFont()->LegacySize;
 		uint32_t charWid = (uint32_t)(ImGui::GetWindowWidth()/fontWidth);
 
 		uint32_t byteChars = (showHex ? 3 : 0)+(showText ? 1 : 0);

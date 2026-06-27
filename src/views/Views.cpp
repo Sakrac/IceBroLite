@@ -143,6 +143,7 @@ ViewContext::ViewContext() : currFont(3), setupDocking(true), saveSettingsOnExit
 	for (int fa = 0; fa < ViewContext::sNumFontSizes; ++fa) {
 		int f = (fa + 3) % ViewContext::sNumFontSizes;
 		aFonts[f] = io.Fonts->AddFontFromMemoryCompressedTTF(GetC64FontData(), GetC64FontSize(), sFontSizes[f], NULL, C64CharRanges);
+
 		assert(aFonts[f] != NULL);
 	}
 	nextFont = currFont;
@@ -562,7 +563,7 @@ void SelectFont(int size)
 		if (viewContext->aFonts[size]->IsLoaded()) {
 			viewContext->currFont = size;
 			viewContext->currFontSize = sFontSizes[size];
-			ImGui::SetCurrentFont(viewContext->aFonts[viewContext->currFont]);
+			ImGui::SetCurrentFont(viewContext->aFonts[viewContext->currFont], sFontSizes[viewContext->currFont], sFontSizes[viewContext->currFont]);
 			GImGui->IO.FontDefault = viewContext->aFonts[viewContext->currFont];
 		}
 		viewContext->nextFont = size;

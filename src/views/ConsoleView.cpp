@@ -493,7 +493,7 @@ void IceConsole::ExecCommand(const char* command_line)
 		CommandForget();
 	} else if (cmd.same_str("match")) {
 		if (!ViceConnected()) { AddLog("VICE Not Connected Error"); }
-		else { CommandMatch(param, (int)ImGui::GetWindowSize().x / (int)ImGui::GetFont()->GetCharAdvance('D')); }
+		else { CommandMatch(param, (int)ImGui::GetWindowSize().x / (int)ImGui::CalcTextSize("D").x); }
 	} else if (cmd.same_str("gfxsave")) {
 		if (!ViceConnected()) { AddLog("VICE Not Connected Error"); }
 		else {
