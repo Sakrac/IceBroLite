@@ -426,7 +426,8 @@ void ThemeColorMenu()
 
 				ImDrawList* draw_list = ImGui::GetWindowDrawList();
 				float ch = ImGui::GetTextLineHeightWithSpacing();
-				float cw = ImGui::GetFont()->GetCharAdvance('D');
+				float cw = ImGui::CalcTextSize("D").x;
+//				float cw = ImGui::GetFont()->GetCharAdvance('D');
 				draw_list->AddRectFilled(pos,
 					ImVec2(pos.x + cw * (4 * 5 - 1), pos.y + ch * 4),
 					ImGui::GetColorU32(ImGuiCol_ChildBg));
