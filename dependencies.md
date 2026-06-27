@@ -1,66 +1,68 @@
 # WINDOWS
 
-# Install CMake
-# Download the correct version from
-# https://cmake.org/download/
+## Build Tool
 
-# Install Ninja, put it somewhere and add the path to the path environment variable
-# https://github.com/ninja-build/ninja/releases
+Both Visual Studio and CMake will build on Windows. If you're fine with Visual Studio just use that and skip CMake/Ninja-Build/Clang
 
-# Install CLANG
-# Download the latest release from LLVM and copy the folders (bin, etc.) to C:\Program Files\LLVM\
-# https://github.com/llvm/llvm-project/releases
+### Install CMake
+Download the correct version from
+https://cmake.org/download/
 
-# FEDORA
+### Install Ninja, put it somewhere and add the path to the path environment variable
+https://github.com/ninja-build/ninja/releases
 
-# Fedora make sure to upgrade first
-# sudo dnf upgrade --refresh
+### Install CLANG
+Download the latest release from LLVM and copy the folders (bin, etc.) to C:\Program Files\LLVM\, or pick the full LLVM installer.
+https://github.com/llvm/llvm-project/releases
 
-# Install CMake and Ninja
-# sudo dnf install cmake ninja
+# FEDORA Workspace (DNF)
 
-# Install the clang compiler and llvm
-# sudo dnf install clang
-# sudo dnf install llvm
+### Fedora make sure to upgrade first
+sudo dnf upgrade --refresh
 
-# Run this to install OpenGL development files in Fedora
-# sudo dnf install mesa-libGL-devel
+### Install CMake and Ninja
+sudo dnf install cmake ninja
 
-# Install dependencies for GLFW in Fedora
-# sudo dnf install wayland-devel libxkbcommon-devel libXcursor-devel libXi-devel libXinerama-devel libXrandr-devel
+### Install the clang compiler and llvm
+sudo dnf install clang
+sudo dnf install llvm
 
-# DEBIAN
+### Run this to install OpenGL development files in Fedora
+sudo dnf install mesa-libGL-devel
 
-# sudo apt update
-# sudp apt upgrade
+### Install dependencies for X11 in Fedora
+sudo dnf install wayland-devel libxkbcommon-devel libXcursor-devel libXi-devel libXinerama-devel libXrandr-devel
 
-# Install CMake and Ninja
-# sudo apt install cmake ninja-build
+# DEBIAN (APT)
 
-# Install the clang compiler and llvm
-# sudo apt install clang
-# sudo apt install llvm
+sudo apt update
+sudp apt upgrade
 
-# Install dependencies for GLFW in Fedora
-# sudo apt-get install mesa-utils libglu1-mesa-dev freeglut3-dev mesa-common-dev
+### Install CMake and Ninja
+sudo apt install cmake ninja-build
 
-# Probably need a newer version of cmake though (if build_cmake.sh doesn't work)
-# sudo apt install -y snapd
-# sudo reboot
-# sudo snap install core
-# sudo snap install cmake --classic
+### Install the clang compiler and llvm
+sudo apt install clang
+sudo apt install llvm
 
-# More debian dev stuff
-# sudo apt install libwayland-dev
-# sudo apt install libxkbcommon-dev
-# sudo apt install libxrandr-dev
-# sudo apt-get install libxinerama-dev
-# sudo apt-get install libxcursor-dev
-# sudo apt-get install libxi-dev
+### Install dependencies for X11 / OpenGL in Fedora
+sudo apt-get install mesa-utils libglu1-mesa-dev freeglut3-dev mesa-common-dev
 
-# Include GLFW source in the project
-cd src
-git clone https://github.com/glfw/glfw.git
-cd ..
+### Probably need a newer version of cmake though (if build_cmake.sh doesn't work)
+Install SNAP and install cmake from there
+sudo apt install -y snapd
+sudo reboot
+sudo snap install core
+sudo snap install cmake --classic
 
-# Now build_cmake.sh / build_cmake.bat should work
+### Install X11 / wayland stuff
+sudo apt install libwayland-dev libxkbcommon-dev libxrandr-dev
+sudo apt-get install libxinerama-dev
+sudo apt-get install libxcursor-dev
+sudo apt-get install libxi-dev
+
+# Clone ImGui / Sokol
+
+Run get_dependencies.bat or get_dependencies.sh in the root folder of the project.
+
+Now build_cmake.sh / build_cmake.bat should work

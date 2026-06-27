@@ -1,17 +1,17 @@
 #include "imgui.h"
 #include "imgui_internal.h"
-#include "GLFW/glfw3.h"
 
-void ForceKeyboardCanvas(const char* label)
+void ForceKeyboardCanvas(const char *label)
 {
-	ImGuiWindow* window = ImGui::GetCurrentWindow();
+	ImGuiWindow *window = ImGui::GetCurrentWindow();
 	if (window->SkipItems)
 		return;
 
-	ImGuiContext& g = *GImGui;
+	ImGuiContext &g = *GImGui;
 	const ImGuiID id = window->GetID(label);
 
-	if (g.ActiveId!=id) {
+	if (g.ActiveId != id)
+	{
 		ImGui::SetActiveID(id, window);
 		ImGui::SetFocusID(id, window);
 		ImGui::FocusWindow(window);
@@ -20,23 +20,27 @@ void ForceKeyboardCanvas(const char* label)
 
 static ImGuiID sCanvasID = 0;
 
-bool KeyboardCanvas( const char* label )
+bool KeyboardCanvas(const char *label)
 {
-	ImGuiWindow* window = ImGui::GetCurrentWindow();
-	if( window->SkipItems )
+	ImGuiWindow *window = ImGui::GetCurrentWindow();
+	if (window->SkipItems)
 		return false;
 
-	ImGuiContext& g = *GImGui;
-	const ImGuiIO& io = g.IO;
+	ImGuiContext &g = *GImGui;
+	const ImGuiIO &io = g.IO;
 
-	const ImGuiID id = window->GetID( label );
+	const ImGuiID id = window->GetID(label);
 
 	const bool hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
 	const bool clicked = io.MouseClicked[0];
-	if (clicked) {
-		if (hovered) {
+	if (clicked)
+	{
+		if (hovered)
+		{
 			sCanvasID = id;
-		} else if (sCanvasID == id) {
+		}
+		else if (sCanvasID == id)
+		{
 			sCanvasID = 0;
 		}
 	}
@@ -45,20 +49,20 @@ bool KeyboardCanvas( const char* label )
 	const bool user_clicked = hovered && clicked;
 	const bool user_nav_input_start = (g.ActiveId != id) && ((g.NavActivatePressedId == id) || (g.NavActivateId == id && g.NavInputSource == ImGuiInputSource_Keyboard));
 
-	if(user_focused || user_clicked || user_nav_input_start)
+	if (user_focused || user_clicked || user_nav_input_start)
 	{
-		if( g.ActiveId != id )
+		if (g.ActiveId != id)
 		{
-			ImGui::SetActiveID( id, window );
-			ImGui::SetFocusID( id, window );
-			ImGui::FocusWindow( window );
+			ImGui::SetActiveID(id, window);
+			ImGui::SetFocusID(id, window);
+			ImGui::FocusWindow(window);
 		}
-	} else if (g.ActiveId == id) {
+	}
+	else if (g.ActiveId == id)
+	{
 		if ((!hovered && io.MouseClicked[0]) || ImGui::IsKeyPressed(ImGuiKey_Escape))
 			ImGui::ClearActiveID();
 	}
 
 	return g.ActiveId == id;
 }
-
-

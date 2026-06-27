@@ -1,23 +1,22 @@
 #include "platform.h"
+#include "sokol/sokol_app.h"
 #include <stdint.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 
-void IBMutexInit(IBMutex* mutex, const char* name)
-{
+void IBMutexInit(IBMutex* mutex, const char* name) {
 #ifdef _WIN32
-	*mutex = CreateMutex(NULL, false, "Vice connect mutex");
+	* mutex = CreateMutex(NULL, false, "Vice connect mutex");
 #else
 	(void)name;
 	if (pthread_mutex_init(mutex, NULL) != 0) {
-		// error
+	  // error
 	}
 
 #endif
 }
 
-bool IBMutexDestroy(IBMutex* mutex)
-{
+bool IBMutexDestroy(IBMutex* mutex) {
 #ifdef _WIN32
 	HANDLE m = *mutex;
 	if (m != IBMutex_Clear) {
@@ -30,20 +29,16 @@ bool IBMutexDestroy(IBMutex* mutex)
 #endif
 }
 
-
-int IBMutexLock(IBMutex* mutex)
-{
+int IBMutexLock(IBMutex* mutex) {
 #ifdef _WIN32
-	return WaitForSingleObject(
-		*mutex,    // handle to mutex
-		INFINITE);  // no time-out interval
+	return WaitForSingleObject(*mutex,    // handle to mutex
+		INFINITE); // no time-out interval
 #else
 	return pthread_mutex_lock(mutex);
 #endif
 }
 
-bool IBMutexRelease(IBMutex* mutex)
-{
+bool IBMutexRelease(IBMutex* mutex) {
 #ifdef _WIN32
 	return ReleaseMutex(*mutex);
 #else
@@ -51,10 +46,10 @@ bool IBMutexRelease(IBMutex* mutex)
 #endif
 }
 
-bool IBCreateThread(IBThread* thread, size_t stackSize, IBThreadFunc func, void *param)
-{
+bool IBCreateThread(IBThread* thread, size_t stackSize, IBThreadFunc func,
+	void* param) {
 #ifdef _WIN32
-	*thread = CreateThread(nullptr, stackSize, func, param, 0, nullptr);
+	* thread = CreateThread(nullptr, stackSize, func, param, 0, nullptr);
 	return *thread != nullptr;
 #else
 	pthread_attr_t attr;
@@ -62,14 +57,14 @@ bool IBCreateThread(IBThread* thread, size_t stackSize, IBThreadFunc func, void 
 	pthread_attr_setstacksize(&attr, stackSize);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
-//	int pthread_create(pthread_t * thread, const pthread_attr_t * attr,
-//					   void* (*start_routine) (void*), void* arg);
+	//	int pthread_create(pthread_t * thread, const pthread_attr_t * attr,
+	//					   void* (*start_routine) (void*), void*
+	//arg);
 	return pthread_create(thread, &attr, func, param);
 #endif
 }
 
-bool IBDestroyThread(IBThread* thread)
-{
+bool IBDestroyThread(IBThread* thread) {
 #ifdef _WIN32
 	HANDLE t = *thread;
 	if (t != INVALID_HANDLE_VALUE) {
@@ -83,16 +78,25 @@ bool IBDestroyThread(IBThread* thread)
 }
 
 #ifdef _WIN32
-HWND GetHWnd();
+HWND GetHWnd() {
+	HWND ret = {};
+	const void* hwnd = sapp_win32_get_hwnd();
+	if (hwnd) {
+		ret = *reinterpret_cast<const HWND*>(hwnd);
+	}
+	return ret;
+}
 #endif
 
-void CopyBitmapToClipboard(void* bitmap, int width, int height)
-{
+void CopyBitmapToClipboard(void* bitmap, int width, int height) {
 #ifdef _WIN32
 	size_t pixelSize = (size_t)width * (size_t)height;
 	size_t byteSize = pixelSize * sizeof(uint32_t);
-	HANDLE hData = GlobalAlloc(GHND | GMEM_SHARE, sizeof(BITMAPINFO) + byteSize - sizeof(uint32_t));
-	if (hData == nullptr) { return; }
+	HANDLE hData = GlobalAlloc(GHND | GMEM_SHARE,
+		sizeof(BITMAPINFO) + byteSize - sizeof(uint32_t));
+	if (hData == nullptr) {
+		return;
+	}
 	LPVOID pData = (LPVOID)GlobalLock(hData);
 
 	BITMAPINFO* dib = (BITMAPINFO*)pData;
@@ -110,8 +114,8 @@ void CopyBitmapToClipboard(void* bitmap, int width, int height)
 	dib->bmiHeader.biXPelsPerMeter = 1080;
 	dib->bmiHeader.biYPelsPerMeter = 1080;
 
-	uint32_t *src = (uint32_t*)bitmap + pixelSize - width;
-	uint32_t *dst = (uint32_t*)dib->bmiColors;
+	uint32_t* src = (uint32_t*)bitmap + pixelSize - width;
+	uint32_t* dst = (uint32_t*)dib->bmiColors;
 
 	for (int y = 0; y < height; ++y) {
 		for (int x = 0; x < width; ++x) {
@@ -133,3 +137,20 @@ void CopyBitmapToClipboard(void* bitmap, int width, int height)
 	(void)height;
 #endif
 }
+
+#ifdef _DEBUG
+int DebugLog(char const* const _Format, ...) {
+	int _Result;
+	char tempString[1024];
+	va_list args;
+	va_start(args, _Format);
+	_Result = (int32_t)vsprintf_s(tempString, sizeof(tempString), _Format, args);
+	va_end(args);
+#if defined _MSC_VER
+	OutputDebugStringA(tempString);
+#else
+	puts(tempString);
+#endif
+	return _Result;
+}
+#endif

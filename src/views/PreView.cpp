@@ -15,8 +15,8 @@ void PreView::Draw()
 			strref show = currFile + currFileTopOffs;
 
 
-			float fontWidth = ImGui::GetFont()->GetCharAdvance('W');
-			float fontHgt = ImGui::GetFont()->FontSize;
+			float fontWidth = ImGui::CalcTextSize("D").x;
+			float fontHgt = ImGui::GetFont()->LegacySize;
 
 			// CONSIDER: allow moving up/down in the file
 			//uint32_t numLines = (uint32_t)(ImGui::GetWindowSize().y / fontHgt);

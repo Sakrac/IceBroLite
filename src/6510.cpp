@@ -8,7 +8,6 @@
 
 static CPU6510* sp6510 = nullptr;
 
-
 CPU6510::CPU6510() : space(VICEMemSpaces::MainMemory), memoryChanged(false)
 #ifdef _WIN32
 	, memoryUpdateMutex(NULL_HANDLE)

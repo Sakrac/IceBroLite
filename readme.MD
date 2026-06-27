@@ -4,9 +4,13 @@ New [manual](https://sakrac.github.io/IceBroLite/) using GitHub Pages! ([previou
 
 ## Starting CMake project
 
-Trying to make the project smoother to build for linux and mac. To build with CMake GLFW3 source should be downloaded (https://www.glfw.org/) into src/glfw/
+I'm switching the backend from GLFW to [Sokol](https://github.com/floooh/sokol) because it is hard to keep a single backend on Mac, Windows AND Linux. Sokol lets you run OpenGL on Linux, DirectX11 on Windows and Metal on Mac so it is far easier to manage.
 
-At this point I can run in Windows from CLion, testing more as I go. Some code may be in a transitionary phase for a while.
+I'm also getting rid of the makefile, but keeping the Visual Studio .sln. I expect some unexpected challenges so let me know about issues. You can build by pressing F7 in Visual Studio Code if everything works on every platform.
+
+Build setup instructions in [dependencies.md](dependencies.md)
+
+Previous version available in the _glfw_ branch.
 
 ## Other Updates
 

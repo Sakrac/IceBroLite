@@ -11,7 +11,6 @@
 #include "../ViceInterface.h"
 #include "../ImGui_Helper.h"
 #include "../imgui/imgui_internal.h"
-#include "GLFW/glfw3.h"
 #include "../Image.h"
 #include "../Config.h"
 #include "../Sym.h"
@@ -314,7 +313,7 @@ void CodeView::Draw(int index)
 		}
 	}
 
-	float fontCharWidth = ImGui::GetFont()->GetCharAdvance('D');// CurrFontSize();
+	float fontCharWidth = ImGui::CalcTextSize("D").x;
 	float lineHeight = ImGui::GetTextLineHeightWithSpacing()-2;
 
 	if (sY<0) {
