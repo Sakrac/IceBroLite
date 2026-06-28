@@ -19,6 +19,12 @@
     <Filter Include="data">
       <UniqueIdentifier>{28c7c175-d940-4363-bfc4-5f9f2c7c378f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="sokol">
+      <UniqueIdentifier>{6bc39f0e-04c0-440f-97d9-9c45fbec09a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sokol\util">
+      <UniqueIdentifier>{0c894cdc-4217-4323-97f1-147854d2af55}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imconfig.h">
@@ -81,12 +87,6 @@
       <Filter>views</Filter>
     </ClInclude>
     <ClInclude Include="SourceDebug.h" />
-    <ClInclude Include="imgui\backends\imgui_impl_glfw.h">
-      <Filter>ImGUI\Iimpl</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\backends\imgui_impl_opengl2.h">
-      <Filter>ImGUI\Iimpl</Filter>
-    </ClInclude>
     <ClInclude Include="views\WatchView.h">
       <Filter>views</Filter>
     </ClInclude>
@@ -116,6 +116,37 @@
     <ClInclude Include="SaveState.h" />
     <ClInclude Include="Commands.h" />
     <ClInclude Include="CodeColoring.h" />
+    <ClInclude Include="sokol\sokol_app.h">
+      <Filter>sokol</Filter>
+    </ClInclude>
+    <ClInclude Include="sokol\sokol_args.h">
+      <Filter>sokol</Filter>
+    </ClInclude>
+    <ClInclude Include="sokol\sokol_audio.h">
+      <Filter>sokol</Filter>
+    </ClInclude>
+    <ClInclude Include="sokol\sokol_fetch.h">
+      <Filter>sokol</Filter>
+    </ClInclude>
+    <ClInclude Include="sokol\sokol_gfx.h">
+      <Filter>sokol</Filter>
+    </ClInclude>
+    <ClInclude Include="sokol\sokol_glue.h">
+      <Filter>sokol</Filter>
+    </ClInclude>
+    <ClInclude Include="sokol\sokol_log.h">
+      <Filter>sokol</Filter>
+    </ClInclude>
+    <ClInclude Include="sokol\sokol_time.h">
+      <Filter>sokol</Filter>
+    </ClInclude>
+    <ClInclude Include="sokol\util\sokol_gfx_imgui.h">
+      <Filter>sokol\util</Filter>
+    </ClInclude>
+    <ClInclude Include="sokol\util\sokol_imgui.h">
+      <Filter>sokol\util</Filter>
+    </ClInclude>
+    <ClInclude Include="IceBroLite.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\imgui.cpp">
@@ -174,12 +205,6 @@
     </ClCompile>
     <ClCompile Include="SourceDebug.cpp" />
     <ClCompile Include="ViceMonitorInterface.cpp" />
-    <ClCompile Include="imgui\backends\imgui_impl_glfw.cpp">
-      <Filter>ImGUI\Iimpl</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\backends\imgui_impl_opengl2.cpp">
-      <Filter>ImGUI\Iimpl</Filter>
-    </ClCompile>
     <ClCompile Include="imgui\imgui_tables.cpp">
       <Filter>ImGUI</Filter>
     </ClCompile>
@@ -210,6 +235,8 @@
     </ClCompile>
     <ClCompile Include="Commands.cpp" />
     <ClCompile Include="CodeColoring.cpp" />
+    <ClCompile Include="SokolImpl.cpp" />
+    <ClCompile Include="IceBroLiteC.c" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="struse\struse.natvis">

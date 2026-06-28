@@ -178,27 +178,36 @@ uint32_t plus4pal[128] = {
 	ColRGBA(219, 255, 163, 255),
 };
 
-ImTextureID CreateTexture()
+IBLImage CreateImage(int w, int h, const char *label, const void *image_data, size_t image_size, int format)
 {
-	// Turn the RGBA pixel data into an OpenGL texture:
-	GLuint my_opengl_texture = 0;
-	glGenTextures(1, &my_opengl_texture);
-	glBindTexture(GL_TEXTURE_2D, my_opengl_texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-
-	return (ImTextureID)(size_t)my_opengl_texture;
+	sg_image_desc desc = {};
+	desc.type = SG_IMAGETYPE_2D;
+	desc.usage.color_attachment = true;
+	desc.width = w;
+	desc.height = h;
+	desc.num_slices = 1;
+	desc.num_mipmaps = 1;
+	desc.pixel_format = static_cast<sg_pixel_format>(format);
+	desc.label = label;
+	if (image_data)
+	{
+		desc.data.mip_levels[0].ptr = image_data;
+		desc.data.mip_levels[0].size = image_size;
+		desc.usage.immutable = true;
+	}
+	else
+	{
+		desc.usage.dynamic_update = true;
+	}
+	return sg_make_image(&desc);
 }
 
-void SelectTexture(ImTextureID img)
+void UpdateTextureData(IBLImage image, const void *data, size_t size)
 {
-	glBindTexture(GL_TEXTURE_2D, (GLuint)(size_t)img);
-}
-
-void UpdateTextureData(int width, int height, const void *data)
-{
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	sg_image_data image_data = {};
+	image_data.mip_levels[0].ptr = data;
+	image_data.mip_levels[0].size = size;
+	sg_update_image(image, image_data);
 }
 
 // data for icons
@@ -237,19 +246,15 @@ struct sTexArea
 	{48 * 2, 48 * 2, 12 * 2, 16 * 2},
 };
 
-static ImTextureID aIconID = {};
+static IBLImage aIconID = {};
 static int sIconTexWidth = 0;
 static int sIconTexHeight = 0;
 
 void LoadIcons()
 {
-	if (ImTextureID id = CreateTexture())
-	{
-		UpdateTextureData(sIcons_Width, sIcons_Height, sIcons_Pixels);
-		sIconTexWidth = sIcons_Width;
-		sIconTexHeight = sIcons_Height;
-		aIconID = id;
-	}
+	aIconID = CreateImage(sIcons_Width, sIcons_Height, "IconsTextureAtlas", (const void *)sIcons_Pixels, sIcons_Width * sIcons_Height * 4);
+	sIconTexWidth = sIcons_Width;
+	sIconTexHeight = sIcons_Height;
 }
 
 int GetViceMonIconWidth(ViceMonIcons icon)
@@ -260,7 +265,7 @@ int GetViceMonIconWidth(ViceMonIcons icon)
 bool DrawTexturedIcon(ViceMonIcons icon, bool flipX, float width, const ImVec4 &tint, const ImVec4 &hover)
 {
 	bool ret = false;
-	if (aIconID)
+	if (IBLImageValid(aIconID))
 	{
 		float iW = 1.0f / (float)sIconTexWidth;
 		float iH = 1.0f / (float)sIconTexHeight;
@@ -292,7 +297,7 @@ bool DrawTexturedIcon(ViceMonIcons icon, bool flipX, float width, const ImVec4 &
 				ret = ImGui::IsMouseReleased(0);
 			}
 		}
-		ImGui::ImageWithBg(aIconID,
+		ImGui::ImageWithBg(simgui_imtextureid(aIconID),
 						   ImVec2(s * aIcons[(size_t)icon].w, s * aIcons[(size_t)icon].h),
 						   ImVec2(u0, iH * aIcons[(size_t)icon].y),
 						   ImVec2(u1, iH * (aIcons[(size_t)icon].y + aIcons[(size_t)icon].h)),

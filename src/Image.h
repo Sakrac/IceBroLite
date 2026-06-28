@@ -1,6 +1,9 @@
 #pragma once
 
-enum class ViceMonIcons {
+#include "sokol/sokol_gfx.h"
+
+enum class ViceMonIcons
+{
 	VMI_BreakPoint = 0,
 	VMI_Reload,
 	VMI_Load,
@@ -29,14 +32,16 @@ enum class ViceMonIcons {
 };
 
 void LoadIcons();
-bool DrawTexturedIcon(ViceMonIcons icon, bool flipX = false, float wid = -1.0f, const ImVec4& tint = ImVec4(1, 1, 1, 1), const ImVec4& hover = ImVec4(1, 0.5f, 0.0f, 1.0f));
-bool DrawTexturedIconCenter(ViceMonIcons icon, bool flipX = false, float wid = -1.0f, const ImVec4& tint = ImVec4(1, 1, 1, 1), const ImVec4& hover = ImVec4(1, 0.5f, 0.0f, 1.0f));
+bool DrawTexturedIcon(ViceMonIcons icon, bool flipX = false, float wid = -1.0f, const ImVec4 &tint = ImVec4(1, 1, 1, 1), const ImVec4 &hover = ImVec4(1, 0.5f, 0.0f, 1.0f));
+bool DrawTexturedIconCenter(ViceMonIcons icon, bool flipX = false, float wid = -1.0f, const ImVec4 &tint = ImVec4(1, 1, 1, 1), const ImVec4 &hover = ImVec4(1, 0.5f, 0.0f, 1.0f));
 int GetViceMonIconWidth(ViceMonIcons icon);
 
-ImTextureID CreateTexture();
-void SelectTexture(ImTextureID img);
-void UpdateTextureData(int width, int height, const void* data);
-//ImTextureID LoadTexture( const char* filename, int* width, int* height );
+typedef sg_image IBLImage;
+
+IBLImage CreateImage(int w, int h, const char *label = nullptr, const void *image_data = nullptr, size_t image_size = 0, int format = SG_PIXELFORMAT_RGBA8);
+void UpdateTextureData(IBLImage image, const void *data, size_t size);
+
+static inline bool IBLImageValid(IBLImage image) { return image.id != SG_INVALID_ID; }
 
 extern uint32_t c64pal[16];
 extern uint32_t vic20pal_sc[16];

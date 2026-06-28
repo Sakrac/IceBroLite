@@ -30,9 +30,8 @@
     <ClInclude Include="FileDialog.h" />
     <ClInclude Include="Files.h" />
     <ClInclude Include="HashTable.h" />
+    <ClInclude Include="IceBroLite.h" />
     <ClInclude Include="Image.h" />
-    <ClInclude Include="imgui\backends\imgui_impl_glfw.h" />
-    <ClInclude Include="imgui\backends\imgui_impl_opengl2.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_internal.h" />
@@ -42,6 +41,16 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="resource1.h" />
     <ClInclude Include="SaveState.h" />
+    <ClInclude Include="sokol\sokol_app.h" />
+    <ClInclude Include="sokol\sokol_args.h" />
+    <ClInclude Include="sokol\sokol_audio.h" />
+    <ClInclude Include="sokol\sokol_fetch.h" />
+    <ClInclude Include="sokol\sokol_gfx.h" />
+    <ClInclude Include="sokol\sokol_glue.h" />
+    <ClInclude Include="sokol\sokol_log.h" />
+    <ClInclude Include="sokol\sokol_time.h" />
+    <ClInclude Include="sokol\util\sokol_gfx_imgui.h" />
+    <ClInclude Include="sokol\util\sokol_imgui.h" />
     <ClInclude Include="SourceDebug.h" />
     <ClInclude Include="StartVice.h" />
     <ClInclude Include="stb\stb_image.h" />
@@ -78,10 +87,9 @@
     <ClCompile Include="Expressions.cpp" />
     <ClCompile Include="FileDialog.cpp" />
     <ClCompile Include="Files.cpp" />
+    <ClCompile Include="IceBroLiteC.c" />
     <ClCompile Include="Icons.cpp" />
     <ClCompile Include="Image.cpp" />
-    <ClCompile Include="imgui\backends\imgui_impl_glfw.cpp" />
-    <ClCompile Include="imgui\backends\imgui_impl_opengl2.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
     <ClCompile Include="imgui\imgui_tables.cpp" />
@@ -90,6 +98,7 @@
     <ClCompile Include="Mnemonics.cpp" />
     <ClCompile Include="Platform.cpp" />
     <ClCompile Include="SaveState.cpp" />
+    <ClCompile Include="SokolImpl.cpp" />
     <ClCompile Include="SourceDebug.cpp" />
     <ClCompile Include="StartVice.cpp" />
     <ClCompile Include="struse.cpp" />
@@ -234,11 +243,12 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>imgui;imgui\backends;imgui\examples\libs\glfw\include</AdditionalIncludeDirectories>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>imgui\examples\libs\glfw\lib-vc2010-64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -251,13 +261,14 @@
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>imgui;imgui\backends;imgui\examples\libs\glfw\include</AdditionalIncludeDirectories>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>imgui\examples\libs\glfw\lib-vc2010-64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>

@@ -45,15 +45,13 @@
 #include "CodeColoring.h"
 #include "views/Views.h"
 
-#include "WindowIcon.inc"
-
-#ifdef _SOKOL_BUILD
 #include "sokol/sokol_app.h"
+#include "sokol/sokol_gfx.h"
 #include "sokol/util/sokol_imgui.h"
-#endif
+#include "IceBroLite.h"
 
 void StyleC64();
-static int sWindow_width = 1700, sWindow_height = 900;
+int sWindow_width = 1700, sWindow_height = 900;
 static int sCmdLineArgN = 0;
 static const char **sCmdLineArgs = nullptr;
 static SaveStateFile state;
@@ -192,20 +190,12 @@ WindowPreset ReadStateWindow(SaveStateFile file)
 	return ret;
 }
 
-extern "C"
-{
-	void IBLCommandLine(int argc, char *argv[]);
-}
 void IBLCommandLine(int argc, char *argv[])
 {
 	sCmdLineArgN = argc;
 	sCmdLineArgs = (const char **)argv;
 }
 
-extern "C"
-{
-	void IBLPreSokolSetup();
-}
 void IBLPreSokolSetup()
 {
 	ReadCurrentState();
@@ -213,6 +203,8 @@ void IBLPreSokolSetup()
 
 void IBLInit()
 {
+	sgimgui_desc_t SGImGuiSetup = {};
+	sgimgui_setup(SGImGuiSetup);
 	LoadIcons();
 	InitStartFolder();
 	CreateMainCPU();
@@ -326,18 +318,6 @@ void IBLInit()
 		ReadSymbolsFile(forceLoadSymbols);
 		forceLoadSymbols[0] = 0;
 	}
-
-#ifdef _WIN32
-	// release win32 command line
-	for (int i = 1; i < argc; ++i)
-	{
-		LocalFree(argv[i]);
-	}
-	if (argv)
-	{
-		free(argv);
-	}
-#endif
 
 	// Our state
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -488,29 +468,3 @@ void IBLCleanup()
 void IBLEvent(const sapp_event *sokol_event)
 {
 }
-
-extern "C"
-{
-
-	sapp_desc sokol_main(int argc, char *argv[])
-	{
-		IBLCommandLine(argc, argv);
-		IBLPreSokolSetup();
-
-		return (sapp_desc){
-			.width = sWindow_width,
-			.height = sWindow_height,
-			.init_cb = IBLInit,
-			.frame_cb = IBLFrame,
-			.cleanup_cb = IBLCleanup,
-			.event_cb = IBLEvent,
-			.window_title = "Ice Bro Lite",
-			.enable_clipboard = true,
-			.enable_dragndrop = true,
-			.icon.sokol_default = false,
-			.icon.images[0].width = sIcon_Width,
-			.icon.images[0].height = sIcon_Height,
-			.icon.images[0].pixels = {sIcon_Pixels, sizeof(sIcon_Pixels)},
-		};
-	}
-};
