@@ -10,8 +10,7 @@
 #include "../imgui/imgui_internal.h"
 #include "../Sym.h"
 
-MemView::MemView() : fixedAddress(false), open(false), evalAddress(false)
-{
+MemView::MemView() : fixedAddress(false), open(false), evalAddress(false) {
 	SetAddr(0x400);
 
 	spanValue = 0;
@@ -31,19 +30,17 @@ MemView::MemView() : fixedAddress(false), open(false), evalAddress(false)
 
 #define CursorFlashPeriod 64.0f/50.0f
 
-uint8_t ScreenToAscii(uint8_t s)
-{
-	if (s==0) { return '@'; }
-	if (s<=0x1a) { return s+'a'-1; }
-	if (s==0x1b) { return '['; }
-	if (s==0x1e) { return ']'; }
-	if (s>=0x61&&s<=0x7a) { return s-0x20; }
-	if (s<0x20||s > 0x40) { return '.'; }
+uint8_t ScreenToAscii(uint8_t s) {
+	if (s == 0) { return '@'; }
+	if (s <= 0x1a) { return s + 'a' - 1; }
+	if (s == 0x1b) { return '['; }
+	if (s == 0x1e) { return ']'; }
+	if (s >= 0x61 && s <= 0x7a) { return s - 0x20; }
+	if (s < 0x20 || s > 0x40) { return '.'; }
 	return s;
 }
 
-void MemView::SetAddr(uint16_t addr)
-{
+void MemView::SetAddr(uint16_t addr) {
 	addrValue = addr;
 	if (!fixedAddress) {
 		strovl addr(address, sizeof(address));
@@ -52,13 +49,12 @@ void MemView::SetAddr(uint16_t addr)
 	}
 }
 
-void MemView::Draw(int index)
-{
+void MemView::Draw(int index) {
 	CPU6510* cpu = GetCurrCPU();
 	if (!open) { return; }
 	{
 		strown<64> title("Mem");
-		title.append_num(index+1, 1, 10);
+		title.append_num(index + 1, 1, 10);
 
 		ImGui::SetNextWindowPos(ImVec2(400, 150), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(520, 400), ImGuiCond_FirstUseEver);
@@ -78,34 +74,34 @@ void MemView::Draw(int index)
 			ImGui::EndDragDropTarget();
 		}
 
-		if( !active ) {
+		if (!active) {
 			ImGui::End();
 			return;
 		}
 	}
 
 	cursorTime += ImGui::GetIO().DeltaTime;
-	if (cursorTime>=CursorFlashPeriod) { cursorTime -= CursorFlashPeriod; }
+	if (cursorTime >= CursorFlashPeriod) { cursorTime -= CursorFlashPeriod; }
 	{
 		strown<64> field("address##");
-		field.append_num(index+1, 1, 10);
+		field.append_num(index + 1, 1, 10);
 		ImGui::Columns(2, "memViewCokumns", false);  // 3-ways, no border
 		if (ImGui::InputText(field.c_str(), address, sizeof(address), ImGuiInputTextFlags_EnterReturnsTrue)) {
-			fixedAddress = address[0]=='=';
-			SetAddr(ValueFromExpression(address+(fixedAddress ? 1 : 0)));
+			fixedAddress = address[0] == '=';
+			SetAddr(ValueFromExpression(address + (fixedAddress ? 1 : 0)));
 		}
 		ImGui::NextColumn();
 
 		field.copy("span");
-		field.append_num(index+1, 1, 10);
+		field.append_num(index + 1, 1, 10);
 		if (ImGui::InputText(field.c_str(), span, sizeof(span))) {
 			spanValue = ValueFromExpression(span);
-			if (spanValue>256) { spanValue = 256; }
+			if (spanValue > 256) { spanValue = 256; }
 		}
 	}
 
-	if (evalAddress||(fixedAddress && cpu->MemoryChange())) {
-		SetAddr(ValueFromExpression(address+(fixedAddress ? 1 : 0)));
+	if (evalAddress || (fixedAddress && cpu->MemoryChange())) {
+		SetAddr(ValueFromExpression(address + (fixedAddress ? 1 : 0)));
 		spanValue = ValueFromExpression(span);
 		evalAddress = false;
 	}
@@ -139,7 +135,7 @@ void MemView::Draw(int index)
 
 	uint32_t prevAddrValue = addrValue;
 
-	if (showHex||showText) {
+	if (showHex || showText) {
 		bool active = KeyboardCanvas("HexView");// IsItemActive();
 
 		wasActive = active;
@@ -147,12 +143,12 @@ void MemView::Draw(int index)
 		// force font spacing
 		float fontWidth = ImGui::CalcTextSize("D").x;
 		float fontHgt = ImGui::GetFont()->LegacySize;
-		uint32_t charWid = (uint32_t)(ImGui::GetWindowWidth()/fontWidth);
+		uint32_t charWid = (uint32_t)(ImGui::GetWindowWidth() / fontWidth);
 
-		uint32_t byteChars = (showHex ? 3 : 0)+(showText ? 1 : 0);
+		uint32_t byteChars = (showHex ? 3 : 0) + (showText ? 1 : 0);
 		if (showAddress) { charWid -= 5; }
 		if (showHex && showText) { charWid--; }
-		uint32_t spanWin = spanValue ? spanValue : charWid/byteChars;
+		uint32_t spanWin = spanValue ? spanValue : charWid / byteChars;
 		ImVec2 mousePos = ImGui::GetMousePos();
 		ImVec2 curPos = ImGui::GetCursorScreenPos();
 		ImVec2 winPos = ImGui::GetWindowPos();
@@ -192,8 +188,7 @@ void MemView::Draw(int index)
 		// handle scroll wheel
 		if (mousePos.x >= curPos.x && mousePos.x < (winPos.x + winSize.x) && mousePos.y >= curPos.y && mousePos.y < (winPos.y + winSize.y) && address[0] != '=') {
 			mouseWheelDiff += ImGui::GetIO().MouseWheel;
-			if (mouseWheelDiff < -0.5f) { addrValue += spanWin; mouseWheelDiff += 1.0f; } 
-			else if (mouseWheelDiff > 0.5) { addrValue -= spanWin; mouseWheelDiff -= 1.0f; }
+			if (mouseWheelDiff < -0.5f) { addrValue += spanWin; mouseWheelDiff += 1.0f; } else if (mouseWheelDiff > 0.5) { addrValue -= spanWin; mouseWheelDiff -= 1.0f; }
 		} else {
 			mouseWheelDiff = 0.0f;
 		}
@@ -202,8 +197,8 @@ void MemView::Draw(int index)
 			ImVec2 mousePos = ImGui::GetMousePos();
 			ImVec2 winPos = ImGui::GetWindowPos();
 			ImVec2 winSize = ImGui::GetWindowSize();
-			if (mousePos.x>=winPos.x && mousePos.y>=winPos.y &&
-				mousePos.x<(winPos.x+winSize.x)&&mousePos.y<(winPos.y+winSize.y)) {
+			if (mousePos.x >= winPos.x && mousePos.y >= winPos.y &&
+				mousePos.x < (winPos.x + winSize.x) && mousePos.y < (winPos.y + winSize.y)) {
 				float mx = mousePos.x - winPos.x;
 				if (showAddress) { mx -= fontWidth * 5; }
 				int byte = (int)((mx + 0.5f * fontWidth) / (3.0f * fontWidth));
@@ -215,7 +210,7 @@ void MemView::Draw(int index)
 			}
 		}
 
-		int lines = int(ImGui::GetWindowHeight()/ImGui::GetTextLineHeightWithSpacing());
+		int lines = int(ImGui::GetWindowHeight() / ImGui::GetTextLineHeightWithSpacing());
 
 		if (active) {
 			int curX = cursor[0], curY = cursor[1];
@@ -225,33 +220,33 @@ void MemView::Draw(int index)
 			if (ImGui::IsKeyPressed(ImGuiKey_DownArrow)) { dY++; }
 			if (ImGui::IsKeyPressed(ImGuiKey_LeftArrow)) { dX--; }
 			if (ImGui::IsKeyPressed(ImGuiKey_RightArrow)) { dX++; }
-			if (ImGui::IsKeyPressed(ImGuiKey_PageUp)) { addrValue -= spanWin * (lines/2); }
-			if (ImGui::IsKeyPressed(ImGuiKey_PageDown)) { addrValue += spanWin * (lines/2); }
+			if (ImGui::IsKeyPressed(ImGuiKey_PageUp)) { addrValue -= spanWin * (lines / 2); }
+			if (ImGui::IsKeyPressed(ImGuiKey_PageDown)) { addrValue += spanWin * (lines / 2); }
 
 			if (showHex) {
 				curX += dX; curY += dY;
 				if (curX >= int(spanWin * 2)) { curY += 1; curX = 0; } else if (curX < 0) { curY -= 1; cursor[0] = spanWin * 2 - 1; } else { cursor[0] = curX; }
 				if (curY < 0) { addrValue -= spanWin; } else if (curY >= lines) { addrValue += spanWin; } else { cursor[1] = curY; }
-			} else if( dY ) {
+			} else if (dY) {
 				addrValue += dY * spanWin;
 			}
 		}
 
 		strown<1024> line;
 		uint16_t read = addrValue;
-		for(int lineNum = 0; lineNum < lines; ++lineNum) {
+		for (int lineNum = 0; lineNum < lines; ++lineNum) {
 			line.clear();
-			if (showAddress) { line.append_num(read, 4, 16).append(' ');  }
+			if (showAddress) { line.append_num(read, 4, 16).append(' '); }
 			if (showHex) {
 				uint16_t bytes = read;
-				for (uint32_t c = 0; c<spanWin; ++c) {
+				for (uint32_t c = 0; c < spanWin; ++c) {
 					line.append_num(cpu->GetByte(bytes++), 2, 16).append(' ');
 				}
 			}
-			if (showText && petsciiFont<0) {
+			if (showText && petsciiFont < 0) {
 				uint16_t chars = read;
 				uint32_t base = textLowercase ? (uint32_t)0xee00 : (uint32_t)0xef00;
-				for (uint32_t c = 0; c<spanWin; ++c) {
+				for (uint32_t c = 0; c < spanWin; ++c) {
 					uint32_t code = base + cpu->GetByte(chars++);
 					line.push_utf8(code);
 				}
@@ -260,7 +255,8 @@ void MemView::Draw(int index)
 			if (showText && petsciiFont >= 0) {
 				float yPos = ImGui::GetCursorPosY();
 				ImGui::SameLine();
-				ImGui::SetCursorPosX(line.len()* fontWidth);
+				ImGui::SetCursorPosX(line.len() * fontWidth);
+				ImGui::Dummy(ImVec2(0, 0));
 				ViewPushFont(petsciiFont);
 				line.clear();
 				uint16_t chars = read;
@@ -270,6 +266,7 @@ void MemView::Draw(int index)
 				ImGui::Text("%s", line.c_str());
 				ImGui::PopFont();
 				ImGui::SetCursorPosY(yPos);
+				ImGui::Dummy(ImVec2(0, 0));
 			}
 
 
@@ -280,44 +277,45 @@ void MemView::Draw(int index)
 		if (active && showHex) {
 			int col0 = 0;
 			int colT = spanWin * 2;
-			if (showHex && cursor[0]<colT) {
-				uint16_t a = addrValue + cursor[0]/2 + cursor[1]*spanWin;
+			if (showHex && cursor[0] < colT) {
+				uint16_t a = addrValue + cursor[0] / 2 + cursor[1] * spanWin;
 				int nib = cursor[0] & 1;
 				uint8_t b = InputHex();
-				if (b!=0xff) {
+				if (b != 0xff) {
 					uint8_t byte = cpu->GetByte(a);
 					if (nib) {
-						byte = (byte&0xf0)|b;
+						byte = (byte & 0xf0) | b;
 						++cursor[0];
-						if (cursor[0]>=colT) {
+						if (cursor[0] >= colT) {
 							cursor[0] = col0;
 							++cursor[1];
 						}
 					} else {
-						byte = (byte&0xf)|(b<<4);
+						byte = (byte & 0xf) | (b << 4);
 						++cursor[0];
 					}
 					cpu->SetByte(a, byte);
 				}
 			}
 			// cursor
-			if (cursorTime>(0.5f*CursorFlashPeriod)) {
+			if (cursorTime > (0.5f * CursorFlashPeriod)) {
 				const ImGuiStyle style = ImGui::GetStyle();
 
 				int cx = (cursor[0] & 1) + (cursor[0] / 2) * 3 + (showAddress ? 5 : 0);
 
 				ImGui::SetCursorPos(ImVec2(fontWidth * cx, ImGui::GetTextLineHeightWithSpacing() * cursor[1]));
+				ImGui::Dummy(ImVec2(0, 0));
 				const ImVec2 p = ImGui::GetCursorScreenPos();
-				ImGui::GetWindowDrawList()->AddRectFilled(p, ImVec2(p.x+fontWidth, p.y+fontHgt),
+				ImGui::GetWindowDrawList()->AddRectFilled(p, ImVec2(p.x + fontWidth, p.y + fontHgt),
 					ImColor(255, 255, 255));
 				strown<16> curChr;
-				if (showHex && cursor[0]<colT) {
-					uint8_t b = cpu->GetByte(addrValue+cursor[0]/2+cursor[1]*spanWin);
-					int nib = (cursor[0]-col0)&1;
-					curChr.append(strref::num_to_char((b>>(nib ? 0 : 4))&0xf));
+				if (showHex && cursor[0] < colT) {
+					uint8_t b = cpu->GetByte(addrValue + cursor[0] / 2 + cursor[1] * spanWin);
+					int nib = (cursor[0] - col0) & 1;
+					curChr.append(strref::num_to_char((b >> (nib ? 0 : 4)) & 0xf));
 				} else if (showText) {
-					uint8_t b = cpu->GetByte(addrValue+(cursor[0]-colT)+cursor[1]*spanWin);
-					curChr.push_utf8(0xee00+b);//curChr[ 0 ] = ScreenToAscii( b );
+					uint8_t b = cpu->GetByte(addrValue + (cursor[0] - colT) + cursor[1] * spanWin);
+					curChr.push_utf8(0xee00 + b);//curChr[ 0 ] = ScreenToAscii( b );
 				}
 				ImGui::TextColored(style.Colors[ImGuiCol_ChildBg], "%s", curChr.c_str());
 			}
@@ -332,8 +330,7 @@ void MemView::Draw(int index)
 	ImGui::End();
 }
 
-void MemView::WriteConfig(UserData& config)
-{
+void MemView::WriteConfig(UserData& config) {
 	config.AddValue(strref("open"), config.OnOff(open));
 	config.AddValue(strref("address"), strref(address));
 	config.AddValue(strref("span"), strref(span));
@@ -342,25 +339,24 @@ void MemView::WriteConfig(UserData& config)
 	config.AddValue(strref("showText"), config.OnOff(showText));
 }
 
-void MemView::ReadConfig(strref config)
-{
+void MemView::ReadConfig(strref config) {
 	ConfigParse conf(config);
 	while (!conf.Empty()) {
 		strref name, value;
 		ConfigParseType type = conf.Next(&name, &value);
-		if (name.same_str("open")&&type== ConfigParseType::CPT_Value) {
+		if (name.same_str("open") && type == ConfigParseType::CPT_Value) {
 			open = !value.same_str("Off");
-		} else if (name.same_str("address")&&type== ConfigParseType::CPT_Value) {
+		} else if (name.same_str("address") && type == ConfigParseType::CPT_Value) {
 			strovl addr(address, sizeof(address));
 			addr.copy(value); addr.c_str(); evalAddress = true;
-		} else if (name.same_str("span")&&type== ConfigParseType::CPT_Value) {
+		} else if (name.same_str("span") && type == ConfigParseType::CPT_Value) {
 			strovl spn(span, sizeof(span));
 			spn.copy(value); spn.c_str(); evalAddress = true;
-		} else if (name.same_str("showAddress")&&type== ConfigParseType::CPT_Value) {
+		} else if (name.same_str("showAddress") && type == ConfigParseType::CPT_Value) {
 			showAddress = !value.same_str("Off");
-		} else if (name.same_str("showHex")&&type== ConfigParseType::CPT_Value) {
+		} else if (name.same_str("showHex") && type == ConfigParseType::CPT_Value) {
 			showHex = !value.same_str("Off");
-		} else if (name.same_str("showText")&&type== ConfigParseType::CPT_Value) {
+		} else if (name.same_str("showText") && type == ConfigParseType::CPT_Value) {
 			showText = !value.same_str("Off");
 		}
 	}

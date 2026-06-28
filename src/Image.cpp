@@ -1,6 +1,5 @@
-#define GL_SILENCE_DEPRECATION
+#include "platform.h"
 #include "Image.h"
-#include "imgui/imgui.h"
 #include "sokol/sokol_app.h"
 #include "sokol/util/sokol_imgui.h"
 #include <stdint.h>
@@ -11,190 +10,198 @@ extern const unsigned char sIcons_Pixels[];
 
 #define ColRGBA(r, g, b, a) uint32_t((a << 24) | (b << 16) | (g << 8) | (r))
 uint32_t c64pal[16] = {
-    ColRGBA(0, 0, 0, 255),       ColRGBA(255, 255, 255, 255),
-    ColRGBA(136, 57, 50, 255),   ColRGBA(103, 182, 189, 255),
-    ColRGBA(139, 63, 150, 255),  ColRGBA(85, 160, 73, 255),
-    ColRGBA(64, 49, 141, 255),   ColRGBA(191, 206, 114, 255),
-    ColRGBA(139, 84, 41, 255),   ColRGBA(87, 66, 0, 255),
-    ColRGBA(184, 105, 98, 255),  ColRGBA(80, 80, 80, 255),
-    ColRGBA(120, 120, 120, 255), ColRGBA(148, 224, 137, 255),
-    ColRGBA(120, 105, 196, 255), ColRGBA(159, 159, 159, 255)};
+	ColRGBA(0, 0, 0, 255),       ColRGBA(255, 255, 255, 255),
+	ColRGBA(136, 57, 50, 255),   ColRGBA(103, 182, 189, 255),
+	ColRGBA(139, 63, 150, 255),  ColRGBA(85, 160, 73, 255),
+	ColRGBA(64, 49, 141, 255),   ColRGBA(191, 206, 114, 255),
+	ColRGBA(139, 84, 41, 255),   ColRGBA(87, 66, 0, 255),
+	ColRGBA(184, 105, 98, 255),  ColRGBA(80, 80, 80, 255),
+	ColRGBA(120, 120, 120, 255), ColRGBA(148, 224, 137, 255),
+	ColRGBA(120, 105, 196, 255), ColRGBA(159, 159, 159, 255) };
 
 uint32_t vic20pal_sc[16] = {
-    // Form vice : mike pal
-    ColRGBA(0, 0, 0, 255),       ColRGBA(255, 255, 255, 255),
-    ColRGBA(182, 31, 33, 255),   ColRGBA(77, 240, 255, 255),
-    ColRGBA(180, 63, 255, 255),  ColRGBA(68, 226, 55, 255),
-    ColRGBA(26, 52, 255, 255),   ColRGBA(220, 215, 27, 255),
-    ColRGBA(202, 84, 0, 255),    ColRGBA(233, 176, 114, 255),
-    ColRGBA(231, 146, 147, 255), ColRGBA(154, 247, 253, 255),
-    ColRGBA(224, 159, 255, 255), ColRGBA(143, 228, 147, 255),
-    ColRGBA(130, 144, 255, 255), ColRGBA(229, 222, 133, 255),
+	// Form vice : mike pal
+	ColRGBA(0, 0, 0, 255),       ColRGBA(255, 255, 255, 255),
+	ColRGBA(182, 31, 33, 255),   ColRGBA(77, 240, 255, 255),
+	ColRGBA(180, 63, 255, 255),  ColRGBA(68, 226, 55, 255),
+	ColRGBA(26, 52, 255, 255),   ColRGBA(220, 215, 27, 255),
+	ColRGBA(202, 84, 0, 255),    ColRGBA(233, 176, 114, 255),
+	ColRGBA(231, 146, 147, 255), ColRGBA(154, 247, 253, 255),
+	ColRGBA(224, 159, 255, 255), ColRGBA(143, 228, 147, 255),
+	ColRGBA(130, 144, 255, 255), ColRGBA(229, 222, 133, 255),
 };
 
 uint32_t plus4pal[128] = {
-    // from vice : yape pal
-    ColRGBA(0, 0, 0, 255),       ColRGBA(39, 39, 39, 255),
-    ColRGBA(96, 15, 16, 255),    ColRGBA(0, 64, 63, 255),
-    ColRGBA(86, 4, 102, 255),    ColRGBA(0, 75, 0, 255),
-    ColRGBA(26, 26, 140, 255),   ColRGBA(53, 52, 0, 255),
-    ColRGBA(83, 30, 0, 255),     ColRGBA(71, 40, 0, 255),
-    ColRGBA(24, 67, 0, 255),     ColRGBA(97, 8, 52, 255),
-    ColRGBA(0, 71, 30, 255),     ColRGBA(4, 41, 122, 255),
-    ColRGBA(40, 19, 143, 255),   ColRGBA(8, 72, 0, 255),
-    ColRGBA(0, 0, 0, 255),       ColRGBA(55, 55, 55, 255),
-    ColRGBA(111, 30, 31, 255),   ColRGBA(0, 79, 78, 255),
-    ColRGBA(101, 19, 117, 255),  ColRGBA(4, 90, 5, 255),
-    ColRGBA(42, 42, 156, 255),   ColRGBA(68, 68, 0, 255),
-    ColRGBA(99, 46, 0, 255),     ColRGBA(86, 56, 0, 255),
-    ColRGBA(40, 82, 0, 255),     ColRGBA(112, 23, 67, 255),
-    ColRGBA(0, 86, 46, 255),     ColRGBA(20, 56, 138, 255),
-    ColRGBA(56, 34, 158, 255),   ColRGBA(23, 88, 0, 255),
-    ColRGBA(0, 0, 0, 255),       ColRGBA(67, 67, 67, 255),
-    ColRGBA(124, 43, 44, 255),   ColRGBA(11, 92, 91, 255),
-    ColRGBA(114, 32, 130, 255),  ColRGBA(17, 103, 17, 255),
-    ColRGBA(54, 55, 168, 255),   ColRGBA(81, 80, 0, 255),
-    ColRGBA(111, 58, 0, 255),    ColRGBA(99, 68, 0, 255),
-    ColRGBA(52, 95, 0, 255),     ColRGBA(125, 36, 80, 255),
-    ColRGBA(10, 99, 58, 255),    ColRGBA(33, 69, 150, 255),
-    ColRGBA(69, 47, 171, 255),   ColRGBA(36, 101, 0, 255),
-    ColRGBA(0, 0, 0, 255),       ColRGBA(85, 85, 85, 255),
-    ColRGBA(141, 60, 61, 255),   ColRGBA(28, 109, 108, 255),
-    ColRGBA(131, 49, 147, 255),  ColRGBA(34, 120, 34, 255),
-    ColRGBA(71, 72, 185, 255),   ColRGBA(98, 97, 0, 255),
-    ColRGBA(128, 75, 17, 255),   ColRGBA(116, 85, 0, 255),
-    ColRGBA(69, 112, 0, 255),    ColRGBA(142, 53, 97, 255),
-    ColRGBA(27, 116, 75, 255),   ColRGBA(50, 86, 167, 255),
-    ColRGBA(86, 64, 188, 255),   ColRGBA(53, 118, 0, 255),
-    ColRGBA(0, 0, 0, 255),       ColRGBA(121, 121, 121, 255),
-    ColRGBA(178, 97, 98, 255),   ColRGBA(64, 145, 144, 255),
-    ColRGBA(167, 85, 183, 255),  ColRGBA(70, 157, 71, 255),
-    ColRGBA(108, 108, 222, 255), ColRGBA(134, 134, 20, 255),
-    ColRGBA(165, 112, 53, 255),  ColRGBA(153, 122, 34, 255),
-    ColRGBA(106, 148, 21, 255),  ColRGBA(179, 89, 134, 255),
-    ColRGBA(63, 152, 112, 255),  ColRGBA(86, 123, 204, 255),
-    ColRGBA(122, 100, 225, 255), ColRGBA(89, 154, 34, 255),
-    ColRGBA(0, 0, 0, 255),       ColRGBA(169, 169, 169, 255),
-    ColRGBA(225, 144, 145, 255), ColRGBA(112, 193, 192, 255),
-    ColRGBA(215, 133, 231, 255), ColRGBA(118, 204, 118, 255),
-    ColRGBA(156, 156, 255, 255), ColRGBA(182, 182, 68, 255),
-    ColRGBA(213, 160, 101, 255), ColRGBA(200, 169, 82, 255),
-    ColRGBA(154, 196, 69, 255),  ColRGBA(226, 137, 181, 255),
-    ColRGBA(111, 200, 160, 255), ColRGBA(134, 170, 251, 255),
-    ColRGBA(170, 148, 255, 255), ColRGBA(137, 202, 82, 255),
-    ColRGBA(0, 0, 0, 255),       ColRGBA(199, 199, 199, 255),
-    ColRGBA(255, 175, 176, 255), ColRGBA(143, 224, 223, 255),
-    ColRGBA(246, 163, 255, 255), ColRGBA(148, 235, 149, 255),
-    ColRGBA(186, 186, 255, 255), ColRGBA(212, 212, 98, 255),
-    ColRGBA(243, 190, 131, 255), ColRGBA(231, 200, 112, 255),
-    ColRGBA(184, 226, 99, 255),  ColRGBA(255, 167, 212, 255),
-    ColRGBA(141, 231, 190, 255), ColRGBA(164, 201, 255, 255),
-    ColRGBA(200, 179, 255, 255), ColRGBA(168, 232, 112, 255),
-    ColRGBA(0, 0, 0, 255),       ColRGBA(250, 250, 250, 255),
-    ColRGBA(255, 226, 227, 255), ColRGBA(194, 255, 255, 255),
-    ColRGBA(255, 214, 255, 255), ColRGBA(199, 255, 200, 255),
-    ColRGBA(237, 237, 255, 255), ColRGBA(255, 255, 149, 255),
-    ColRGBA(255, 241, 182, 255), ColRGBA(255, 251, 163, 255),
-    ColRGBA(235, 255, 150, 255), ColRGBA(255, 218, 255, 255),
-    ColRGBA(192, 255, 241, 255), ColRGBA(215, 252, 255, 255),
-    ColRGBA(251, 230, 255, 255), ColRGBA(219, 255, 163, 255),
+	// from vice : yape pal
+	ColRGBA(0, 0, 0, 255),       ColRGBA(39, 39, 39, 255),
+	ColRGBA(96, 15, 16, 255),    ColRGBA(0, 64, 63, 255),
+	ColRGBA(86, 4, 102, 255),    ColRGBA(0, 75, 0, 255),
+	ColRGBA(26, 26, 140, 255),   ColRGBA(53, 52, 0, 255),
+	ColRGBA(83, 30, 0, 255),     ColRGBA(71, 40, 0, 255),
+	ColRGBA(24, 67, 0, 255),     ColRGBA(97, 8, 52, 255),
+	ColRGBA(0, 71, 30, 255),     ColRGBA(4, 41, 122, 255),
+	ColRGBA(40, 19, 143, 255),   ColRGBA(8, 72, 0, 255),
+	ColRGBA(0, 0, 0, 255),       ColRGBA(55, 55, 55, 255),
+	ColRGBA(111, 30, 31, 255),   ColRGBA(0, 79, 78, 255),
+	ColRGBA(101, 19, 117, 255),  ColRGBA(4, 90, 5, 255),
+	ColRGBA(42, 42, 156, 255),   ColRGBA(68, 68, 0, 255),
+	ColRGBA(99, 46, 0, 255),     ColRGBA(86, 56, 0, 255),
+	ColRGBA(40, 82, 0, 255),     ColRGBA(112, 23, 67, 255),
+	ColRGBA(0, 86, 46, 255),     ColRGBA(20, 56, 138, 255),
+	ColRGBA(56, 34, 158, 255),   ColRGBA(23, 88, 0, 255),
+	ColRGBA(0, 0, 0, 255),       ColRGBA(67, 67, 67, 255),
+	ColRGBA(124, 43, 44, 255),   ColRGBA(11, 92, 91, 255),
+	ColRGBA(114, 32, 130, 255),  ColRGBA(17, 103, 17, 255),
+	ColRGBA(54, 55, 168, 255),   ColRGBA(81, 80, 0, 255),
+	ColRGBA(111, 58, 0, 255),    ColRGBA(99, 68, 0, 255),
+	ColRGBA(52, 95, 0, 255),     ColRGBA(125, 36, 80, 255),
+	ColRGBA(10, 99, 58, 255),    ColRGBA(33, 69, 150, 255),
+	ColRGBA(69, 47, 171, 255),   ColRGBA(36, 101, 0, 255),
+	ColRGBA(0, 0, 0, 255),       ColRGBA(85, 85, 85, 255),
+	ColRGBA(141, 60, 61, 255),   ColRGBA(28, 109, 108, 255),
+	ColRGBA(131, 49, 147, 255),  ColRGBA(34, 120, 34, 255),
+	ColRGBA(71, 72, 185, 255),   ColRGBA(98, 97, 0, 255),
+	ColRGBA(128, 75, 17, 255),   ColRGBA(116, 85, 0, 255),
+	ColRGBA(69, 112, 0, 255),    ColRGBA(142, 53, 97, 255),
+	ColRGBA(27, 116, 75, 255),   ColRGBA(50, 86, 167, 255),
+	ColRGBA(86, 64, 188, 255),   ColRGBA(53, 118, 0, 255),
+	ColRGBA(0, 0, 0, 255),       ColRGBA(121, 121, 121, 255),
+	ColRGBA(178, 97, 98, 255),   ColRGBA(64, 145, 144, 255),
+	ColRGBA(167, 85, 183, 255),  ColRGBA(70, 157, 71, 255),
+	ColRGBA(108, 108, 222, 255), ColRGBA(134, 134, 20, 255),
+	ColRGBA(165, 112, 53, 255),  ColRGBA(153, 122, 34, 255),
+	ColRGBA(106, 148, 21, 255),  ColRGBA(179, 89, 134, 255),
+	ColRGBA(63, 152, 112, 255),  ColRGBA(86, 123, 204, 255),
+	ColRGBA(122, 100, 225, 255), ColRGBA(89, 154, 34, 255),
+	ColRGBA(0, 0, 0, 255),       ColRGBA(169, 169, 169, 255),
+	ColRGBA(225, 144, 145, 255), ColRGBA(112, 193, 192, 255),
+	ColRGBA(215, 133, 231, 255), ColRGBA(118, 204, 118, 255),
+	ColRGBA(156, 156, 255, 255), ColRGBA(182, 182, 68, 255),
+	ColRGBA(213, 160, 101, 255), ColRGBA(200, 169, 82, 255),
+	ColRGBA(154, 196, 69, 255),  ColRGBA(226, 137, 181, 255),
+	ColRGBA(111, 200, 160, 255), ColRGBA(134, 170, 251, 255),
+	ColRGBA(170, 148, 255, 255), ColRGBA(137, 202, 82, 255),
+	ColRGBA(0, 0, 0, 255),       ColRGBA(199, 199, 199, 255),
+	ColRGBA(255, 175, 176, 255), ColRGBA(143, 224, 223, 255),
+	ColRGBA(246, 163, 255, 255), ColRGBA(148, 235, 149, 255),
+	ColRGBA(186, 186, 255, 255), ColRGBA(212, 212, 98, 255),
+	ColRGBA(243, 190, 131, 255), ColRGBA(231, 200, 112, 255),
+	ColRGBA(184, 226, 99, 255),  ColRGBA(255, 167, 212, 255),
+	ColRGBA(141, 231, 190, 255), ColRGBA(164, 201, 255, 255),
+	ColRGBA(200, 179, 255, 255), ColRGBA(168, 232, 112, 255),
+	ColRGBA(0, 0, 0, 255),       ColRGBA(250, 250, 250, 255),
+	ColRGBA(255, 226, 227, 255), ColRGBA(194, 255, 255, 255),
+	ColRGBA(255, 214, 255, 255), ColRGBA(199, 255, 200, 255),
+	ColRGBA(237, 237, 255, 255), ColRGBA(255, 255, 149, 255),
+	ColRGBA(255, 241, 182, 255), ColRGBA(255, 251, 163, 255),
+	ColRGBA(235, 255, 150, 255), ColRGBA(255, 218, 255, 255),
+	ColRGBA(192, 255, 241, 255), ColRGBA(215, 252, 255, 255),
+	ColRGBA(251, 230, 255, 255), ColRGBA(219, 255, 163, 255),
 };
 
 IBLImage InvalidImage() {
-  IBLImage Empty = {};
-  return Empty;
+	IBLImage Empty = {};
+	return Empty;
 }
 
-IBLImage CreateImage(int w, int h, const char *label, const void *image_data,
-                     size_t image_size, int format) {
-  sg_image_desc desc = {};
-  desc = sg_query_image_defaults(&desc);
-  desc.type = SG_IMAGETYPE_2D;
-//  desc.usage.color_attachment = true;
-  desc.width = w;
-  desc.height = h;
-  desc.num_slices = 1;
-  desc.num_mipmaps = 1;
-  desc.pixel_format = static_cast<sg_pixel_format>(format);
-  desc.label = label;
-  if (image_data) {
-    desc.data.mip_levels[0].ptr = image_data;
-    desc.data.mip_levels[0].size = image_size;
-    desc.usage.immutable = true;
-  } else {
-    desc.usage.dynamic_update = true;
-  }
+IBLImage CreateImage(int w, int h, const char* label, const void* image_data,
+	size_t image_size, int format) {
+	sg_image_desc desc = {};
+	desc = sg_query_image_defaults(&desc);
+	desc.type = SG_IMAGETYPE_2D;
+  //  desc.usage.color_attachment = true;
+	desc.width = w;
+	desc.height = h;
+	desc.num_slices = 1;
+	desc.num_mipmaps = 1;
+	desc.pixel_format = static_cast<sg_pixel_format>(format);
+	desc.label = label;
+	if (image_data != nullptr) {
+		desc.data.mip_levels[0].ptr = image_data;
+		desc.data.mip_levels[0].size = image_size;
+		desc.usage.immutable = true;
+		desc.usage.dynamic_update = false;
+	} else {
+		desc.usage.immutable = false;
+		desc.usage.dynamic_update = true;
+	}
 
-  sg_image image = sg_make_image(&desc);
+	sg_image image = sg_make_image(&desc);
 
-  sg_view_desc view_desc = {};
-  view_desc = sg_query_view_defaults(&view_desc);
-  view_desc.texture.image = image;
-  view_desc.label = label;
+	IBL_LOGF("Creating %s texture %x (%s)\n", image_data == nullptr ? "dynamic" : "fixed", image.id, label ? label : "?");
 
-  IBLImage ret;
-  ret.image = image;
-  ret.view = sg_make_view(&view_desc);
-  ret.format = desc.pixel_format;
-  ret.width = static_cast<uint16_t>(w);
-  ret.height = static_cast<uint16_t>(h);
+	sg_view_desc view_desc = {};
+	view_desc = sg_query_view_defaults(&view_desc);
+	view_desc.texture.image = image;
+	view_desc.label = label;
 
-  return ret;
+	IBLImage ret;
+	ret.image = image;
+	ret.view = sg_make_view(&view_desc);
+	ret.format = desc.pixel_format;
+	ret.width = static_cast<uint16_t>(w);
+	ret.height = static_cast<uint16_t>(h);
+
+	IBL_LOGF("Creating view %x\n", ret.view.id);
+
+	return ret;
 }
 
 void DestroyImage(IBLImage image) {
-  sg_destroy_view(image.view);
-  sg_destroy_image(image.image);
+	sg_destroy_view(image.view);
+	sg_destroy_image(image.image);
 }
 
-void UpdateTextureData(IBLImage image, const void *data, size_t size) {
-  sg_image_data image_data = {};
-  image_data.mip_levels[0].ptr = data;
-  image_data.mip_levels[0].size = size;
-  sg_update_image(image.image, image_data);
+void UpdateTextureData(IBLImage image, const void* data, size_t size) {
+	IBL_LOGF("Updating image %x\n", image.image.id);
+
+	sg_image_data image_data = {};
+	image_data.mip_levels[0].ptr = data;
+	image_data.mip_levels[0].size = size;
+	sg_update_image(image.image, image_data);
 }
 
 IBLImage UpdateImageSize(IBLImage image, int width, int height, int format,
-                         const char *label) {
-  if (!IBLImageValid(image)) {
-    return CreateImage(width, height, label, nullptr, 0, format);
-  }
-  if (width != (int)image.width || height != (int)image.height ||
-      format != (int)image.format) {
-    IBLImage NewImage = CreateImage(width, height, label, nullptr, 0, format);
-    DestroyImage(image);
-    return NewImage;
-  }
-  return image;
+	const char* label) {
+	if (!IBLImageValid(image)) {
+		return CreateImage(width, height, label, nullptr, 0, format);
+	}
+	if (width != (int)image.width || height != (int)image.height ||
+		format != (int)image.format) {
+		IBLImage NewImage = CreateImage(width, height, label, nullptr, 0, format);
+		DestroyImage(image);
+		return NewImage;
+	}
+	return image;
 }
 
 ImTextureID GetImageID(IBLImage image) {
-  return simgui_imtextureid(image.view);
+	return simgui_imtextureid(image.view);
 }
 
 // data for icons
 struct sTexArea {
-  int x, y, w, h;
+	int x, y, w, h;
 } aIcons[] = {
-    {0 * 2, 0 * 2, 12 * 2, 11 * 2},   {12 * 2, 0 * 2, 12 * 2, 12 * 2},
-    {24 * 2, 0 * 2, 12 * 2, 12 * 2},  {36 * 2, 0 * 2, 12 * 2, 12 * 2},
-    {48 * 2, 0 * 2, 12 * 2, 12 * 2},
+	{0 * 2, 0 * 2, 12 * 2, 11 * 2},   {12 * 2, 0 * 2, 12 * 2, 12 * 2},
+	{24 * 2, 0 * 2, 12 * 2, 12 * 2},  {36 * 2, 0 * 2, 12 * 2, 12 * 2},
+	{48 * 2, 0 * 2, 12 * 2, 12 * 2},
 
-    {0 * 2, 12 * 2, 12 * 2, 12 * 2},  {12 * 2, 12 * 2, 12 * 2, 12 * 2},
-    {24 * 2, 12 * 2, 12 * 2, 12 * 2}, {36 * 2, 12 * 2, 12 * 2, 12 * 2},
-    {48 * 2, 12 * 2, 12 * 2, 12 * 2},
+	{0 * 2, 12 * 2, 12 * 2, 12 * 2},  {12 * 2, 12 * 2, 12 * 2, 12 * 2},
+	{24 * 2, 12 * 2, 12 * 2, 12 * 2}, {36 * 2, 12 * 2, 12 * 2, 12 * 2},
+	{48 * 2, 12 * 2, 12 * 2, 12 * 2},
 
-    {0 * 2, 24 * 2, 12 * 2, 12 * 2},  {12 * 2, 24 * 2, 12 * 2, 12 * 2},
-    {24 * 2, 24 * 2, 12 * 2, 12 * 2}, {36 * 2, 24 * 2, 12 * 2, 12 * 2},
-    {48 * 2, 24 * 2, 12 * 2, 16 * 2},
+	{0 * 2, 24 * 2, 12 * 2, 12 * 2},  {12 * 2, 24 * 2, 12 * 2, 12 * 2},
+	{24 * 2, 24 * 2, 12 * 2, 12 * 2}, {36 * 2, 24 * 2, 12 * 2, 12 * 2},
+	{48 * 2, 24 * 2, 12 * 2, 16 * 2},
 
-    {0 * 2, 36 * 2, 12 * 2, 12 * 2},  {12 * 2, 36 * 2, 12 * 2, 12 * 2},
-    {24 * 2, 36 * 2, 12 * 2, 12 * 2}, {36 * 2, 36 * 2, 12 * 2, 12 * 2},
-    {48 * 2, 36 * 2, 12 * 2, 16 * 2},
+	{0 * 2, 36 * 2, 12 * 2, 12 * 2},  {12 * 2, 36 * 2, 12 * 2, 12 * 2},
+	{24 * 2, 36 * 2, 12 * 2, 12 * 2}, {36 * 2, 36 * 2, 12 * 2, 12 * 2},
+	{48 * 2, 36 * 2, 12 * 2, 16 * 2},
 
-    {0 * 2, 48 * 2, 12 * 2, 12 * 2},  {12 * 2, 48 * 2, 12 * 2, 12 * 2},
-    {24 * 2, 48 * 2, 12 * 2, 12 * 2}, {36 * 2, 48 * 2, 12 * 2, 12 * 2},
-    {48 * 2, 48 * 2, 12 * 2, 16 * 2},
+	{0 * 2, 48 * 2, 12 * 2, 12 * 2},  {12 * 2, 48 * 2, 12 * 2, 12 * 2},
+	{24 * 2, 48 * 2, 12 * 2, 12 * 2}, {36 * 2, 48 * 2, 12 * 2, 12 * 2},
+	{48 * 2, 48 * 2, 12 * 2, 16 * 2},
 };
 
 static IBLImage aIconID = {};
@@ -202,59 +209,59 @@ static int sIconTexWidth = 0;
 static int sIconTexHeight = 0;
 
 void LoadIcons() {
-  aIconID = CreateImage(sIcons_Width, sIcons_Height, "IconsTextureAtlas",
-                        (const void *)sIcons_Pixels,
-                        sIcons_Width * sIcons_Height * 4);
-  sIconTexWidth = sIcons_Width;
-  sIconTexHeight = sIcons_Height;
+	aIconID = CreateImage(sIcons_Width, sIcons_Height, "IconsTextureAtlas",
+		(const void*)sIcons_Pixels,
+		sIcons_Width * sIcons_Height * 4);
+	sIconTexWidth = sIcons_Width;
+	sIconTexHeight = sIcons_Height;
 }
 
 int GetViceMonIconWidth(ViceMonIcons icon) { return aIcons[(size_t)icon].w; }
 
 bool DrawTexturedIcon(ViceMonIcons icon, bool flipX, float width,
-                      const ImVec4 &tint, const ImVec4 &hover) {
-  bool ret = false;
-  if (IBLImageValid(aIconID)) {
-    float iW = 1.0f / (float)sIconTexWidth;
-    float iH = 1.0f / (float)sIconTexHeight;
-    float du = iW * aIcons[(size_t)icon].w;
-    float u0 = iW * aIcons[(size_t)icon].x, u1 = u0;
-    float s = width > 0.0f ? width / (float)aIcons[(size_t)icon].w : 1.0f;
-    if (flipX) {
-      u0 += du;
-    } else {
-      u1 += du;
-    }
+	const ImVec4& tint, const ImVec4& hover) {
+	bool ret = false;
+	if (IBLImageValid(aIconID)) {
+		float iW = 1.0f / (float)sIconTexWidth;
+		float iH = 1.0f / (float)sIconTexHeight;
+		float du = iW * aIcons[(size_t)icon].w;
+		float u0 = iW * aIcons[(size_t)icon].x, u1 = u0;
+		float s = width > 0.0f ? width / (float)aIcons[(size_t)icon].w : 1.0f;
+		if (flipX) {
+			u0 += du;
+		} else {
+			u1 += du;
+		}
 
-    // hover or ting?
-    const ImVec4 *color = &tint;
-    {
-      ImVec2 mousePos = ImGui::GetMousePos();
-      ImVec2 winPos = ImGui::GetWindowPos();
-      ImVec2 curPos = ImGui::GetCursorPos();
-      float w = s * aIcons[(size_t)icon].w;
-      float h = s * aIcons[(size_t)icon].h;
-      float x = mousePos.x - (winPos.x + curPos.x);
-      float y = mousePos.y - (winPos.y + curPos.y);
-      if (x > 0 && x < w && y > 0 && y < h) {
-        color = &hover;
-        ret = ImGui::IsMouseReleased(0);
-      }
-    }
-    ImGui::ImageWithBg(
-        GetImageID(aIconID),
-        ImVec2(s * aIcons[(size_t)icon].w, s * aIcons[(size_t)icon].h),
-        ImVec2(u0, iH * aIcons[(size_t)icon].y),
-        ImVec2(u1, iH * (aIcons[(size_t)icon].y + aIcons[(size_t)icon].h)),
-        *color);
-  }
-  return ret;
+		// hover or ting?
+		const ImVec4* color = &tint;
+		{
+			ImVec2 mousePos = ImGui::GetMousePos();
+			ImVec2 winPos = ImGui::GetWindowPos();
+			ImVec2 curPos = ImGui::GetCursorPos();
+			float w = s * aIcons[(size_t)icon].w;
+			float h = s * aIcons[(size_t)icon].h;
+			float x = mousePos.x - (winPos.x + curPos.x);
+			float y = mousePos.y - (winPos.y + curPos.y);
+			if (x > 0 && x < w && y > 0 && y < h) {
+				color = &hover;
+				ret = ImGui::IsMouseReleased(0);
+			}
+		}
+		ImGui::ImageWithBg(
+			GetImageID(aIconID),
+			ImVec2(s * aIcons[(size_t)icon].w, s * aIcons[(size_t)icon].h),
+			ImVec2(u0, iH * aIcons[(size_t)icon].y),
+			ImVec2(u1, iH * (aIcons[(size_t)icon].y + aIcons[(size_t)icon].h)),
+			*color);
+	}
+	return ret;
 }
 
 bool DrawTexturedIconCenter(ViceMonIcons icon, bool flipX, float width,
-                            const ImVec4 &tint, const ImVec4 &hover) {
-  ImGui::SetCursorPosX(
-      0.5f * (ImGui::GetColumnWidth() - GetViceMonIconWidth(icon)) +
-      ImGui::GetColumnOffset());
-  return DrawTexturedIcon(icon, flipX, width, tint, hover);
+	const ImVec4& tint, const ImVec4& hover) {
+	ImGui::SetCursorPosX(
+		0.5f * (ImGui::GetColumnWidth() - GetViceMonIconWidth(icon)) +
+		ImGui::GetColumnOffset());
+	return DrawTexturedIcon(icon, flipX, width, tint, hover);
 }

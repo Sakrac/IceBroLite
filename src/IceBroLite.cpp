@@ -55,7 +55,7 @@
 void StyleC64();
 int sWindow_width = 1700, sWindow_height = 900;
 static int sCmdLineArgN = 0;
-static const char **sCmdLineArgs = nullptr;
+static const char** sCmdLineArgs = nullptr;
 static SaveStateFile state;
 // first frame stuff
 static bool firstFrame = true;
@@ -75,43 +75,37 @@ static char forceLoadExtraDebug[PATH_MAX_LEN];
 
 // If extra debug is specified on the command line then reload extra debug info
 // when "Reload" button is pressed as well
-void CheckForceLoadExtraDebug()
-{
-	if (forceLoadExtraDebug[0])
-	{
+void CheckForceLoadExtraDebug() {
+	if (forceLoadExtraDebug[0]) {
 		ReadC64DbgSrcExtra(forceLoadExtraDebug);
 	}
 }
 
-void StartupCommandLine()
-{
-	const char **argv = sCmdLineArgs;
+void StartupCommandLine() {
+	const char** argv = sCmdLineArgs;
 	const int argc = sCmdLineArgN;
 	// Check if -? / -help or -info is on the command line, then stop and print command line info
-	for (int i = 1; i < argc; ++i)
-	{
+	for (int i = 1; i < argc; ++i) {
 		strref line = argv[i];
-		if (line[0] == '-')
-		{
+		if (line[0] == '-') {
 			++line;
-			if (line.same_str("?") || line.same_str("help") || line.same_str("info"))
-			{
+			if (line.same_str("?") || line.same_str("help") || line.same_str("info")) {
 #ifdef WIN32
 				MessageBoxA(0,
 #else
 				printf(
 #endif
-							"IceBroLite optional parameters:\n"
-							"* -load=<file>: automatically load a prg/d64/crt etc. and associated debug info when connected to VICE\n"
-							" * -symbols=<file>: autoload symbols from file\n"
-							" * -connect: connect to an existing instance of VICE\n"
-							" * -extradebug=<file>: attempt to load an additional debug XML file (kickasm) in addition to the program debug\n"
-							" * -start: start the previously loaded VICE executable on startup\n"
-							" * -start:<file>: start a VICE executable specified as the file\n"
-							" * -emu=<type>: start a VICE emulator where type is one of: c64, vic20 or plus4\n"
+					"IceBroLite optional parameters:\n"
+					"* -load=<file>: automatically load a prg/d64/crt etc. and associated debug info when connected to VICE\n"
+					" * -symbols=<file>: autoload symbols from file\n"
+					" * -connect: connect to an existing instance of VICE\n"
+					" * -extradebug=<file>: attempt to load an additional debug XML file (kickasm) in addition to the program debug\n"
+					" * -start: start the previously loaded VICE executable on startup\n"
+					" * -start:<file>: start a VICE executable specified as the file\n"
+					" * -emu=<type>: start a VICE emulator where type is one of: c64, vic20 or plus4\n"
 #ifdef WIN32
-							,
-							"IceBroLite Info", 0
+					,
+					"IceBroLite Info", 0
 #endif
 				);
 			}
@@ -119,15 +113,13 @@ void StartupCommandLine()
 	}
 }
 
-void ReadCurrentState()
-{
+void ReadCurrentState() {
 	GetStartFolder();
 	StartupCommandLine();
 	state = ReadState();
 }
 
-void SaveStateWindow(UserData &conf)
-{
+void SaveStateWindow(UserData& conf) {
 	conf.BeginStruct("Window");
 
 	conf.AddValue("width", sapp_width());
@@ -137,50 +129,36 @@ void SaveStateWindow(UserData &conf)
 	conf.EndStruct();
 }
 
-struct WindowPreset
-{
+struct WindowPreset {
 	int w, h, m;
 };
 
-WindowPreset ReadStateWindow(SaveStateFile file)
-{
-	WindowPreset ret = {sWindow_width, sWindow_height, 0};
-	if (file.data && file.size)
-	{
+WindowPreset ReadStateWindow(SaveStateFile file) {
+	WindowPreset ret = { sWindow_width, sWindow_height, 0 };
+	if (file.data && file.size) {
 		ConfigParse config(file.data, file.size);
-		while (!config.Empty())
-		{
+		while (!config.Empty()) {
 			strref name, value;
 			ConfigParseType type = config.Next(&name, &value);
-			if (name.same_str("Window") && type == ConfigParseType::CPT_Struct)
-			{
+			if (name.same_str("Window") && type == ConfigParseType::CPT_Struct) {
 				ConfigParse win_config(value);
-				while (!win_config.Empty())
-				{
+				while (!win_config.Empty()) {
 					strref win_name, win_value;
 					ConfigParseType win_type = win_config.Next(&win_name, &win_value);
-					if (win_type == ConfigParseType::CPT_Value)
-					{
-						if (win_name.same_str("width"))
-						{
+					if (win_type == ConfigParseType::CPT_Value) {
+						if (win_name.same_str("width")) {
 							ret.w = (int)win_value.atoi();
-							if (ret.w < 320)
-							{
+							if (ret.w < 320) {
 								ret.w = 320;
 							}
 							sWindow_width = ret.w;
-						}
-						else if (win_name.same_str("height"))
-						{
+						} else if (win_name.same_str("height")) {
 							ret.h = (int)win_value.atoi();
-							if (ret.h < 200)
-							{
+							if (ret.h < 200) {
 								ret.h = 200;
 							}
 							sWindow_height = ret.h;
-						}
-						else if (win_name.same_str("maximized"))
-						{
+						} else if (win_name.same_str("maximized")) {
 							ret.m = (int)win_value.atoi() != 0;
 						}
 					}
@@ -192,23 +170,23 @@ WindowPreset ReadStateWindow(SaveStateFile file)
 	return ret;
 }
 
-void IBLCommandLine(int argc, char *argv[])
-{
+void IBLCommandLine(int argc, char* argv[]) {
 	sCmdLineArgN = argc;
-	sCmdLineArgs = (const char **)argv;
+	sCmdLineArgs = (const char**)argv;
 }
 
-void IBLPreSokolSetup()
-{
+void IBLPreSokolSetup() {
 	ReadCurrentState();
 }
 
-void IBLInit()
-{
+void IBLInit() {
 	sg_desc sokol_desc = {};
 	sokol_desc.environment = sglue_environment();
 	sokol_desc.logger.func = slog_func;
 	sg_setup(&sokol_desc);
+
+	simgui_desc_t imgui_desc = {};
+	simgui_setup(&imgui_desc);
 
 	LoadIcons();
 	InitStartFolder();
@@ -220,7 +198,7 @@ void IBLInit()
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	ImGuiIO &io = ImGui::GetIO();
+	ImGuiIO& io = ImGui::GetIO();
 	(void)io;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;	  // Enable Docking
@@ -230,9 +208,8 @@ void IBLInit()
 	StyleC64();
 
 	// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
-	ImGuiStyle &style = ImGui::GetStyle();
-	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-	{
+	ImGuiStyle& style = ImGui::GetStyle();
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
 		style.WindowRounding = 0.0f;
 		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 	}
@@ -243,71 +220,47 @@ void IBLInit()
 	ParseState(state);
 	ReleaseState(state);
 
-	for (int i = 1; i < sCmdLineArgN; ++i)
-	{
+	for (int i = 1; i < sCmdLineArgN; ++i) {
 		strref line = sCmdLineArgs[i];
-		if (line[0] == '-')
-		{
+		if (line[0] == '-') {
 			++line;
 			strref cmd = line.split_token_trim('=');
-			if (line.get_first() == '"')
-			{
+			if (line.get_first() == '"') {
 				line.skip(1);
 			}
-			if (line.get_last() == '"')
-			{
+			if (line.get_last() == '"') {
 				line.clip(1);
 			}
-			if (cmd.same_str("load"))
-			{
+			if (cmd.same_str("load")) {
 				strovl ovl(forceLoadProgram, sizeof(forceLoadProgram));
 				ovl.copy(line);
 				ovl.c_str();
-			}
-			else if (cmd.same_str("symbols"))
-			{
+			} else if (cmd.same_str("symbols")) {
 				strovl ovl(forceLoadSymbols, sizeof(forceLoadSymbols));
 				ovl.copy(line);
 				ovl.c_str();
-			}
-			else if (cmd.same_str("connect"))
-			{
+			} else if (cmd.same_str("connect")) {
 				ViceConnect("127.0.0.1", 6502);
-			}
-			else if (cmd.same_str("extradebug"))
-			{
+			} else if (cmd.same_str("extradebug")) {
 				strovl ovl(forceLoadExtraDebug, sizeof(forceLoadExtraDebug));
 				ovl.copy(line);
 				ovl.c_str();
-			}
-			else if (cmd.same_str("start"))
-			{
-				if (line)
-				{
+			} else if (cmd.same_str("start")) {
+				if (line) {
 					SetViceEXEPath(line);
 				}
 				LoadViceEXE();
-			}
-			else if (cmd.same_str("font"))
-			{
-				if (line)
-				{
+			} else if (cmd.same_str("font")) {
+				if (line) {
 					strref file = line.split_token(',');
 					ForceUserFont(file, line.atoi() ? (int)line.atoi() : 13);
 				}
-			}
-			else if (cmd.same_str("emu"))
-			{
-				if (line.same_str("c64"))
-				{
+			} else if (cmd.same_str("emu")) {
+				if (line.same_str("c64")) {
 					ViceSetEmuType(VICEEmuType::C64);
-				}
-				else if (line.same_str("vic20"))
-				{
+				} else if (line.same_str("vic20")) {
 					ViceSetEmuType(VICEEmuType::Vic20);
-				}
-				else if (line.same_str("plus4"))
-				{
+				} else if (line.same_str("plus4")) {
 					ViceSetEmuType(VICEEmuType::Plus4);
 				}
 			}
@@ -318,8 +271,7 @@ void IBLInit()
 	CheckCustomThemeAfterStateLoad();
 
 	// if only symbols provided just read those in immediately
-	if (forceLoadProgram[0] == 0 && forceLoadSymbols[0] != 0)
-	{
+	if (forceLoadProgram[0] == 0 && forceLoadSymbols[0] != 0) {
 		ReadSymbolsFile(forceLoadSymbols);
 		forceLoadSymbols[0] = 0;
 	}
@@ -329,24 +281,18 @@ void IBLInit()
 	ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard;
 }
 
-void IBLFrame()
-{
-	// Poll and handle events (inputs, window resize, etc.)
-	// You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
-	// - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
-	// - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
-	// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
-	//		glfwPollEvents();
-	//
-	//		// Start the Dear ImGui frame
-	//		ImGui_ImplOpenGL2_NewFrame();
-	//		ImGui_ImplGlfw_NewFrame();
-	ImGui::NewFrame();
+void IBLFrame() {
+	simgui_frame_desc_t frame_desc = {};
+	frame_desc.width = sapp_width();
+	frame_desc.height = sapp_height();
+	frame_desc.delta_time = sapp_frame_duration();
+	frame_desc.dpi_scale = sapp_dpi_scale();
+	simgui_new_frame(&frame_desc);
 
 	// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
 	// because it would be confusing to have two docking targets within each others.
 	ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-	ImGuiViewport *viewport = ImGui::GetMainViewport();
+	ImGuiViewport* viewport = ImGui::GetMainViewport();
 	ImGui::SetNextWindowPos(viewport->Pos);
 	ImGui::SetNextWindowSize(viewport->Size);
 	ImGui::SetNextWindowViewport(viewport->ID);
@@ -359,8 +305,7 @@ void IBLFrame()
 	ImGui::Begin("IceBroLite Main", &mainWindowOpen, window_flags);
 	ImGui::PopStyleVar(2);
 
-	if (firstFrame)
-	{
+	if (firstFrame) {
 		SetInitialFont();
 	}
 
@@ -372,44 +317,24 @@ void IBLFrame()
 	ImGui::End();
 
 	// Rendering
-	ImGui::Render();
-	//		int display_w, display_h;
-	//		glfwGetFramebufferSize(window, &display_w, &display_h);
-	//		glViewport(0, 0, display_w, display_h);
-	//		glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-	//		glClear(GL_COLOR_BUFFER_BIT);
-
-	// If you are using this code with non-legacy OpenGL header/contexts (which you should not, prefer using imgui_impl_opengl3.cpp!!),
-	// you may need to backup/reset/restore current shader using the commented lines below.
-	// GLint last_program;
-	// glGetIntegerv(GL_CURRENT_PROGRAM, &last_program);
-	// glUseProgram(0);
-	//		ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
-	// glUseProgram(last_program);
+	simgui_render();
 
 	// Update and Render additional Platform Windows
 	// (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
 	//  For this specific demo app we could also call glfwMakeContextCurrent(window) directly)
-	ImGuiIO &io = ImGui::GetIO();
-	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-	{
-		//			GLFWwindow* backup_current_context = glfwGetCurrentContext();
+	ImGuiIO& io = ImGui::GetIO();
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
 		ImGui::UpdatePlatformWindows();
 		ImGui::RenderPlatformWindowsDefault();
-		//			glfwMakeContextCurrent(backup_current_context);
 	}
 
-	//		glfwSwapBuffers(window);
+	sg_commit();
 
-	if (forceLoadProgram[0] != 0 && ViceConnected())
-	{
+	if (forceLoadProgram[0] != 0 && ViceConnected()) {
 		ViceStartProgram(forceLoadProgram);
-		if (forceLoadSymbols[0] != 0)
-		{
+		if (forceLoadSymbols[0] != 0) {
 			ReadSymbolsFile(forceLoadSymbols);
-		}
-		else
-		{
+		} else {
 			ReadSymbolsForBinary(forceLoadProgram);
 			CheckForceLoadExtraDebug();
 		}
@@ -417,35 +342,27 @@ void IBLFrame()
 		forceLoadSymbols[0] = 0;
 	}
 
-	if (const char *kickDbgFile = LoadKickDbgReady())
-	{
+	if (const char* kickDbgFile = LoadKickDbgReady()) {
 		ReadC64DbgSrc(kickDbgFile);
 	}
-	if (const char *kickDbgExtraFile = LoadKickDbgExtraReady())
-	{
+	if (const char* kickDbgExtraFile = LoadKickDbgExtraReady()) {
 		ReadC64DbgSrcExtra(kickDbgExtraFile);
 	}
-	if (const char *viceMonCmdFile = LoadViceCMDReady())
-	{
+	if (const char* viceMonCmdFile = LoadViceCMDReady()) {
 		ReadViceCommandFile(viceMonCmdFile);
 	}
-	if (const char *symFile = LoadSymbolsReady())
-	{
+	if (const char* symFile = LoadSymbolsReady()) {
 		ReadSymbols(symFile);
 	}
-	if (const char *listFile = LoadListingReady())
-	{
-		if (ReadListingFile(listFile))
-		{
+	if (const char* listFile = LoadListingReady()) {
+		if (ReadListingFile(listFile)) {
 			ReviewListing();
 		}
 	}
-	if (const char *themeFile = LoadThemeReady())
-	{
+	if (const char* themeFile = LoadThemeReady()) {
 		LoadCustomTheme(themeFile);
 	}
-	if (const char *themeFile = SaveThemeReady())
-	{
+	if (const char* themeFile = SaveThemeReady()) {
 		SaveCustomTheme(themeFile);
 	}
 	WaitForViceEXEPath();
@@ -454,10 +371,8 @@ void IBLFrame()
 	firstFrame = false;
 }
 
-void IBLCleanup()
-{
-	if (SaveLayoutOnExit())
-	{
+void IBLCleanup() {
+	if (SaveLayoutOnExit()) {
 		SaveState();
 	}
 
@@ -467,9 +382,12 @@ void IBLCleanup()
 	ShutdownSymbols();
 	ShutdownMainCPU();
 	// Cleanup
-	ImGui::DestroyContext();
+//	ImGui::DestroyContext();
+	simgui_shutdown();
 }
 
-void IBLEvent(const sapp_event *sokol_event)
-{
+bool CapturedKeyboard = false;
+
+void IBLEvent(const sapp_event* sokol_event) {
+	CapturedKeyboard = simgui_handle_event(sokol_event);
 }
