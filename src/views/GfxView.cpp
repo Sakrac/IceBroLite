@@ -759,7 +759,7 @@ void GfxView::Draw(int index)
 	int hoverPos[2] = { 
 		(int)size.x ? ((int)(mousePos.x - textureScreen.x) * bitmapWidth) / (int)size.x : -1,
 		(int)size.y ? ((int)(mousePos.y - textureScreen.y) * bitmapHeight) / (int)size.y : -1 };
-	ImGui::Image(texture, size);
+	ImGui::Image(GetImageID(texture), size);
 
 	hovering = false;
 	if(hoverPos[0]>=0 && hoverPos[0]<bitmapWidth && hoverPos[1]>=0 && hoverPos[1]<bitmapWidth) {
@@ -849,8 +849,7 @@ void GfxView::PrintHoverInfo(CPU6510* cpu, int *hoverPos, int mode, uint16_t scr
 	info_text[1] = line;
 }
 
-void GfxView::Create8bppBitmap(CPU6510* cpu)
-{
+void GfxView::Create8bppBitmap(CPU6510* cpu) {
 	int cellWid = 8, cellHgt = 8;
 	if (displayMode == C64_Sprites) {
 		cellWid = 24;
@@ -868,7 +867,7 @@ void GfxView::Create8bppBitmap(CPU6510* cpu)
 		}
 	} else if (displayMode == C64_Sprites) {
 		cl = columns_sprite; rw = rows_sprite;
-	} else if( displayMode != C64_Current && displayMode != Plus4_Current) {
+	} else if (displayMode != C64_Current && displayMode != Plus4_Current) {
 		cl = columns; rw = rows;
 	}
 
@@ -882,7 +881,7 @@ void GfxView::Create8bppBitmap(CPU6510* cpu)
 
 	int linesHigh = rw * cellHgt;
 
-	uint32_t *d = (uint32_t*)bitmap;
+	uint32_t* d = (uint32_t*)bitmap;
 	uint32_t w = cl * cellWid;
 
 	bitmapWidth = w;
@@ -895,7 +894,7 @@ void GfxView::Create8bppBitmap(CPU6510* cpu)
 		case Planar: CreatePlanarBitmap(cpu, d, linesHigh, w, c64pal); break;
 		case Columns: CreateColumnsBitmap(cpu, d, linesHigh, w, c64pal); break;
 
-		case C64_Bitmap: 
+		case C64_Bitmap:
 			if (color) {
 				CreateC64ColorBitmapBitmap(cpu, d, c64pal, addrGfxValue, addrScreenValue, cl, rw);
 			} else if (multicolor) {
@@ -928,16 +927,17 @@ void GfxView::Create8bppBitmap(CPU6510* cpu)
 
 		case C64_Current: CreateC64CurrentBitmap(cpu, d, c64pal); break;
 
-		case V20_Current: {
+		case V20_Current:
+		{
 			uint8_t so = cpu->GetByte(0x9002);
 			uint8_t sc = cpu->GetByte(0x9005);
 
-			uint16_t screen = vic20GfxAddr[sc >> 4] + ((so&0x80)?0x200 : 0);
+			uint16_t screen = vic20GfxAddr[sc >> 4] + ((so & 0x80) ? 0x200 : 0);
 			uint16_t chsrs = vic20GfxAddr[sc & 0x0f];
 			CreateV20TextBitmap(cpu, d, vic20pal, chsrs,
-				screen, (sc&0x80) ? 0x9600 : 0x9400,
-				cpu->GetByte(0x9002)&0x7f, (cpu->GetByte(0x9003)&0x7f)>>1,
-				(cpu->GetByte(0x9003)&0x01)==1,
+				screen, (sc & 0x80) ? 0x9600 : 0x9400,
+				cpu->GetByte(0x9002) & 0x7f, (cpu->GetByte(0x9003) & 0x7f) >> 1,
+				(cpu->GetByte(0x9003) & 0x01) == 1,
 				true);
 			break;
 		}
@@ -971,11 +971,8 @@ void GfxView::Create8bppBitmap(CPU6510* cpu)
 		case Plus4_Current: CreatePlus4CurrentBitmap(cpu, d, plus4pal); break;
 	}
 
-	if (!texture) { texture = CreateTexture(); }
-	if (texture) {
-		SelectTexture(texture);
-		UpdateTextureData(cl * cellWid, rw * cellHgt, bitmap);
-	}
+	texture = UpdateImageSize(texture, cl * cellWid, rw * cellHgt, SG_PIXELFORMAT_RGBA8, "GfxView Image");
+	UpdateTextureData(texture, bitmap, cl * cellWid * rw * cellHgt * 4);
 }
 
 void GfxView::CreatePlanarBitmap(CPU6510* cpu, uint32_t* d, int linesHigh, uint32_t w, const uint32_t* pal)
@@ -1687,7 +1684,7 @@ GfxView::GfxView() : bitmapWidth(0), open(false), reeval(false), color(false),
 	plus4Mode = Plus4_Current - Plus4_Modes;
 	bitmap = nullptr;
 	bitmapSize = 0;
-	texture = 0;
+	texture = InvalidImage();
 	vicColors = false;
 
 	bg = 6;

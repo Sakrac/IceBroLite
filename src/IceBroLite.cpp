@@ -49,6 +49,8 @@
 #include "sokol/sokol_gfx.h"
 #include "sokol/util/sokol_imgui.h"
 #include "IceBroLite.h"
+#include "sokol/sokol_glue.h"
+#include "sokol/sokol_log.h"
 
 void StyleC64();
 int sWindow_width = 1700, sWindow_height = 900;
@@ -203,6 +205,11 @@ void IBLPreSokolSetup()
 
 void IBLInit()
 {
+	sg_desc sokol_desc = {};
+	sokol_desc.environment = sglue_environment();
+	sokol_desc.logger.func = slog_func;
+	sg_setup(&sokol_desc);
+
 	LoadIcons();
 	InitStartFolder();
 	CreateMainCPU();
