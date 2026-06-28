@@ -51,6 +51,7 @@ struct ViewContext {
 	bool setupDocking;
 	bool memoryWasChanged;
 	bool saveSettingsOnExit;
+	bool pushedFont;
 
 	ViewContext();
 	void SaveState(UserData& conf);
@@ -201,7 +202,7 @@ void ViewContext::SaveState(UserData& conf)
 	}
 	conf.EndArray();
 	// BreakpointView breakView;
-	conf.BeginStruct("Breakpoits"); breakView.WriteConfig(conf); conf.EndStruct();
+	conf.BeginStruct("Breakpoints"); breakView.WriteConfig(conf); conf.EndStruct();
 	// SymbolView symbolView;
 	conf.BeginStruct("Symbols"); symbolView.WriteConfig(conf); conf.EndStruct();
 	// SectionView sectionView;
@@ -504,7 +505,9 @@ void InitViews()
 void ShowViews()
 {
 	if (viewContext) {
+		SetViewFont();
 		viewContext->Draw();
+		EndViewFont();
 	}
 }
 
@@ -562,10 +565,28 @@ void SelectFont(int size)
 		if (viewContext->aFonts[size]->IsLoaded()) {
 			viewContext->currFont = size;
 			viewContext->currFontSize = sFontSizes[size];
-			ImGui::SetCurrentFont(viewContext->aFonts[viewContext->currFont], sFontSizes[viewContext->currFont], sFontSizes[viewContext->currFont]);
-			GImGui->IO.FontDefault = viewContext->aFonts[viewContext->currFont];
+//			ImGui::SetCurrentFont(viewContext->aFonts[viewContext->currFont], 16, sFontSizes[viewContext->currFont]);
+//			GImGui->IO.FontDefault = viewContext->aFonts[viewContext->currFont];
 		}
 		viewContext->nextFont = size;
+	}
+}
+
+void SetViewFont()
+{
+	if (viewContext->currFont < ViewContext::sNumFontSizes) {
+		ImGui::PushFont(viewContext->aFonts[viewContext->currFont]);
+		viewContext->pushedFont = true;
+	} else {
+		viewContext->pushedFont = false;
+	}
+}
+
+void EndViewFont()
+{
+	if (viewContext->pushedFont) {
+		ImGui::PopFont();
+		viewContext->pushedFont = false;
 	}
 }
 

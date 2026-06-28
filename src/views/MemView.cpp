@@ -141,8 +141,9 @@ void MemView::Draw(int index) {
 		wasActive = active;
 
 		// force font spacing
-		float fontWidth = ImGui::CalcTextSize("D").x;
-		float fontHgt = ImGui::GetFont()->LegacySize;
+		ImVec2 fontCharSize = ImGui::CalcTextSize("D");
+		float fontWidth = fontCharSize.x;
+		float fontHgt = fontCharSize.y;
 		uint32_t charWid = (uint32_t)(ImGui::GetWindowWidth() / fontWidth);
 
 		uint32_t byteChars = (showHex ? 3 : 0) + (showText ? 1 : 0);
@@ -256,7 +257,6 @@ void MemView::Draw(int index) {
 				float yPos = ImGui::GetCursorPosY();
 				ImGui::SameLine();
 				ImGui::SetCursorPosX(line.len() * fontWidth);
-				ImGui::Dummy(ImVec2(0, 0));
 				ViewPushFont(petsciiFont);
 				line.clear();
 				uint16_t chars = read;
@@ -266,13 +266,11 @@ void MemView::Draw(int index) {
 				ImGui::Text("%s", line.c_str());
 				ImGui::PopFont();
 				ImGui::SetCursorPosY(yPos);
-				ImGui::Dummy(ImVec2(0, 0));
 			}
 
 
 			read += spanWin;
 		}
-
 		// keyboard
 		if (active && showHex) {
 			int col0 = 0;
@@ -304,7 +302,6 @@ void MemView::Draw(int index) {
 				int cx = (cursor[0] & 1) + (cursor[0] / 2) * 3 + (showAddress ? 5 : 0);
 
 				ImGui::SetCursorPos(ImVec2(fontWidth * cx, ImGui::GetTextLineHeightWithSpacing() * cursor[1]));
-				ImGui::Dummy(ImVec2(0, 0));
 				const ImVec2 p = ImGui::GetCursorScreenPos();
 				ImGui::GetWindowDrawList()->AddRectFilled(p, ImVec2(p.x + fontWidth, p.y + fontHgt),
 					ImColor(255, 255, 255));
@@ -325,8 +322,9 @@ void MemView::Draw(int index) {
 		strovl addrStr(address, (strl_t)sizeof(address));
 		addrStr.append('$').append_num(addrValue, 4, 16).c_str();
 	}
-	ImGui::EndChild();
+	ImGui::Dummy(ImVec2(0, 0));
 
+	ImGui::EndChild();
 	ImGui::End();
 }
 

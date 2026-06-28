@@ -187,6 +187,7 @@ void IBLInit() {
 	sg_setup(&sokol_desc);
 
 	simgui_desc_t imgui_desc = {};
+	imgui_desc.no_default_font = true;
 	simgui_setup(&imgui_desc);
 
 	// initial clear color
