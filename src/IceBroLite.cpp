@@ -59,6 +59,7 @@ static const char** sCmdLineArgs = nullptr;
 static SaveStateFile state;
 // first frame stuff
 static bool firstFrame = true;
+static sg_pass_action pass_action;
 
 // [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to maximize ease of testing and compatibility with old VS compilers.
 // To link with VS2010-era libraries, VS2015+ requires linking with legacy_stdio_definitions.lib, which we do using this pragma.
@@ -188,6 +189,10 @@ void IBLInit() {
 	simgui_desc_t imgui_desc = {};
 	simgui_setup(&imgui_desc);
 
+	// initial clear color
+	pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
+	pass_action.colors[0].clear_value = { 0.0f, 0.5f, 0.7f, 1.0f };
+
 	LoadIcons();
 	InitStartFolder();
 	CreateMainCPU();
@@ -316,9 +321,6 @@ void IBLFrame() {
 
 	ImGui::End();
 
-	// Rendering
-	simgui_render();
-
 	// Update and Render additional Platform Windows
 	// (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
 	//  For this specific demo app we could also call glfwMakeContextCurrent(window) directly)
@@ -328,6 +330,13 @@ void IBLFrame() {
 		ImGui::RenderPlatformWindowsDefault();
 	}
 
+	// the sokol_gfx draw pass
+	sg_pass pass = {};
+	pass.action = pass_action;
+	pass.swapchain = sglue_swapchain();
+	sg_begin_pass(&pass);
+	simgui_render();
+	sg_end_pass();
 	sg_commit();
 
 	if (forceLoadProgram[0] != 0 && ViceConnected()) {
