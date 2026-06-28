@@ -8,7 +8,6 @@
 #include "../6510.h"
 #include "Views.h"
 #include "RegView.h"
-#include "GLFW/glfw3.h"
 
 constexpr auto CursorFlashPeriod = 64.0f/50.0f;
 

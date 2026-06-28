@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 4.1.2)
 
 set(CMAKE_CXX_STANDARD 20)
-include_directories("imgui" "imgui/backends" "imgui/examples/libs/glfw/include" )
+include_directories("imgui" )
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -11,15 +11,21 @@ if(CMAKE_BUILD_TYPE EQUAL "Debug")
     add_compile_definitions("_DEBUG")
 endif()
 
+if (CMAKE_SYSTEM_NAME STREQUAL Windows)
+    add_compile_definitions("SOKOL_D3D11")
+elseif (CMAKE_SYSTEM_NAME STREQUAL Linux)
+    add_compile_definitions("SOKOL_GLCORE")
+elseif (CMAKE_SYSTEM_NAME STREQUAL Darwin)
+    add_compile_definitions("SOKOL_METAL")
+endif()
+
 # Currently needed to distinguish between wWinMain (MSVC) and WinMain (CMake)
 add_compile_definitions("_CMAKE_BUILD")
+# Feature flag while getting Sokol backend to build
+add_compile_definitions("_SOKOL_BUILD")
 
-#list( APPEND LIBRARY_INCLUDES ${CMAKE_SOURCE_DIR}/imgui/examples/libs/glfw/lib-vc2010-64/glfw3.lib )
-list( APPEND LIBRARY_INCLUDES glfw )
 
 # set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} "/SUBSYSTEM:WINDOWS" "/ENTRY:mainCRTStartup" )
-
-add_subdirectory( glfw )
 
 add_executable( IceBroLite
         6510.cpp
@@ -38,6 +44,7 @@ add_executable( IceBroLite
         Mnemonics.cpp
         Platform.cpp
         SaveState.cpp
+        SokolImpl.cpp
         SourceDebug.cpp
         StartVice.cpp
         struse.cpp
@@ -64,8 +71,6 @@ add_executable( IceBroLite
         imgui/imgui_draw.cpp
         imgui/imgui_tables.cpp
         imgui/imgui_widgets.cpp
-        imgui/backends/imgui_impl_glfw.cpp
-        imgui/backends/imgui_impl_opengl2.cpp
         data/C64_Pro_Mono-STYLE.ttf.cpp
         struse/xml.cpp
 )

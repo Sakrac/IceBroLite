@@ -23,7 +23,6 @@
 #include "../SourceDebug.h"
 #include "../StartVice.h"
 #include "Views.h"
-#include "GLFW/glfw3.h"
 #include "../Image.h"
 #include "../CodeColoring.h"
 

@@ -9,7 +9,6 @@
 #include "../ImGui_Helper.h"
 #include "../imgui/imgui_internal.h"
 #include "../Sym.h"
-#include "GLFW/glfw3.h"
 
 MemView::MemView() : fixedAddress(false), open(false), evalAddress(false)
 {

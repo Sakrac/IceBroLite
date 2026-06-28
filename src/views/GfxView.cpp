@@ -13,7 +13,6 @@
 #include "../Sym.h"
 #include "Views.h"
 #include "GfxView.h"
-#include "GLFW/glfw3.h"
 #include "../Image.h"
 #include "../C64Colors.h"
 

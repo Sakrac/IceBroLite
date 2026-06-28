@@ -11,7 +11,6 @@
 #include "../ViceInterface.h"
 #include "../ImGui_Helper.h"
 #include "../imgui/imgui_internal.h"
-#include "GLFW/glfw3.h"
 #include "../Image.h"
 #include "../Config.h"
 #include "../Sym.h"

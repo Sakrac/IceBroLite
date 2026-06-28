@@ -14,8 +14,6 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 
-#include "GLFW/glfw3.h"
-
 #ifdef _MSC_VER 
 #define strncasecmp _strnicmp
 #define strcasecmp _stricmp

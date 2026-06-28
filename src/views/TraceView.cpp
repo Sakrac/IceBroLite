@@ -10,7 +10,6 @@
 #include "../ViceInterface.h"
 #include "Views.h"
 #include "TraceView.h"
-#include "GLFW/glfw3.h"
 
 #ifndef _WIN32
 #define strncpy_s strncpy

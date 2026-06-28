@@ -1,7 +1,6 @@
 #define GL_SILENCE_DEPRECATION
 #include <stdint.h>
 #include "imgui/imgui.h"
-#include "GLFW/glfw3.h"
 #include "Image.h"
 
 extern const int sIcons_Width;

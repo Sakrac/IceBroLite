@@ -7,9 +7,7 @@
 #include "../platform.h"
 #include "../6510.h"
 #include "../C64Colors.h"
-#include "GLFW/glfw3.h"
 #include "ScreenView.h"
-
 
 void ScreenView::WriteConfig(UserData& config)
 {

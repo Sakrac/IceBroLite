@@ -11,6 +11,7 @@ src/x86
 src/.idea
 src/glfw
 src/build
+src/sokol
 build/
 .idea/
 
