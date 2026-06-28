@@ -203,8 +203,6 @@ void IBLPreSokolSetup()
 
 void IBLInit()
 {
-	sgimgui_desc_t SGImGuiSetup = {};
-	sgimgui_setup(SGImGuiSetup);
 	LoadIcons();
 	InitStartFolder();
 	CreateMainCPU();

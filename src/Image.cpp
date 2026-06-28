@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include "imgui/imgui.h"
 #include "Image.h"
+#include "sokol/sokol_app.h"
+#include "sokol/util/sokol_imgui.h"
 
 extern const int sIcons_Width;
 extern const int sIcons_Height;
@@ -199,7 +201,18 @@ IBLImage CreateImage(int w, int h, const char *label, const void *image_data, si
 	{
 		desc.usage.dynamic_update = true;
 	}
-	return sg_make_image(&desc);
+
+	sg_image image = sg_make_image(&desc);
+
+	sg_view_desc view_desc = {};
+	view_desc.texture.image = image;
+	view_desc.label = label;
+
+	IBLImage ret;
+	ret.image = image;
+	ret.view = sg_make_view(&view_desc);
+
+	return ret;
 }
 
 void UpdateTextureData(IBLImage image, const void *data, size_t size)
@@ -207,8 +220,10 @@ void UpdateTextureData(IBLImage image, const void *data, size_t size)
 	sg_image_data image_data = {};
 	image_data.mip_levels[0].ptr = data;
 	image_data.mip_levels[0].size = size;
-	sg_update_image(image, image_data);
+	sg_update_image(image.image, image_data);
 }
+
+ImTextureID GetImageID(IBLImage image) { return simgui_imtextureid(image.view); }
 
 // data for icons
 struct sTexArea
@@ -297,7 +312,7 @@ bool DrawTexturedIcon(ViceMonIcons icon, bool flipX, float width, const ImVec4 &
 				ret = ImGui::IsMouseReleased(0);
 			}
 		}
-		ImGui::ImageWithBg(simgui_imtextureid(aIconID),
+		ImGui::ImageWithBg(GetImageID(aIconID),
 						   ImVec2(s * aIcons[(size_t)icon].w, s * aIcons[(size_t)icon].h),
 						   ImVec2(u0, iH * aIcons[(size_t)icon].y),
 						   ImVec2(u1, iH * (aIcons[(size_t)icon].y + aIcons[(size_t)icon].h)),

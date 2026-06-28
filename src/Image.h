@@ -36,12 +36,17 @@ bool DrawTexturedIcon(ViceMonIcons icon, bool flipX = false, float wid = -1.0f, 
 bool DrawTexturedIconCenter(ViceMonIcons icon, bool flipX = false, float wid = -1.0f, const ImVec4 &tint = ImVec4(1, 1, 1, 1), const ImVec4 &hover = ImVec4(1, 0.5f, 0.0f, 1.0f));
 int GetViceMonIconWidth(ViceMonIcons icon);
 
-typedef sg_image IBLImage;
+struct IBLImage
+{
+	sg_image image;
+	sg_view view;
+};
 
 IBLImage CreateImage(int w, int h, const char *label = nullptr, const void *image_data = nullptr, size_t image_size = 0, int format = SG_PIXELFORMAT_RGBA8);
+void DestroyImage(IBLImage image);
 void UpdateTextureData(IBLImage image, const void *data, size_t size);
-
-static inline bool IBLImageValid(IBLImage image) { return image.id != SG_INVALID_ID; }
+ImTextureID GetImageID(IBLImage image);
+static inline bool IBLImageValid(IBLImage image) { return image.image.id != SG_INVALID_ID && image.view.id != SG_INVALID_ID; }
 
 extern uint32_t c64pal[16];
 extern uint32_t vic20pal_sc[16];
