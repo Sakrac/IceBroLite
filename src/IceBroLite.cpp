@@ -1,32 +1,15 @@
-// WitchMap by Carl-Henrik Sk�rstedt, Space Moguls 2020
+// IceBroLite by Carl-Henrik Skårstedt, Space Moguls 2020
 //  uses STB image loader by Sean Barrett and others, see stb/stb_image.h
 //  uses ImGui by Omar Cornut, see ImGui/imgui.h
+//  uses Sokol by Andre Weissflog, see sokol/sokol_app.h
 
-// dear imgui: standalone example application for GLFW + OpenGL2, using legacy fixed pipeline
-// If you are new to dear imgui, see examples/README.txt and documentation at the top of imgui.cpp.
-// (GLFW is a cross-platform general purpose library for handling windows, inputs, OpenGL/Vulkan/Metal graphics context creation, etc.)
-
-// **DO NOT USE THIS CODE IF YOUR CODE/ENGINE IS USING MODERN OPENGL (SHADERS, VBO, VAO, etc.)**
-// **Prefer using the code in the example_glfw_opengl2/ folder**
-// See imgui_impl_glfw.cpp for details.
-
-#ifdef _WIN32
-#include "framework.h"
-#include <shellapi.h>
-#else
-#define APIENTRY
-#endif
-
-// C RunTime Header Files
-#include <stdlib.h>
-#include <memory.h>
+//
+// Compile Instructions
+//	first import dependencies by running get_dependencies.bat / .sh
+//	compile with either MSVC or CMake (Clang)
+//
 
 #include "imgui.h"
-#include <stdio.h>
-#ifdef __APPLE__
-#define GL_SILENCE_DEPRECATION
-#endif
-#include <stdint.h>
 #include "struse/struse.h"
 #include "Config.h"
 #include "Files.h"
@@ -36,21 +19,18 @@
 #include "Sym.h"
 #include "StartVice.h"
 #include "SaveState.h"
-#include "views/FilesView.h"
-
-#include "C64Colors.h"
 #include "Image.h"
 #include "6510.h"
 #include "SourceDebug.h"
 #include "CodeColoring.h"
 #include "views/Views.h"
-
+#include "views/FilesView.h"
 #include "sokol/sokol_app.h"
 #include "sokol/sokol_gfx.h"
 #include "sokol/util/sokol_imgui.h"
-#include "IceBroLite.h"
 #include "sokol/sokol_glue.h"
 #include "sokol/sokol_log.h"
+#include "IceBroLite.h"
 
 void StyleC64();
 int sWindow_width = 1700, sWindow_height = 900;
@@ -114,12 +94,6 @@ void StartupCommandLine() {
 	}
 }
 
-void ReadCurrentState() {
-	GetStartFolder();
-	StartupCommandLine();
-	state = ReadState();
-}
-
 void SaveStateWindow(UserData& conf) {
 	conf.BeginStruct("Window");
 
@@ -169,6 +143,14 @@ WindowPreset ReadStateWindow(SaveStateFile file) {
 		}
 	}
 	return ret;
+}
+
+void ReadCurrentState() {
+	GetStartFolder();
+	StartupCommandLine();
+	state = ReadState();
+	WindowPreset winset = ReadStateWindow(state);
+	if ((bool)winset.m != sapp_is_fullscreen()) { sapp_toggle_fullscreen(); }
 }
 
 void IBLCommandLine(int argc, char* argv[]) {
@@ -395,8 +377,9 @@ void IBLCleanup() {
 	ShutdownSourceDebug();
 	ShutdownSymbols();
 	ShutdownMainCPU();
+	ShutdownViews();
+	ShutdownImage();
 	// Cleanup
-//	ImGui::DestroyContext();
 	simgui_shutdown();
 }
 

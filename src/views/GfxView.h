@@ -106,6 +106,7 @@ struct GfxView {
 
   void ReadConfig(strref config);
 
+  void Shutdown();
   void Draw(int index);
   void Create8bppBitmap(CPU6510 *cpu);
   bool HandleContextMenu();

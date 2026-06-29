@@ -23,7 +23,6 @@
 #include "../SourceDebug.h"
 #include "../StartVice.h"
 #include "Views.h"
-#include "../Image.h"
 #include "../CodeColoring.h"
 
 struct ViewContext {
@@ -500,6 +499,14 @@ void ViewContext::GlobalKeyCheck()
 void InitViews()
 {
 	viewContext = new ViewContext;
+}
+
+void ShutdownViews()
+{
+	viewContext->screenView.Shutdown();
+	for ( int i = 0; i < ViewContext::kMaxGfxViews; ++i) {
+		viewContext->gfxView[i].Shutdown();
+	}
 }
 
 void ShowViews()

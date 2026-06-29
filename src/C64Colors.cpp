@@ -17,10 +17,10 @@ void StyleC64()
 	colors[ ImGuiCol_FrameBg ] = C64_BROWN;
 	colors[ ImGuiCol_FrameBgHovered ] = C64_ORANGE;
 	colors[ ImGuiCol_FrameBgActive ] = C64_PINK;
-	colors[ ImGuiCol_TitleBg ] = C64_DGRAY;
-	colors[ ImGuiCol_TitleBgActive ] = C64_MGRAY;
+	colors[ ImGuiCol_TitleBg ] = C64_BLUE;
+	colors[ ImGuiCol_TitleBgActive ] = C64_PURPLE;
 	colors[ ImGuiCol_TitleBgCollapsed ] = C64_BLACK;
-	colors[ ImGuiCol_MenuBarBg ] = C64_BLUE;
+	colors[ ImGuiCol_MenuBarBg ] = C64_BLACK;
 	colors[ ImGuiCol_ScrollbarBg ] = C64_BLACK;
 	colors[ ImGuiCol_ScrollbarGrab ] = C64_LGRAY;
 	colors[ ImGuiCol_ScrollbarGrabHovered ] = C64_GREEN;
@@ -40,13 +40,24 @@ void StyleC64()
 	colors[ ImGuiCol_ResizeGrip ] = C64_WHITE;
 	colors[ ImGuiCol_ResizeGripHovered ] = C64_LGREEN;
 	colors[ ImGuiCol_ResizeGripActive ] = C64_GREEN;
+
+	colors[ImGuiCol_InputTextCursor] = C64_WHITE;
+	colors[ImGuiCol_TabHovered] = C64_LBLUE;
+	colors[ImGuiCol_Tab] = C64_PURPLE;
+	colors[ImGuiCol_TabSelected] = C64_RED;
+	colors[ImGuiCol_TabSelectedOverline] = C64_LBLUE;
+	colors[ImGuiCol_TabDimmed] = C64_PURPLE;
+	colors[ImGuiCol_TabDimmedSelected] = C64_BLUE;
+	colors[ImGuiCol_TabDimmedSelectedOverline] = C64_PINK;
+
 	colors[ ImGuiCol_PlotLines ] = C64_LGREEN;
 	colors[ ImGuiCol_PlotLinesHovered ] = C64_WHITE;
 	colors[ ImGuiCol_PlotHistogram ] = C64_WHITE;
 	colors[ ImGuiCol_PlotHistogramHovered ] = C64_WHITE;
 	colors[ ImGuiCol_TextSelectedBg ] = C64_BLACK;
 	colors[ ImGuiCol_DragDropTarget ] = C64_YELLOW;
-	colors[ ImGuiCol_NavHighlight ] = C64_PURPLE;
+	colors[ImGuiCol_DragDropTargetBg] = C64_BLUE;
+	colors[ ImGuiCol_NavCursor ] = C64_PURPLE;
 	colors[ ImGuiCol_NavWindowingHighlight ] = C64_PINK;
 
 	ImGuiStyle& style = ImGui::GetStyle();

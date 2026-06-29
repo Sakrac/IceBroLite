@@ -82,6 +82,7 @@ void FVFileView::Draw(const char *title)
 			}
 			ImGui::Text("%s", filterStr.c_str());
 		}
+		if (selectIndex >= files.size()) { selectIndex = 0; }
 		bool openSaveDisabled = selectIndex < 0 && userFile[0] == 0;
 		bool openFolder = selectIndex >= 0 && files[selectIndex].fileType == FVFileInfo::dir;
 		if (openSaveDisabled) { ImGui::BeginDisabled(); }

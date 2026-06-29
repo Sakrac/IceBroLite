@@ -216,6 +216,11 @@ void LoadIcons() {
 	sIconTexHeight = sIcons_Height;
 }
 
+void ShutdownImage() {
+	DestroyImage(aIconID);
+	aIconID = InvalidImage();
+}
+
 int GetViceMonIconWidth(ViceMonIcons icon) { return aIcons[(size_t)icon].w; }
 
 bool DrawTexturedIcon(ViceMonIcons icon, bool flipX, float width,

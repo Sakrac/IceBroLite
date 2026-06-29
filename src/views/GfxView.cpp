@@ -359,6 +359,12 @@ void GfxView::ReadConfig(strref config)
 	}
 }
 
+void GfxView::Shutdown()
+{
+	DestroyImage(texture);
+	texture = InvalidImage();
+}
+
 static bool AcceptDragDropAddress(uint32_t* addrValue, char* addrName, size_t addrNameSize)
 {
 	if (ImGui::BeginDragDropTarget()) {

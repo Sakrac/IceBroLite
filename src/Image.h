@@ -54,6 +54,7 @@ IBLImage CreateImage(int w, int h, const char *label = nullptr,
                      int format = SG_PIXELFORMAT_RGBA8);
 void DestroyImage(IBLImage image);
 void UpdateTextureData(IBLImage image, const void *data, size_t size);
+void ShutdownImage();
 IBLImage UpdateImageSize(IBLImage image, int width, int height, int format,
                          const char *label);
 ImTextureID GetImageID(IBLImage image);
