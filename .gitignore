@@ -9,9 +9,9 @@ IceBroLite.exe
 src/x64
 src/x86
 src/.idea
-src/glfw
 src/build
 src/sokol
+src/imgui
 build/
 .idea/
 

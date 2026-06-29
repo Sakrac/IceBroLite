@@ -70,7 +70,7 @@ void StyleC64()
 	style.GrabMinSize = 8;
 	style.GrabRounding = 0;
 
-	style.FontScaleDpi = 0.5f;
+//	style.FontScaleDpi = 2.0f/3.0f;
 	ResetCodeColoring();
 }
 
