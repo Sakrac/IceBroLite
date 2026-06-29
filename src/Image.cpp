@@ -253,6 +253,7 @@ bool DrawTexturedIcon(ViceMonIcons icon, bool flipX, float width,
 			ImVec2(s * aIcons[(size_t)icon].w, s * aIcons[(size_t)icon].h),
 			ImVec2(u0, iH * aIcons[(size_t)icon].y),
 			ImVec2(u1, iH * (aIcons[(size_t)icon].y + aIcons[(size_t)icon].h)),
+			ImVec4(0,0,0,0),
 			*color);
 	}
 	return ret;

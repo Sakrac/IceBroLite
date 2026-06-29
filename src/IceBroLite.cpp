@@ -295,6 +295,8 @@ void IBLFrame() {
 	frame_desc.dpi_scale = sapp_dpi_scale();
 	simgui_new_frame(&frame_desc);
 
+	SetViewFont();
+
 	// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
 	// because it would be confusing to have two docking targets within each others.
 	ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
@@ -330,6 +332,8 @@ void IBLFrame() {
 		ImGui::UpdatePlatformWindows();
 		ImGui::RenderPlatformWindowsDefault();
 	}
+
+	EndViewFont();
 
 	// the sokol_gfx draw pass
 	sg_pass pass = {};

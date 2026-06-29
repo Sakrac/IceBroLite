@@ -505,9 +505,7 @@ void InitViews()
 void ShowViews()
 {
 	if (viewContext) {
-		SetViewFont();
 		viewContext->Draw();
-		EndViewFont();
 	}
 }
 
