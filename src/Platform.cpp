@@ -4,13 +4,12 @@
 
 void IBMutexInit(IBMutex* mutex, const char* name) {
 #ifdef _WIN32
-	* mutex = CreateMutex(NULL, false, "Vice connect mutex");
+	* mutex = CreateMutex(NULL, false, name);
 #else
 	(void)name;
 	if (pthread_mutex_init(mutex, NULL) != 0) {
 	  // error
 	}
-
 #endif
 }
 
