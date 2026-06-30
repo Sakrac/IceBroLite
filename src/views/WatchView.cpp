@@ -12,7 +12,6 @@
 #include "../Sym.h"
 #include "../C64Colors.h"
 #include "../Files.h"
-#include "GLFW/glfw3.h"
 #include "Views.h"
 #include "WatchView.h"
 #include "../CodeColoring.h"
@@ -77,7 +76,7 @@ void WatchView::EvaluateItem(int index) {
 		return;
 	}
 
-	int fw = (int)(ImGui::GetFont()->GetCharAdvance('D') + 0.45f);
+	int fw = (int)(ImGui::CalcTextSize("D").x + 0.45f);
 
 	uint8_t* rpn = (uint8_t*)rpnExp[index].charstr();
 	strown<64> buf;

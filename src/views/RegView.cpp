@@ -8,7 +8,6 @@
 #include "../6510.h"
 #include "Views.h"
 #include "RegView.h"
-#include "GLFW/glfw3.h"
 
 constexpr auto CursorFlashPeriod = 64.0f/50.0f;
 
@@ -45,7 +44,7 @@ void RegisterView::Draw()
 		return;
 	}
 
-	float fontCharWidth = ImGui::GetFont()->GetCharAdvance('0');
+	float fontCharWidth = ImGui::CalcTextSize("0").x;
 
 	ImGuiContext* g = ImGui::GetCurrentContext();
 
@@ -65,7 +64,7 @@ void RegisterView::Draw()
 		ImVec2 cursorPos = ImGui::GetCursorScreenPos();
 		float regTextWid = 39.0f * fontCharWidth;
 		if (mousePos.x >= cursorPos.x && mousePos.x < (cursorPos.x + regTextWid) && mousePos.y >= cursorPos.y) {
-			float regTextHgt = ImGui::GetFont()->FontSize;
+			float regTextHgt = ImGui::GetFont()->LegacySize;
 			if (mousePos.y < (cursorPos.y + regTextHgt)) {
 				int clickPos = int((mousePos.x - cursorPos.x) / fontCharWidth);
 				if (clickPos < 31) {

@@ -23,8 +23,6 @@
 #include "../SourceDebug.h"
 #include "../StartVice.h"
 #include "Views.h"
-#include "GLFW/glfw3.h"
-#include "../Image.h"
 #include "../CodeColoring.h"
 
 struct ViewContext {
@@ -52,6 +50,7 @@ struct ViewContext {
 	bool setupDocking;
 	bool memoryWasChanged;
 	bool saveSettingsOnExit;
+	bool pushedFont;
 
 	ViewContext();
 	void SaveState(UserData& conf);
@@ -143,6 +142,7 @@ ViewContext::ViewContext() : currFont(3), setupDocking(true), saveSettingsOnExit
 	for (int fa = 0; fa < ViewContext::sNumFontSizes; ++fa) {
 		int f = (fa + 3) % ViewContext::sNumFontSizes;
 		aFonts[f] = io.Fonts->AddFontFromMemoryCompressedTTF(GetC64FontData(), GetC64FontSize(), sFontSizes[f], NULL, C64CharRanges);
+
 		assert(aFonts[f] != NULL);
 	}
 	nextFont = currFont;
@@ -201,7 +201,7 @@ void ViewContext::SaveState(UserData& conf)
 	}
 	conf.EndArray();
 	// BreakpointView breakView;
-	conf.BeginStruct("Breakpoits"); breakView.WriteConfig(conf); conf.EndStruct();
+	conf.BeginStruct("Breakpoints"); breakView.WriteConfig(conf); conf.EndStruct();
 	// SymbolView symbolView;
 	conf.BeginStruct("Symbols"); symbolView.WriteConfig(conf); conf.EndStruct();
 	// SectionView sectionView;
@@ -501,6 +501,14 @@ void InitViews()
 	viewContext = new ViewContext;
 }
 
+void ShutdownViews()
+{
+	viewContext->screenView.Shutdown();
+	for ( int i = 0; i < ViewContext::kMaxGfxViews; ++i) {
+		viewContext->gfxView[i].Shutdown();
+	}
+}
+
 void ShowViews()
 {
 	if (viewContext) {
@@ -562,10 +570,28 @@ void SelectFont(int size)
 		if (viewContext->aFonts[size]->IsLoaded()) {
 			viewContext->currFont = size;
 			viewContext->currFontSize = sFontSizes[size];
-			ImGui::SetCurrentFont(viewContext->aFonts[viewContext->currFont]);
-			GImGui->IO.FontDefault = viewContext->aFonts[viewContext->currFont];
+//			ImGui::SetCurrentFont(viewContext->aFonts[viewContext->currFont], 16, sFontSizes[viewContext->currFont]);
+//			GImGui->IO.FontDefault = viewContext->aFonts[viewContext->currFont];
 		}
 		viewContext->nextFont = size;
+	}
+}
+
+void SetViewFont()
+{
+	if (viewContext->currFont < ViewContext::sNumFontSizes) {
+		ImGui::PushFont(viewContext->aFonts[viewContext->currFont]);
+		viewContext->pushedFont = true;
+	} else {
+		viewContext->pushedFont = false;
+	}
+}
+
+void EndViewFont()
+{
+	if (viewContext->pushedFont) {
+		ImGui::PopFont();
+		viewContext->pushedFont = false;
 	}
 }
 
