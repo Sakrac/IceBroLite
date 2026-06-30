@@ -1,6 +1,5 @@
 #pragma once
 
-#include <inttypes.h>
 #include <vector>
 
 struct Breakpoint {

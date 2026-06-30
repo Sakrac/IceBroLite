@@ -6,8 +6,6 @@
 #include "../imgui/imgui.h"
 #include "../imgui/imgui_internal.h"
 #include "../platform.h"
-#include <stdint.h>
-#include <stdlib.h>
 
 void ScreenView::WriteConfig(UserData& config) {
 	config.AddValue(strref("open"), config.OnOff(open));

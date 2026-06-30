@@ -1,8 +1,5 @@
 // various commands for the console view etc.
 #ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <synchapi.h>
 #else
 #include <unistd.h>
 #endif
@@ -11,7 +8,6 @@
 #include "Expressions.h"
 #include "6510.h"
 #include "ViceInterface.h"
-#include "Commands.h"
 
 static std::vector<uint16_t> sRemembered;
 

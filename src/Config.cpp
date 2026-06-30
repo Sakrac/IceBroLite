@@ -1,6 +1,5 @@
 // Save a config file
 
-#include <stdio.h>
 #include <stdlib.h>
 #include "Config.h"
 

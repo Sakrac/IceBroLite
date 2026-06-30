@@ -4,15 +4,11 @@
 #include <sys/stat.h>
 #elif _WIN32
 #include <windows.h>
-#include <stdio.h>
 #endif
 
 #include "../struse/struse.h"
 #include "FilesView.h"
-#include <string.h>
-#include <stdlib.h>
 #include "imgui.h"
-#include "imgui_internal.h"
 
 #ifdef _MSC_VER 
 #define strncasecmp _strnicmp

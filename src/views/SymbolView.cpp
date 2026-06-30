@@ -1,11 +1,7 @@
 #include "../imgui/imgui.h"
 #include "../struse/struse.h"
 #include "../Config.h"
-#include "../Image.h"
-#include "../Breakpoints.h"
 #include "../Sym.h"
-#include "../ViceInterface.h"
-#include "Views.h"
 #include "SymbolView.h"
 
 SymbolView::SymbolView() : open(false), case_sensitive(true), start(0), end(0xffffffff)

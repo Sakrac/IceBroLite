@@ -1,8 +1,6 @@
 #include "platform.h"
 #include "sokol/sokol_app.h"
-#include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 
 void IBMutexInit(IBMutex* mutex, const char* name) {
 #ifdef _WIN32

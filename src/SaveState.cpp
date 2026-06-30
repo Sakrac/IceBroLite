@@ -1,9 +1,7 @@
 #include <stdlib.h>
-#include <stdio.h>
 #include "Config.h"
 #include "imgui/imgui.h"
 #include "Files.h"
-#include "FileDialog.h"
 #include "Sym.h"
 #include "SaveState.h"
 

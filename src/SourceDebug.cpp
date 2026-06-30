@@ -2,12 +2,10 @@
 #include "../struse/xml.h"
 #include "Sym.h"
 #include "Files.h"
-#include <stdlib.h>
 #include <vector>
 #include <assert.h>
 #include "ViceInterface.h"
 #include "Breakpoints.h"
-#include "SourceDebug.h"
 #include "platform.h"
 
 // Format:

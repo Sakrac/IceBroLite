@@ -1,4 +1,4 @@
-#include <inttypes.h>
+#include <stdint.h>
 #include "../imgui/imgui.h"
 #include "../Sym.h"
 #include "../struse/struse.h"

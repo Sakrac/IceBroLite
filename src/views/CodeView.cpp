@@ -1,10 +1,8 @@
 #include "CodeView.h"
 #include "../imgui/imgui.h"
 #include "../struse/struse.h"
-#include <stdlib.h>
 #include "Views.h"
 #include "../Expressions.h"
-#include "../C64Colors.h"
 #include "../6510.h"
 #include "../Mnemonics.h"
 #include "../Breakpoints.h"
@@ -14,7 +12,6 @@
 #include "../Image.h"
 #include "../Config.h"
 #include "../Sym.h"
-//#include "Listing.h"
 #include "../SourceDebug.h"
 #include "../CodeColoring.h"
 

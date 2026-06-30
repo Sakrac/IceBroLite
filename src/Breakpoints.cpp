@@ -1,11 +1,9 @@
 // breakpoints are added in bulk when VICE stops
 // breakpoints can be added by the debugger
 
-#include <stdlib.h>
 #include "platform.h"
 #include "Breakpoints.h"
 #include "HashTable.h"
-#include "struse/struse.h"
 #include "ViceInterface.h"
 
 #ifndef _WIN32

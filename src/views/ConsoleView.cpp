@@ -1,4 +1,3 @@
-#include <inttypes.h>
 #include "../struse/struse.h"
 #include "Views.h"
 #include "../Config.h"

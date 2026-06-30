@@ -3,7 +3,6 @@
 #include "../imgui/imgui.h"
 #include "../C64Colors.h"
 #include "../HashTable.h"
-#include "CodeColoring.h"
 #include "Config.h"
 #include "Files.h"
 #include "FileDialog.h"

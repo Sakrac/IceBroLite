@@ -2,7 +2,6 @@
 #include "Image.h"
 #include "sokol/sokol_app.h"
 #include "sokol/util/sokol_imgui.h"
-#include <stdint.h>
 
 extern const int sIcons_Width;
 extern const int sIcons_Height;

@@ -1,8 +1,3 @@
-// example for creating a texture:
-// static void ImGui_ImplDX11_CreateFontsTexture()
-#include <stdio.h>
-#include <stdlib.h>
-#include <inttypes.h>
 #include "../imgui/imgui.h"
 #include "../imgui/imgui_internal.h"
 #include "../Image.h"
@@ -13,8 +8,6 @@
 #include "../Sym.h"
 #include "Views.h"
 #include "GfxView.h"
-#include "../Image.h"
-#include "../C64Colors.h"
 
 #ifndef _MSC_VER
 #define sprintf_s sprintf

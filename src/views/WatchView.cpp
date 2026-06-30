@@ -1,17 +1,13 @@
 // Expression View
 
-#include <stdint.h>
 #include "../imgui/imgui.h"
 #include "../imgui/imgui_internal.h"
 #include "../struse/struse.h"
-#include "../C64Colors.h"
 #include "../Expressions.h"
 #include "../Config.h"
 #include "../6510.h"
 #include "../Mnemonics.h"
 #include "../Sym.h"
-#include "../C64Colors.h"
-#include "../Files.h"
 #include "Views.h"
 #include "WatchView.h"
 #include "../CodeColoring.h"

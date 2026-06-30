@@ -1,13 +1,9 @@
 #include "../imgui/imgui.h"
-#include "../imgui/imgui_internal.h"
-
 #include "../struse/struse.h"
 #include "../Config.h"
-#include "../Sym.h"
 #include "../6510.h"
 #include "../Mnemonics.h"
 #include "../Traces.h"
-#include "../ViceInterface.h"
 #include "Views.h"
 #include "TraceView.h"
 

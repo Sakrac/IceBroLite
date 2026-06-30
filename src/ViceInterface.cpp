@@ -8,19 +8,13 @@
 #include <sys/errno.h>
 #include <netdb.h>
 #endif
-#include <inttypes.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <queue>
 #include <vector>
 #include <assert.h>
-
 #include "Files.h"
 #include "struse/struse.h"
 #include "6510.h"
 #include "Breakpoints.h"
 #include "Traces.h"
-
 #include "ViceInterface.h"
 #include "ViceBinInterface.h"
 #include "platform.h"

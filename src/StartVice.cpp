@@ -1,12 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "struse/struse.h"
-#include "Files.h"
 #include "FileDialog.h"
-#include "Config.h"
 #include "ViceInterface.h"
 #include "views/FilesView.h"
-#include "views/Views.h"
 #include "StartVice.h"
 
 void WaitForViceEXEPath()

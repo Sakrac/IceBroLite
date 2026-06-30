@@ -1,5 +1,4 @@
 // Capture information from the VICE text monitor output
-#include <stdint.h>
 #include <vector>
 #include "struse/struse.h"
 #include "Traces.h"

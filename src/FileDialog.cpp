@@ -1,11 +1,8 @@
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <commdlg.h>
 #endif
-#include <stdio.h>
 #include "Config.h"
-#include "FileDialog.h"
 #include "views/FilesView.h"
 #include "views/Views.h"
 #include "struse/struse.h"

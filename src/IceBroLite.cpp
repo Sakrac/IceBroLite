@@ -12,7 +12,6 @@
 #include "imgui.h"
 #include "struse/struse.h"
 #include "Config.h"
-#include "Files.h"
 #include "FileDialog.h"
 #include "Breakpoints.h"
 #include "Traces.h"

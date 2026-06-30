@@ -1,5 +1,8 @@
 #pragma once
 
+#include <stdint.h>
+#include "struse/struse.h"
+
 struct CPU6510;
 
 enum class VICEMemSpaces {

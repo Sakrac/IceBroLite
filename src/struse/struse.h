@@ -35,6 +35,7 @@ Add this #define to *one* C++ file before #include "struse.h" to create the impl
 #ifndef __STRUSE_H__
 #define __STRUSE_H__
 
+#define __STDC_FORMAT_MACROS // make sure PRIu64 etc. is defined
 #include <inttypes.h> // uint32_t etc.
 #include <string.h> // memcpy, memmove
 #include <stdio.h> // printf, vsnprintf

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <inttypes.h>
 #include <assert.h>
+#include <stdint.h>
 
 template< class KeyType, class ValueType > struct HashTable {
 

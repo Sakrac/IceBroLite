@@ -9,11 +9,8 @@
 #include <sys/errno.h>
 #include <netdb.h>
 #endif
-#include <inttypes.h>
-#include <stdlib.h>
 #include <assert.h>
 #include "platform.h"
-#include "struse/struse.h"
 #include "ViceInterface.h"
 
 #ifdef _WIN32

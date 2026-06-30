@@ -9,8 +9,6 @@
 #include "../Sym.h"
 #include "../ViceInterface.h"
 #include "../C64Colors.h"
-#include "../ImGui_Helper.h"
-#include "Views.h"
 #include "BreakpointView.h"
 
 #ifndef _WIN32
