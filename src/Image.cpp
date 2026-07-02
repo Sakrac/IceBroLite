@@ -2,6 +2,7 @@
 #include "Image.h"
 #include "sokol/sokol_app.h"
 #include "sokol/util/sokol_imgui.h"
+#include <cmath>
 
 extern const int sIcons_Width;
 extern const int sIcons_Height;
@@ -265,8 +266,8 @@ bool DrawTexturedIcon(ViceMonIcons icon, bool flipX, float width,
 
 bool DrawTexturedIconCenter(ViceMonIcons icon, bool flipX, float width,
 	const ImVec4& tint, const ImVec4& hover) {
-	ImGui::SetCursorPosX(
-		0.5f * (ImGui::GetColumnWidth() - GetViceMonIconWidth(icon)) +
-		ImGui::GetColumnOffset());
+	ImGui::SetCursorPos(ImVec2(
+		floorf(0.5f * (ImGui::GetColumnWidth() - GetViceMonIconWidth(icon)) +
+		ImGui::GetColumnOffset()), floorf(ImGui::GetCursorPosY())));
 	return DrawTexturedIcon(icon, flipX, width, tint, hover);
 }
