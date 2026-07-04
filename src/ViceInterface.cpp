@@ -8,8 +8,10 @@
 #include <sys/errno.h>
 #include <netdb.h>
 #endif
-#include <vector>
 #include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <vector>
 #include "Files.h"
 #include "struse/struse.h"
 #include "6510.h"

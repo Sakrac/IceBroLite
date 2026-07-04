@@ -1,9 +1,11 @@
 // Expression View
-
+#include <stdlib.h>
+#include <stdio.h>
 #include "../imgui/imgui.h"
 #include "../imgui/imgui_internal.h"
 #include "../struse/struse.h"
 #include "../Expressions.h"
+#include "../Files.h"
 #include "../Config.h"
 #include "../6510.h"
 #include "../Mnemonics.h"

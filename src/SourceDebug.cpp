@@ -1,9 +1,10 @@
+#include <stdlib.h>
+#include <vector>
+#include <assert.h>
 #include "../struse/struse.h"
 #include "../struse/xml.h"
 #include "Sym.h"
 #include "Files.h"
-#include <vector>
-#include <assert.h>
 #include "ViceInterface.h"
 #include "Breakpoints.h"
 #include "platform.h"

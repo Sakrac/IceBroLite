@@ -1,4 +1,6 @@
 // Testing if the text mode monitor can work alongside the binary connection
+#include <assert.h>
+#include <stdlib.h>
 #ifdef _WIN32
 #include "winsock2.h"
 #include <ws2tcpip.h>
@@ -9,7 +11,6 @@
 #include <sys/errno.h>
 #include <netdb.h>
 #endif
-#include <assert.h>
 #include "platform.h"
 #include "ViceInterface.h"
 

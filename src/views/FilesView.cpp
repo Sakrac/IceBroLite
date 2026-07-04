@@ -6,6 +6,7 @@
 #include <windows.h>
 #endif
 
+#include <stdlib.h>
 #include "../struse/struse.h"
 #include "FilesView.h"
 #include "imgui.h"

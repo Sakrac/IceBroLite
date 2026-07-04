@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "struse/struse.h"
 #include "FileDialog.h"
 #include "ViceInterface.h"

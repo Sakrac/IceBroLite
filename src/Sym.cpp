@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <vector>
 #include "struse/struse.h"
 #include "6510.h"

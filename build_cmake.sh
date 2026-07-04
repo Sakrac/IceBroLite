@@ -1,2 +1,2 @@
-cmake -G "Ninja" -B ./build --preset "linux-release"
+cmake -G "Ninja" -S . -B ./build --preset "linux-release"
 cmake --build ./build
