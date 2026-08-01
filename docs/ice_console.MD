@@ -1,74 +1,57 @@
 ## Console View
 
-This is a combination of the VICE text monitor, if enabled in VICE, and some extra commands for IceBro Lite.
+The console view combines VICE's text monitor output with a small set of IceBro Lite commands. It is most useful when the Remote Monitor is enabled in VICE alongside the Binary Remote Monitor.
 
-To use the console view the remote monitor must be enabled in VICE in addition to the remote binary monitor. This enables a few more features not available in the binary protocol. Tracepoint output will be filtered into the Trace View instead.
-
-Type help or ? for a list of VICE commands when connected to VICE, or type CMD for a list of IceBro Lite commands. VICE text monitor output will be shown in this view.
+Type `help` or `?` for VICE commands when connected to VICE, or `cmd` for a list of IceBro Lite commands. Tracepoint output is routed into the Trace View rather than the console.
 
 * [back to manual](index.md)
 * [back to views](views.md)
 
-## Vice Console IceBro Commands
- * connect/cnct [\<ip\>:\<port\>] - connect to a remote host, default to 127.0.0.1:6510;
- * pause
- * font \<size:0-6\>
- * eval \<exp\>
- * history/hist;
- * clear
- * poke
- * remember
- * forget
- * match
+## IceBro Lite console commands
 
-type cmd <command> for more information on some commands.
+* `connect` / `cnct [<ip>:<port>]`: connect to a remote host (default `127.0.0.1:6510`)
+* `pause`: stop VICE
+* `font <size:0-6>`: adjust the console font size
+* `eval <exp>`: evaluate an expression
+* `history` / `hist`: show command history
+* `clear`: clear the console log
+* `poke <addr>,<byte>`: write a byte to memory; both values may be expressions
+* `remember <byte>[-<byte>] [<addr> <addr>]`: remember matching bytes in a range
+* `forget`: clear the remembered matches
+* `match <byte>[-<byte>] [<addr> <addr>] [clear|filter|trace|watch]`: match remembered bytes and optionally create checkpoints
 
+Use `cmd <command>` for help on a specific console command.
 
-### Remember command
+### `remember`
 
-	remember <byte>[-<byte>] [<addr> <addr>]
- 
-Clears the matches and stores a new set
-of matches in the memory range.
-Identical to match <byte> <addr> C[lear]
+```text
+remember <byte>[-<byte>] [<addr> <addr>]
+```
 
-### forget command:
+Stores a new set of matches in the requested address range. It is the same idea as `match <byte> <addr> clear`.
 
-	forget
-Clears the match buffer, same as match C[lear]
+### `forget`
 
-### match command:
-	match <byte>[-<byte>] [<addr> <addr>] C[lear] F[ilter] T[race] W[atch]
-Match will compare the byte range within
-the address range to a stored list of
-previous matched addresses.
-byte range can be prefixed with '!' for inverted range.
+```text
+forget
+```
 
-If the list had previous matches it will print out the addresses that current match.
+Clears the remembered match buffer.
 
-Controls: (must be after byte/address range)
-  * C[lear]: clear any current results first
-  * F[ilter]: remove all non-matching results for another run
-  * T[race]: add a Trace store for the matching results
-  * W[atch]: add a Watch store for the matching results
+### `match`
 
-Example: find all values between 3 and 5 and clear the list:
+```text
+match <byte>[-<byte>] [<addr> <addr>] [clear|filter|trace|watch]
+```
 
-	match 3-5 clear
+Compares the current memory contents with the remembered byte range. The `clear` flag resets the current results first, `filter` removes non-matching entries from the current result set, `trace` creates tracepoints and `watch` creates watchpoints.
 
-Find all remembered values that are no longer between 3 and 5 within an address range, filter the list from previous results
+### `poke`
 
-	match !3-5 $1000-$8000 filter
+```text
+poke <addr>,<byte>
+```
 
-Find all remembered values that are equal to 2, filter the list and add a watch store to each
-
-	match 2 filter watch
-
-### poke command:
-	poke <addr>,<byte>
- Store a byte in a specific memory location, VICE
- does not need to be in a break state for this command.
- addr and byte can expressions so if you have loaded
- relevant symbols you can f.e. poke VICREGS+32, 3+2
+Writes a byte to memory even while VICE is running. Both operands may be expressions.
 
 ![VICE text monitor](img/ViceMonitor.png)

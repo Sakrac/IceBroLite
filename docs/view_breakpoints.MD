@@ -1,19 +1,19 @@
 # Breakpoint View
 
-The Breakpoint View is a list of the current checkpoints which includes breakpoints (stop on execution of address), watchpoints (stop when reading or writing to an address or range), tracepoints (tracks loading/storing/execution but does not stop VICE).
+The Breakpoint View lists the current checkpoints, including breakpoints, watchpoints and tracepoints. Breakpoints stop execution when the target address is reached, watchpoints stop on reads and/or writes to an address or range, and tracepoints record the event without stopping VICE.
 
 ![Breakpoint View](img/BreakpointView.png)
 
 * [back to manual](index.md)
 * [back to views](views.md)
 
-While debugging code it is usually easiest to toggle breakpoints from the code view, at the top of the Breakpoint View there is a drop down to create other types of checkpoints.
+While debugging, the easiest way to create a breakpoint is usually from the Code View. The top of the Breakpoint View also offers a dropdown for creating other checkpoint types.
 
-Breakpoint addresses can be dragged from the breakpoint table into the Code tab to see the code at the breakpoint, or to the memory view along with anything you can drag a symbol to.
+Items can be dragged from the table into other views. For example, dragging a checkpoint into the Code View opens the matching code, while dragging it into the Memory View shows the referenced address.
 
-In the table a checkpoint can be selected, conditions can be added, clicking on a checkpoint icon disables/enables the checkpoint.
-
-Keyboard shortcuts when a checkpoint is selected:
-* cursor up/down: move to previous/next checkpoint in table
-* Delete: delete the selected checkpoint
+The checkpoint table also supports basic editing:
+* click the checkpoint icon to enable or disable it
+* add conditions from the row editor
+* use the arrow keys to move among entries
+* press Delete to remove the selected checkpoint
 

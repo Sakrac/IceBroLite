@@ -1,12 +1,14 @@
 # Command Line Arguments
 
-The IceBroLite.exe executable accepts command line arguments to speed up getting started and for additional initialization.
+The IceBro Lite executable accepts command line arguments for automation and initialization.
 
-* -load=\<executable>: load a .prg, .d64, .crt etc. immediately after VICE is connected. This will also load any .dbg / .sym / .vs file with the same filename as the executable.
-* -symbols=\<.dbg/.sym/.vs\>: load this symbol file
-* -connect: automatically connect with a running VICE executable
-* -start: start the previously loaded VICE executable on startup
-* -start=\<file\>: start a VICE executable specified as the file
-* -font=\<.ttf/.otf file\>,\<size\>: load an alternative font, for example -font=c:\windows\fonts\cour.ttf,20
-* -extradebug=\<file\>: attempt to load an additional debug XML file (kickasm) in addition to the program debug
-* -emu=\<type\>: start a VICE emulator where type is one of: c64, vic20 or plus4
+* `-load=<file>`: load a program such as a `.prg`, `.d64` or `.crt` once VICE is connected. IceBro Lite will also look for matching debug files with the same base name.
+* `-symbols=<file>`: load symbols from a `.dbg`, `.sym` or `.vs` file immediately.
+* `-connect`: connect to an already-running VICE instance.
+* `-start`: start the previously configured VICE executable on startup.
+* `-start=<file>`: start a specific VICE executable.
+* `-font=<file>,<size>`: load an alternate font. Example: `-font=C:\Windows\Fonts\cour.ttf,20`.
+* `-extradebug=<file>`: load an additional debug XML file in addition to the program debug info.
+* `-emu=<type>`: start a VICE machine where `<type>` is `c64`, `vic20` or `plus4`.
+* `-help`, `-?` or `-info`: print the supported options.
+

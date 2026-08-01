@@ -1,75 +1,27 @@
-# Setting up your system
+# Setup
 
-## The simple way
+IceBro Lite connects to VICE over the remote monitor protocols. The setup is straightforward once VICE is configured to expose those interfaces.
 
-Start up IceBro Lite, the click on **Start Vice** to the far right.
+## Quick start
 
-![Toolbar Disconnected](img/ToolbarDisconnected.png)
+1. Start IceBro Lite and click the toolbar button to launch VICE, or connect to an already-running VICE instance.
+2. On first launch, point the debugger at your VICE executable if it is not already known.
+3. Load a program with the Load button. IceBro Lite will look for matching `.dbg`, `.sym` or `.vs` files automatically.
 
-The first time you Start Vice you will see a file dialog where you can locate x64sc.exe (or x64.exe if you built that). If you save settings or exit the debugger properly it will remember the path next time and just load it up.
+## VICE configuration
 
-![VICE file location dialog](img/LocateVICEExeDialog.png)
+In VICE, enable:
+- Remote Monitor
+- Binary Remote Monitor
 
-Now you're ready to go! Just click **Load** in the toolbar to pick your .prg or .d64 or .crt file and start fixing things :)
+These settings are typically enabled once and then persisted. If you want to re-enable the built-in VICE monitor later, turn the remote monitor options off again.
 
-If this works for you feel free to skip the manual setup!
+## Layout files
 
-## The manual way
+The debugger stores its window layout and recent state in `icebrolt.ini`. Launching IceBro Lite from a project folder makes it easier to keep a project-specific layout and avoid mixing settings between projects.
 
-### VICE Settings
+## Troubleshooting
 
-To set up your system for debugging, do the following:
-1) Enable external debugging in VICE. You normally only need to do this once as long as you save the settings
-
-2) Connect the debugger to VICE. This you have to do every time you start the debugger up.
-
-Alternatively to the above steps you can start IceBro Lite and then start VICE from the File/Load VICE menu which will start VICE with the settings enabled.
-<br><br>
-The following sections will describe these steps in detail.
-## Enable external debugging in VICE
-
-To enable external debugging in VICE, you must enable the binary monitor and – ideally – the text mode monitor protocols.
-
-Please note that if you wish to enable the built-in monitor of the VICE emulator again, you may have to disable external debugging. 
-
-Follow these steps to enable external debugging in VICE:
-
-**Step 1**: Go to Settings / Settings in the menu.
-First find the settings menu 
-
-![VICESettingsMenu](img/VICESettingsMenu.png)
-
-**Step 2**: Check Enable Remote Monitor and Enable Binary Remote Monitor in the Host / Monitor sub-menu.
-
-![VICESettingsMonitor](img/VICESettings_Host_Monitor.png)
-
-**Step 3**: (not mandatory) Check Save settings on exit to avoid having to repeat the procedure at a future point.
-
-**Step 4**: Done! VICE is now ready to accept a binary debugger connection.
-
-# Connect the debugger to VICE
-
-The EXE file for IceBro Lite is called IceBroLite.exe. It’s warmly recommended to launch the file directly from the command prompt – or from a batch script – in your project folder. This is because the debugger will save its layout in a text file in the folder from where it was launched.
-
-Note: If you are using source control (git, svn, etc.), consider ignoring "icebrolt.ini" in your project directory if using in different environments as it stores full path names to previously loaded files.
-
-**Step 1**: Launch IceBroLite.exe (see recommendations earlier in this section).
-
-![IceBroLite Default Startup](img/IceBroLite_initial.png)
-
-**Step 2**: Make sure VICE is running and has the binary remote monitor enabled.
-
-**Step 3**: Click on the VICE icon at the top right corner of the screen.
-
-![Vice Connect Icon](img/VICE_Connect_Icon.png)
-
-When the icon looks like this VICE is connected:
-
-![Vice Disconnect Icon](img/VICE_Disconnect_Icon.png)
-
-If you press it again VICE disconnects.
-
-**Step 4**: Press the **PAUSE** icon or Shift+F5 to look around in the current memory of VICE's C64 instance.
-
-**Step 5**: Done!
+- If the debugger cannot connect, make sure VICE is still running and the remote monitor options are on.
+- If you start VICE from within IceBro Lite, it will use the configured executable path from the previous run or the one supplied on the command line.
 

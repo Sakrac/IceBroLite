@@ -1,18 +1,17 @@
 # Graphics View
 
-The Graphics View is a viewer for graphics anywhere in RAM in a
-variety of modes and you can have two graphics views up simultaneously.
+The Graphics View displays screen, bitmap and sprite data from RAM using the current VIC-II settings. IceBro Lite can keep two graphics views open at once.
 
-This view has a lot of fields where addresses and numbers can be edited. It is a little complicated because the C64 has so many ways to show graphics. Here is a quick overview:
-* System: C64 layouts or Special layout
-* Screen: Address of Screen Data
-* Chars: Address of font/bitmap/sprite
-* Color: Address of color RAM (always $d800 on a C64, but can be pointed anywhere in the debugger)
-* Mode: Current, Bitmap, Text or Sprite
-* Cols: number of columns (chars or sprites)
-* Rows: number of rows (chars or sprites)
+The view contains address and size fields for the screen data, character data, color RAM and the active mode. Common options include:
 
-If the Graphics View is selected press CTRL+C to copy the graphics to the clipboard (Windows only at the moment).
+* System: standard C64 layouts or a custom layout
+* Screen: address of the screen data
+* Chars: address of font, bitmap or sprite data
+* Color: address of the color RAM (often `$d800` on a C64)
+* Mode: current, bitmap, text or sprite mode
+* Cols / Rows: dimensions of the rendered data
+
+Press Ctrl+C while the graphics view is focused to copy the current image to the clipboard on Windows.
 
 * [back to manual](index.md)
 * [back to views](views.md)
@@ -23,53 +22,43 @@ If the Graphics View is selected press CTRL+C to copy the graphics to the clipbo
 
 ---
 
-## Context Menu
+## Context menu
 
-Right click on the image to bring up the context menu
+Right-click the image to open the context menu. It lets you adjust zoom, choose whether to use ROM font data, change the color palette and switch between different rendering modes.
 
 ![Context Menu](img/GfxView_Context.png)
 
-* Zoom: How to size the graphics in the view
-* romFont: Graphics in $1000-$1fff and $9000-$9fff uses the built-in font data
-* VIC Colors
-* Custom colors (bg, fg, multicolors)
-* etc.
-
 ---
 
-## Current View
+## Current view
 
-The current view looks at the VICII registers to determine what the current screenmode is. While the mouse cursor hovers over the image the coordinates are shown  at the bottom along with some information about the current screen registers.
+The current view derives its mode from the VIC-II registers. While the mouse is over the image, the status area shows the current coordinates and relevant register information.
 
 ![Current Mode](img/GfxView_Current.png)
 
-Sprites are also drawn on this screen according to the VIC2 registers.
-
 ---
 
-## Text View
+## Text view
 
-The text mode includes per char color, multi color and extended color background mode (ECBM). Mono will draw the screen with a single color that can be set in the context menu.
+The text mode supports per-character colors, multicolor text and extended color background mode. The mono option renders the screen with a single foreground color.
 
 ![Text Mode](img/GfxView_Text.png)
 
 ---
 
-## Bitmap View
+## Bitmap view
 
-The bitmap mode includes per char color/background and multi color bitmap. Mono will draw the foreground as a single color that can be set in the context menu.
+The bitmap view supports per-character colors, multicolor bitmap mode and mono rendering. The context menu lets you choose the palette used for the foreground and background.
 
 ![Bitmap Mode](img/GfxView_Bitmap.png)
 
 ---
 
-## Sprite View
+## Sprite view
 
-The sprite view shows a grid of sprites in either mono color or multicolor. For multicolor either VIC2 colors can be used or custom colors in the context menu.
+The sprite view renders sprites in mono or multicolor mode. Hovering over a sprite displays metadata about that sprite's current position and state.
 
 ![Sprite Mode](img/GfxView_Sprite.png)
-
-If the mouse pointer is hovering over the sprite image there is additional information printed at the bottom of the screen relevant to that position.
 
 
 

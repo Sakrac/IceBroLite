@@ -1,62 +1,44 @@
 # Start Debugging
 
-Note that when connected to VICE, the debugger will only update the machine state after you’ve stopped VICE. There are several ways to stop VICE:
-- Press the pause button in the debugger
-- Hit Alt+H in Vice
-- Hit a breaking checkpoint (break, watch) while executing the code.
+The debugger updates its view of the machine state when VICE is paused. You can stop VICE by clicking the Pause/Go button in the toolbar, pressing Shift+F5, hitting Alt+H in VICE, or triggering a breakpoint or watchpoint.
 
-## Start executing the program to debug
-There are two ways to go about debugging a program in IceBro Lite:
-1) Start executing the program in VICE, then connect the debugger to VICE.
-2) Connect VICE to the debugger, then load (and reload) the program from within the debugger and execute it from there.
+## Starting a session
 
-### Executing code from VICE
+You can begin debugging in either of these ways:
+1. Start VICE first and then connect to it from IceBro Lite.
+2. Start the debugger first, then load a program from within IceBro Lite and let it launch or attach to VICE.
 
-If you execute code from VICE you can browse for the appropriate symbol file from the debugger "File" menu. When the program is running, you can stop it from inside the debugger.
+## Loading a program
 
-###Executing code from IceBro Lite
+Use the Load button in the toolbar to open a `.prg`, `.d64` or `.crt` file. IceBro Lite will try to locate matching debug data in the same folder and load symbols and source information automatically.
 
-Follow these steps to launch a program from IceBro Lite:
+The Reload button repeats the most recent load. Reload Debug Info reloads the matching debug information without reloading the program itself.
 
-**Step 1**: Click the LOAD icon in IceBro Lite.
+## Useful workflow tips
 
-![IceBro Lite Load Icon](img/IceBroLite_Load_Icon.png)
+- Drag symbols from the Symbol View into the Code, Memory or Breakpoint views to inspect or break on them.
+- Use the watch view to monitor expressions live while the emulator is stopped.
+- Right-click in the code view to add a watch entry or jump to another address.
 
-**Step 2**: Select a .prg/.d64 or .crt file from the file browser.
+## Keyboard shortcuts
 
-The debugger will now try to find a .dbg file (Kick Assembler debugger data), or .sym file (general assembler symbol file) or .vs file (Vice monitor commands). It will then load symbols and source debug at the same time.
+Global shortcuts:
+* **F5**: go/run
+* **Shift+F5**: pause/break
+* **F11**: step into
+* **F10**: step over
+* **Shift+F11**: step out
+* **Esc**: exit edit mode
 
-When the files are loaded into the debugger, the debugger will stop twice before running the code: first before it starts loading, and second when it is about to run the loaded code.
+Code view shortcuts:
+* **Tab**: jump to the current PC
+* **Shift+Tab**: set the PC to the currently selected address
+* **F9**: toggle a breakpoint at the selected line
+* **Enter**: edit the selected address
 
-To return to VICE just press F5 or press the play icon in the toolbar.
-
-**Step 3**: Done!
-
-## How to debug – tips and advice
-Debugging operations mainly involve dragging a symbol or pointer from one pane into another pane, in order to see what it does there. For this purpose you can drag symbols and pointers from e.g. the Symbol browser or Breakpoint to the tabs of other panes, such as the Code view, the Breakpoint view or the Memory view.
-
-In the image below, a symbol from the Symbol pane is dragged to the Breakpoints view. This adds the symbol as a breakpoint in VICE.
-
-![Starting to debug Witch Rescue Service](img/IceBroLite_WitchRescueService.png)
-
-### Keyboard controls
-
-Global keys
-* **F5**: Return to VICE / Run
-* **F11**: Step Into as in step one instruction and follow into jsr instructions
-* **F10**: Step Over, same as F11 but don't follow into jsr instructions
-* **Esc**: Exit the current edit
-
-Code pane Keys
-* **F6**: Run until line with purple cursor is reached or any prior breakpoint
-* **F9**: Toggle breakpoint at line with purple cursor
-* **Enter**: Edit code at line with purple cursor, Esc or Enter on empty line to stop.
-
-Memory pane Keys (after clicking on a byte)
-* **Cursor keys**: Move around the cursor in memory
-* **Hex numbers**: Modify value in memory
-
-Breakpoint pane Keys (after clicking on a breakpoint)
-* **Up/Down**: Move through breakpoints
-* **Delete**: Delete breakpoint
+Watch shortcuts:
+* **Enter**: edit the active watch expression
+* **Delete**: remove the active watch entry
+* **Insert**: insert a new watch entry
+* **Up/Down**: move the active selection
 

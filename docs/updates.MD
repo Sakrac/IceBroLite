@@ -1,24 +1,23 @@
 # Updated features
 
-These are features that have been updated since the manual was created
+This page summarizes the main improvements that are reflected in the current manual.
 
-## Command Line Arguments
+## Command line options
 
-The IceBroLite.exe executable accepts command line arguments to speed up getting started and for additional initialization.
+IceBro Lite accepts command line arguments for startup automation and initialization:
 
-* -load=\<executable>: load a .prg, .d64, .crt etc. immediately after VICE is connected. This will also load any .dbg / .sym / .vs file with the same filename as the executable.
-* -symbols=\<.dbg/.sym/.vs>: load this symbol file
-* -connect: automatically connect with a running VICE executable
-* -start: (optionally with a path to a VICE executable, for example -start=x64sc.exe) automatically start VICE
-* -font=\<.ttf/.otf file\>,\<size\>: load an alternative font, for example -font=c:\windows\fonts\cour.ttf,20
+* `-load=<file>`: load a program and matching debug files automatically
+* `-symbols=<file>`: load symbols from a debug file
+* `-connect`: connect to an already-running VICE instance
+* `-start` / `-start=<file>`: launch VICE at startup
+* `-font=<file>,<size>`: override the UI font
+* `-extradebug=<file>`: load additional debug data
+* `-emu=<type>`: select a VICE machine type (`c64`, `vic20`, `plus4`)
 
-## Updated Context Menus
+## UI and view updates
 
-Right clicking in the value field of a Watch Window entry allows changing the numeric format between hexadecimal, decimal or binary
-
-Right clicking in the code view opens up a context menu that allows you to add a watch entry or open the referenced code in a code window.
-
-## Updated middle button scrolling
-
-Holding down the middle mouse button over a code or memory window allows dragging the contents of the window up and down.
+* Right-click in the watch value column to switch the display between hexadecimal, decimal and binary.
+* Right-click in the code view to add a watch entry or jump to a referenced address.
+* Hold down the middle mouse button over code or memory views to scroll the contents.
+* The code view has a Track PC checkbox to keep the current instruction roughly centered as execution advances.
 
