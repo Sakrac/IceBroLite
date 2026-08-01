@@ -18,12 +18,14 @@ The CMake presets expect Clang as the compiler.
 
 ### Debian/Ubuntu
 
+For a Vulkan-backed Sokol build on Linux, install the windowing and Vulkan development packages rather than the older OpenGL/GLUT stack:
+
 ```bash
 sudo apt update
 sudo apt install -y cmake ninja-build clang llvm \
-  mesa-common-dev libglu1-mesa-dev freeglut3-dev \
-  libwayland-dev libxkbcommon-dev libxrandr-dev \
-  libxinerama-dev libxcursor-dev libxi-dev
+  libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev \
+  libwayland-dev libxkbcommon-dev \
+  libvulkan-dev vulkan-validationlayers vulkan-tools
 ```
 
 ### Fedora
@@ -31,9 +33,12 @@ sudo apt install -y cmake ninja-build clang llvm \
 ```bash
 sudo dnf upgrade --refresh
 sudo dnf install cmake ninja-build clang llvm \
-  mesa-libGL-devel wayland-devel libxkbcommon-devel \
-  libXcursor-devel libXi-devel libXinerama-devel libXrandr-devel
+  libX11-devel libXrandr-devel libXinerama-devel libXcursor-devel \
+  libXi-devel wayland-devel libxkbcommon-devel \
+  vulkan-devel vulkan-validation-layers vulkan-tools
 ```
+
+The bundled Sokol headers in [src/sokol/sokol_app.h](src/sokol/sokol_app.h) list the Linux link requirements directly; for a Vulkan backend the key extra dependency is the Vulkan SDK.
 
 ## macOS
 
