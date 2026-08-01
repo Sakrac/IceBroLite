@@ -1,68 +1,56 @@
-# WINDOWS
+# Build dependencies
 
-## Build Tool
+IceBro Lite now builds with CMake and the Sokol/ImGui dependency bundle in the repository. The usual workflow is:
 
-Both Visual Studio and CMake will build on Windows. If you're fine with Visual Studio just use that and skip CMake/Ninja-Build/Clang
+1. Run get_dependencies.bat on Windows or get_dependencies.sh on Linux/macOS.
+2. Configure and build with CMake/Ninja or the provided scripts.
 
-### Install CMake
-Download the correct version from
-https://cmake.org/download/
+## Windows
 
-### Install Ninja, put it somewhere and add the path to the path environment variable
-https://github.com/ninja-build/ninja/releases
+Install:
+- CMake: https://cmake.org/download/
+- Ninja: https://github.com/ninja-build/ninja/releases
+- LLVM/Clang: https://github.com/llvm/llvm-project/releases
 
-### Install CLANG
-Download the latest release from LLVM and copy the folders (bin, etc.) to C:\Program Files\LLVM\, or pick the full LLVM installer.
-https://github.com/llvm/llvm-project/releases
+The CMake presets expect Clang as the compiler.
 
-# FEDORA Workspace (DNF)
+## Linux
 
-### Fedora make sure to upgrade first
-sudo dnf upgrade --refresh
+### Debian/Ubuntu
 
-### Install CMake and Ninja
-sudo dnf install cmake ninja
-
-### Install the clang compiler and llvm
-sudo dnf install clang
-sudo dnf install llvm
-
-### Run this to install OpenGL development files in Fedora
-sudo dnf install mesa-libGL-devel
-
-### Install dependencies for X11 in Fedora
-sudo dnf install wayland-devel libxkbcommon-devel libXcursor-devel libXi-devel libXinerama-devel libXrandr-devel
-
-# DEBIAN (APT)
-
+```bash
 sudo apt update
-sudp apt upgrade
+sudo apt install -y cmake ninja-build clang llvm \
+  mesa-common-dev libglu1-mesa-dev freeglut3-dev \
+  libwayland-dev libxkbcommon-dev libxrandr-dev \
+  libxinerama-dev libxcursor-dev libxi-dev
+```
 
-### Install CMake and Ninja
-sudo apt install cmake ninja-build
+### Fedora
 
-### Install the clang compiler and llvm
-sudo apt install clang
-sudo apt install llvm
+```bash
+sudo dnf upgrade --refresh
+sudo dnf install cmake ninja-build clang llvm \
+  mesa-libGL-devel wayland-devel libxkbcommon-devel \
+  libXcursor-devel libXi-devel libXinerama-devel libXrandr-devel
+```
 
-### Install dependencies for X11 / OpenGL in Fedora
-sudo apt-get install mesa-utils libglu1-mesa-dev freeglut3-dev mesa-common-dev
+## macOS
 
-### Probably need a newer version of cmake though (if build_cmake.sh doesn't work)
-Install SNAP and install cmake from there
-sudo apt install -y snapd
-sudo reboot
-sudo snap install core
-sudo snap install cmake --classic
+Install Xcode command line tools and Homebrew packages:
 
-### Install X11 / wayland stuff
-sudo apt install libwayland-dev libxkbcommon-dev libxrandr-dev
-sudo apt-get install libxinerama-dev
-sudo apt-get install libxcursor-dev
-sudo apt-get install libxi-dev
+```bash
+xcode-select --install
+brew install cmake ninja llvm
+```
 
-# Clone ImGui / Sokol
+Then configure with the macOS preset:
 
-Run get_dependencies.bat or get_dependencies.sh in the root folder of the project.
+```bash
+cmake -G Ninja -S . -B build --preset macos-release
+cmake --build build
+```
 
-Now build_cmake.sh / build_cmake.bat should work
+## Runtime dependency
+
+IceBro Lite connects to VICE, so you will also need a recent VICE build with the Remote Monitor and Binary Remote Monitor enabled.

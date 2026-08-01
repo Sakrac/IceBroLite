@@ -1,44 +1,43 @@
 # Linux build instructions for IceBro Lite
 
-It is trivial to build IceBro Lite for Linux. In order to avoid missing steps I have followed these steps on a fresh Raspberry PI install of Debian.
+IceBro Lite builds with CMake and Ninja on Linux.
 
----
-### Get the files
+## Prerequisites
 
-* Open a terminal
-* Go to a, or create a new, development folder such as ~/dev
-* clone the repo
+Install the toolchain and graphics dependencies:
 
+```bash
+sudo apt update
+sudo apt install -y cmake ninja-build clang llvm \
+  mesa-common-dev libglu1-mesa-dev freeglut3-dev \
+  libwayland-dev libxkbcommon-dev libxrandr-dev \
+  libxinerama-dev libxcursor-dev libxi-dev
 ```
+
+On Fedora use:
+
+```bash
+sudo dnf install cmake ninja-build clang llvm \
+  mesa-libGL-devel wayland-devel libxkbcommon-devel \
+  libXcursor-devel libXi-devel libXinerama-devel libXrandr-devel
+```
+
+## Build
+
+```bash
 git clone https://github.com/Sakrac/IceBroLite.git
+cd IceBroLite
+./get_dependencies.sh
+./build_cmake.sh
 ```
 
----
+The equivalent CMake invocation is:
 
-### Install dependencies
-
-```
-sudo apt-get install libglfw3-dev
-sudo apt-get install pkg-config
-sudo apt-get install clang
+```bash
+cmake -G Ninja -S . -B build --preset linux-release
+cmake --build build
 ```
 
-### Build the project
+## Run
 
-```
-cd IceBroLite/src
-make
-```
-
-If successful IceBroLite is now in the project folder!
-
----
-
-### Updating
-
-To update with the latest at a future time simply go to the project folder and update
-
-```
-git pull
-make
-```
+Run the produced executable from the repository root or another folder where the debugger can save its layout file.

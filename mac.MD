@@ -1,34 +1,27 @@
-# Build instructions for Mac OSX
+# Build instructions for macOS
 
-This document is in a research stage. I don't have a working mac so I will have to borrow one at some points to work through the information
-
-## Make File
-
-The makefile included for building Linux versions have been tested
-on macs with the same steps as [building the linux version](linux.MD),
-but trying to find more straightforward methods
-
-## XCode External Build Project
-XCode can build makefile projects:
-https://developers.google.com/j2objc/guides/external-build-projects, https://acecilia.medium.com/setup-a-c-c-makefile-project-in-xcode-syntax-highlight-autocompletion-jump-to-definition-and-80405bd4542e
+IceBro Lite uses the Sokol backend on macOS and can be built with CMake and Ninja.
 
 ## Prerequisites
 
-Install command-line tools:
+Install the Xcode command line tools and required Homebrew packages:
 
-```
+```bash
 xcode-select --install
-```
-
-Install glfw:
-
-```
-brew install glfw
+brew install cmake ninja llvm
 ```
 
 ## Build
 
+```bash
+git clone https://github.com/Sakrac/IceBroLite.git
+cd IceBroLite
+./get_dependencies.sh
+cmake -G Ninja -S . -B build --preset macos-release
+cmake --build build
 ```
-cd src
-make
-```
+
+## Run
+
+The generated binary can be launched from the repository root. If you want to keep the debugger layout and state in a project-local folder, launch it from there.
+
