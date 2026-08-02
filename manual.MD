@@ -62,6 +62,8 @@ new commands added for the console to add Action Replay like support:
   * finds matching byte values in the remembered set of addresses, optionally within a sub-range of addresses. Add a T or W at the end to automatically assign TracePoints or WatchPoints to the matches. Vice does not need to be in break mode to use this command.
 * forget
   * clears the remembered addresses
+* gfxsave [<name>]
+  * exports the current graphics screen to a set of files using the provided base name. If no name is supplied it uses `gfxsave`. The command writes a `.txt` metadata file, a `.scr` screen dump, a `.col` color dump, and a `.chr` character dump for the detected graphics mode.
 
 ## Next Release
 
