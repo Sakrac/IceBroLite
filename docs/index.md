@@ -17,8 +17,9 @@ It connects directly to VICE's Binary Monitor for core debugging data and the Te
    * [Ice console](ice_console.MD)
    * [Watch view](view_watch.MD)
 7. [Numeric expressions](expressions.MD)
-8. [Acknowledgements](acknowledgements.MD)
-9. [History](history.MD)
+8. [Cracker Barrel](cracker_barrel.md)
+9. [Acknowledgements](acknowledgements.MD)
+10. [History](history.MD)
 
 **Feedback is always welcome**
 

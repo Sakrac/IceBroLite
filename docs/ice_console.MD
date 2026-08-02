@@ -19,6 +19,7 @@ Type `help` or `?` for VICE commands when connected to VICE, or `cmd` for a list
 * `remember <byte>[-<byte>] [<addr> <addr>]`: remember matching bytes in a range
 * `forget`: clear the remembered matches
 * `match <byte>[-<byte>] [<addr> <addr>] [clear|filter|trace|watch]`: match remembered bytes and optionally create checkpoints
+* `gfxsave [<name>]`: export the current graphics screen to a set of files using the supplied base name
 
 Use `cmd <command>` for help on a specific console command.
 
@@ -45,6 +46,14 @@ match <byte>[-<byte>] [<addr> <addr>] [clear|filter|trace|watch]
 ```
 
 Compares the current memory contents with the remembered byte range. The `clear` flag resets the current results first, `filter` removes non-matching entries from the current result set, `trace` creates tracepoints and `watch` creates watchpoints.
+
+### `gfxsave`
+
+```text
+gfxsave [<name>]
+```
+
+Exports the current graphics screen to a set of files using the supplied base name. If no name is supplied, the command uses `gfxsave` as the default name. It writes a `.txt` metadata file, a `.scr` screen dump, a `.col` color dump, and a `.chr` character dump for the detected graphics mode.
 
 ### `poke`
 
