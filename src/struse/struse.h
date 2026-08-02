@@ -1017,6 +1017,17 @@ public:
 	void format_insert(const strref format, const strref *args, strl_t pos) {
 		set_len_int(_strmod_format_insert(charstr(), len(), cap(), pos, format, args)); }
 
+	strmod& append_bin(uint32_t num) {
+		if (!num) { return append('0'); }
+		uint32_t m = 1u << 31;
+		while (!(m & num)) { m >>= 1; }
+		while (m) {
+			append((m & num) ? '1' : '0');
+			m >>= 1;
+		}
+		return *this;
+	}
+
 	strmod& append_num(uint32_t num, strl_t size, strl_t radix) {
 		add_len_int( _strmod_append_num( charstr() + len(), cap() - len(), num, size, radix ) );
 		return *this;
