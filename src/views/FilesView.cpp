@@ -16,6 +16,12 @@
 #define strcasecmp _stricmp
 #endif
 
+#ifdef _WIN32
+#define DIR_SEP "\\"
+#else
+#define DIR_SEP "/"
+#endif
+
 void FVFileView::Show(const char *folder, bool *setWhenDone, char *pathWhenDone, int pathWhenDoneSize, const char *filter)
 {
 	strovl usr(userPath, sizeof(userPath));
